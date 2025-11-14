@@ -1,6 +1,7 @@
 // src/hooks/useWordViewerLogic.jsx
 import { useState, useEffect, useCallback } from "react";
 import { modeOptions } from "../config/modeOptions";
+import { speakWord, stopSpeech, estimateWordDuration } from "../utils/speech"; // ✅ Importar estimateWordDuration
 
 const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
   const defaultOptions = modeOptions[mode] || modeOptions.adult;
@@ -11,7 +12,7 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [speed, setSpeed] = useState(300); // Valor base
-  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [voiceEnabled, setVoiceEnabled] = useState(false); // ✅ false por defecto
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState([]);
   const [pdfPages, setPdfPages] = useState([]);
@@ -20,7 +21,9 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
   // ✅ Usar opciones centralizadas
   const { maxSpeed, enablePdf, enableAutoPause, autoPauseInterval, autoPauseDuration } = options;
 
+  // ✅ Desactivar voz si la velocidad es muy alta
   useEffect(() => {
+    console.log("🚀 Desactivar Voz por velocidad");
     if (speed < maxSpeed) {
       setVoiceEnabled(false); // Desactivar voz si es muy rápido
     }
@@ -37,8 +40,23 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     }
   }, [mode]);
 
+    useEffect(() => {
+      if (text) {
+        console.log("🚀 si (text)");
+        setWords(parseText(text));
+        setCurrentIndex(0);
+      } else {
+        // ✅ Si no hay texto, reiniciar todo
+        console.log("🚀 no hay texto, reiniciar");
+        setWords([]);
+        setCurrentIndex(0);
+        setIsRunning(false); // ✅ Detener la lectura si se borra el texto
+      }
+    }, [text, parseText]);
+
   useEffect(() => {
     if (text) {
+      console.log("🚀 si (text)");
       setWords(parseText(text));
       setCurrentIndex(0);
     }
@@ -46,8 +64,13 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
 
   // ✅ Lógica de lectura
   const startReading = () => {
+    console.log("🚀 startReading llamado");
     if (words.length > 0) {
+      setCurrentIndex(0); // ✅ Reiniciar índice al iniciar
       setIsRunning(true);
+      console.log("✅ Lectura iniciada, palabras:", words);
+    } else {
+      console.log("❌ No hay palabras para leer");
     }
   };
 
@@ -83,6 +106,60 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
       addToHistory(text, selectedPage);
     }
   }, [text, selectedPage, isRunning]);
+
+  // ✅ Efecto que controla la lectura palabra por palabra (único)
+  useEffect(() => {
+    console.log("🔄 useEffect de lectura", { isRunning, words, currentIndex, speed });
+    
+    if (isRunning && words.length > 0 && currentIndex < words.length - 1) {
+      console.log("✅ Intervalo activo, avanzando palabra...");
+      const interval = setInterval(() => {
+        console.log("➡️ Avanzando índice a:", currentIndex + 1);
+        setCurrentIndex(prev => prev + 1);
+      }, speed);
+
+      return () => clearInterval(interval);
+    } else {
+      // ✅ Si ya terminó de leer o no está corriendo, detener la lectura
+      if (isRunning && currentIndex >= words.length - 1) {
+        console.log("🏁 Lectura terminada, deteniendo isRunning");
+        setIsRunning(false);
+      }
+      console.log("❌ No se activó el intervalo", { isRunning, words, currentIndex });
+    }
+  }, [isRunning, words, currentIndex, speed]);
+
+  // ✅ Efecto que reproduce la palabra en voz alta
+  useEffect(() => {
+    if (isRunning && voiceEnabled && words[currentIndex]) {
+      console.log("🚀 Reproduce voz para palabra:", words[currentIndex]);
+      speakWord(words[currentIndex]);
+    }
+  }, [currentIndex, isRunning, voiceEnabled, words]);
+
+  // ✅ Efecto que detiene la voz inmediatamente si se inhabilita
+  useEffect(() => {
+    if (!voiceEnabled) {
+      console.log("🚀 Detener Voz");
+      stopSpeech(); // ✅ Detener voz inmediatamente
+    }
+  }, [voiceEnabled]);
+
+  // ✅ Efecto que detiene la voz al detener la lectura
+  useEffect(() => {
+    return () => {
+      console.log("🚀 Detiene la voz al desmontar");
+      stopSpeech(); // Detener voz al desmontar el hook
+    };
+  }, []);
+
+  // ✅ Desactivar voz si la velocidad es muy rápida para la pronunciación
+  useEffect(() => {
+    const wordDuration = estimateWordDuration("a"); // palabra más corta
+    if (speed < wordDuration * 0.8) {
+      setVoiceEnabled(false);
+    }
+  }, [speed]);
 
   // ✅ Efecto para pausas automáticas (configurable)
   useEffect(() => {

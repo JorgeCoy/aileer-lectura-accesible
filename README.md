@@ -1,16 +1,78 @@
-# React + Vite
+# 📖 AILEER — Lectura Accesible para Todos
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> *“No necesitas tener tiempo. Solo necesitas tener corazón.”*
 
-Currently, two official plugins are available:
+AILEER es una herramienta de lectura rápida y accesible, diseñada para padres, docentes, personas con TDAH y quienes necesitan leer sin distracciones. Nace de la necesidad real de un padre en Bogotá que quiere ayudar a sus hijos a leer, aunque solo tenga 10 minutos al día.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 🌱 ¿Por qué existe?
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Tengo dos hijos de 5 y 1 años.  
+- Y quiero que lean… sin presión. Sin ruido. Con gusto.
 
-## Expanding the ESLint configuration
+AILEER nació de eso.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## ✅ Características
+
+| Funcionalidad | Descripción |
+|---------------|-------------|
+| 🎨 Temas visuales | Minimalista, Cinemático, Zen, Profesional, Vintage, Focus, Gris |
+| 📚 Modos personalizados | Adulto, Niños, Bebés, Profesor, TDAH |
+| 🗣️ Voz en texto | Sincronizada con la velocidad de lectura |
+| 🖥️ Atajos de teclado | Espacio (pausar), Flechas (avanzar), Esc (cerrar historial) |
+| 📄 Lectura de PDF | Carga y navegación por páginas |
+| 🕒 Velocidad ajustable | Desde 10ms hasta 1000ms |
+| 💾 Historial de lectura | Guarda tus textos para volver a ellos |
+| 🧠 Enfoque en accesibilidad | Sin publicidad, sin cobros, sin distracciones |
+
+---
+
+## 🛠️ Tecnologías
+
+- React + Vite  
+- Framer Motion (animaciones)  
+- Web Speech API (voz)  
+- Tailwind CSS (diseño)  
+- localStorage (persistencia)  
+- JavaScript moderno (sin frameworks pesados)
+
+---
+
+## 📂 Estructura del proyecto
+src/
+├── views/ # Vistas por modo (Adulto, Niño, etc.)
+├── hooks/ # Lógica central: useWordViewerLogic
+├── components/ # Botones, controles, sliders
+├── context/ # ThemeContext, AppContext
+├── config/ # Temas, modos, opciones
+├── utils/ # speakWord, stopSpeech, estimateWordDuration
+└── assets/ # Texturas de papel, íconos
+
+
+---
+
+## 🧪 Cómo probarlo
+
+1. Clona el repositorio  
+2. Ejecuta: `npm install`  
+3. Ejecuta: `npm run dev`  
+4. Abre: `http://localhost:5173`
+
+---
+
+## ❤️ ¿Cómo puedes ayudar?
+
+- ¿Eres docente? Prueba con tus alumnos.  
+- ¿Eres padre? Usa AILEER con tus hijos.  
+- ¿Eres desarrollador? Ayúdanos a mejorar.  
+- ¿Tienes un producto accesible? Queremos colaborar.
+
+**No necesitas dinero. Solo necesitas empatía.**
+
+---
+
+> _“AILEER no es una app. Es un abrazo en forma de palabra.”_  
+> — Jorge Coy, Bogotá, 2025

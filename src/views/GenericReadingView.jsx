@@ -34,7 +34,7 @@ const GenericReadingView = ({ modeId }) => {
     pauseReading,
     resumeReading,
     stopReading,
-    handlePdfUpload,
+    handlePdfUpload,  
     showHistory,
     setShowHistory,
     history,
@@ -89,18 +89,10 @@ const GenericReadingView = ({ modeId }) => {
         stop={stopReading}
         setShowHistory={setShowHistory}
         theme={theme}
+        speed={speed} // ✅ Pasar velocidad
+        voiceEnabled={voiceEnabled} // ✅ Pasar estado de voz
+        setVoiceEnabled={setVoiceEnabled} // ✅ Pasar función para cambiar estado
       />
-
-      <div className="flex items-center gap-2 mb-4">
-        <input
-          type="checkbox"
-          id={`voice-toggle-${mode.id}`}
-          checked={voiceEnabled}
-          onChange={() => setVoiceEnabled(!voiceEnabled)}
-          className="h-5 w-5 accent-blue-500"
-        />
-        <label htmlFor={`voice-toggle-${mode.id}`}>Voz</label>
-      </div>
 
       <SpeedSlider speed={speed} setSpeed={setSpeed} />
     </>
@@ -108,67 +100,58 @@ const GenericReadingView = ({ modeId }) => {
 
   // ✅ Definir el panel derecho
   const rightPanel = (
-        <div
-      className="text-center p-8 rounded-lg relative"
-      style={{
-        backgroundImage: `url(${backgroundUrl})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        minHeight: "400px",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        borderRadius: "12px",
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-      }}
-    >
-        {/* ✅ Reemplazar el div del contenido con motion.div */}
-      <motion.div
-        key={theme}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        style={{
-            backgroundImage: `url(${backgroundUrl})`,
-            backgroundSize: "cover", // ✅ Cubre todo el contenedor
-            backgroundPosition: "center", // ✅ Centra la imagen
-            backgroundRepeat: "no-repeat", // ✅ No repite
-            minHeight: "100%", // ✅ Ocupa todo el alto disponible
-            width: "100%", // ✅ Ocupa todo el ancho disponible
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            borderRadius: "12px",
-            padding: "2rem", // ✅ Mantener el padding para que el texto no toque los bordes
-        }}
-        className="text-center" // ✅ Clases de Tailwind para mantener el estilo
-      > 
-      <h2 className="text-xl font-semibold mb-4 opacity-70">
-        {theme === "professional"
-          ? `Palabra ${currentIndex + 1}/${words.length}`
-          : "Leyendo..."}
-      </h2>
+  <motion.div // ✅ Solo este div, sin contenedor exterior
+    key={theme}
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.5 }}
+    style={{
+      backgroundImage: `url(${backgroundUrl})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      minHeight: "400px", // ✅ Mantener altura mínima
+      width: "100%", // ✅ Ocupar todo el ancho
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      borderRadius: "12px",
+      padding: "2rem", // ✅ Padding en el contenedor principal
+      boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+      overflow: "hidden",
+    }}
+    className="text-center"
+  >
+    {/* Contenido */}
+    {/* ✅ Ajustar el mensaje según el estado */}
+    <h2 className="text-xl font-semibold mb-4 opacity-70">
+      {theme === "professional"
+        ? `Palabra ${currentIndex + 1}/${words.length}`
+        : isRunning // ✅ Si está corriendo, mostrar el progreso
+        ? `Palabra ${currentIndex + 1}/${words.length}`
+        : words.length > 0 // ✅ Si hay palabras pero no está corriendo
+        ? "Presiona iniciar para leer"
+        : "Leyendo..."} {/* ✅ Si no hay palabras, mostrar el mensaje original */}
+    </h2>
 
-      <div className="min-h-[100px] flex items-center justify-center">
-        <HighlightedWord word={words[currentIndex]} />
-      </div>
-
-      <p className="mt-4 text-gray-400 text-sm">
-        {theme === "focus"
-          ? "Modo lectura Zen"
-          : theme === "cinematic"
-          ? "Modo inmersivo cinematográfico"
-          : theme === "professional"
-          ? "Modo profesional"
-          : theme === "vintage"
-          ? "Modo clásico"
-          : "Modo relajado"}
-      </p>
-      </motion.div>
+    <div className="min-h-[100px] flex items-center justify-center">
+      <HighlightedWord word={words[currentIndex]} />
     </div>
-  );
+
+    <p className="mt-4 text-gray-600 text-sm">
+      {theme === "focus"
+        ? "Modo lectura Zen"
+        : theme === "cinematic"
+        ? "Modo inmersivo cinematográfico"
+        : theme === "professional"
+        ? "Modo profesional"
+        : theme === "vintage"
+        ? "Modo clásico"
+        : "Modo relajado"}
+    </p>
+  </motion.div>
+);
 
   // ✅ Definir los selectores como controlsPanel
   const controlsPanel = (

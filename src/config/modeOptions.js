@@ -3,7 +3,8 @@ import { modes } from "./modes";
 
 export const modeOptions = {
   adult: {
-    maxSpeed: 10,
+    maxSpeed: 10, // Velocidad máxima para lectura visual
+    minVoiceSpeed: 900, // ✅ Velocidad mínima para que la voz suene bien
     enablePdf: true,
     enableAutoPause: false,
     autoPauseInterval: 5000,
@@ -11,6 +12,7 @@ export const modeOptions = {
   },
   teacher: {
     maxSpeed: 10,
+    minVoiceSpeed: 500,
     enablePdf: true,
     enableAutoPause: false,
     autoPauseInterval: 5000,
@@ -18,6 +20,7 @@ export const modeOptions = {
   },
   child: {
     maxSpeed: 500,
+    minVoiceSpeed: 600, // ✅ Para niños, voz más lenta
     enablePdf: false,
     enableAutoPause: false,
     autoPauseInterval: 5000,
@@ -25,6 +28,7 @@ export const modeOptions = {
   },
   baby: {
     maxSpeed: 1000,
+    minVoiceSpeed: 800, // ✅ Para bebés, voz muy lenta
     enablePdf: false,
     enableAutoPause: false,
     autoPauseInterval: 5000,
@@ -32,6 +36,7 @@ export const modeOptions = {
   },
   adhd: {
     maxSpeed: 200,
+    minVoiceSpeed: 600, // ✅ Para TDAH, voz más clara
     enablePdf: true,
     enableAutoPause: true,
     autoPauseInterval: 3000,
