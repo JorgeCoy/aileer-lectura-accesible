@@ -58,46 +58,46 @@ const ConfigMenu = ({
         ref={menuRef}
         className="settings-menu absolute top-16 left-20 shadow-xl rounded-lg p-4 w-64 z-50"
         style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.9)', // ✅ Fondo blanco con 90% de opacidad
+          backgroundColor: 'rgba(155, 255, 255, 0.7)', // ✅ Fondo blanco con 90% de opacidad
         }}
       >
-        <h3 className="text-lg font-bold mb-3">⚙️ Configuración</h3>
+        <h3 className="text-blue-500 font-bold mb-3">⚙️ Configuración</h3>
 
         {/* Velocidad */}
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">📈 Velocidad (ms)</label>
+          <label className="text-black block text-sm font-medium mb-1">📈 Velocidad (ms)</label>
           <input
             type="range"
             min="10"
             max="1000"
             value={speed}
             onChange={(e) => setSpeed(Number(e.target.value))} // ✅ Aplicar inmediatamente
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            className="w-full h-2 bg-blue-950 rounded-lg appearance-none cursor-pointer"
           />
-          <span className="text-xs text-gray-500">{speed}ms</span>
+          <span className="text-blue-500">{speed}ms</span>
         </div>
 
         {/* Tamaño de fuente */}
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">🔤 Tamaño de fuente (px)</label>
+          <label className="text-black block text-sm font-medium mb-1">🔤 Tamaño de fuente (px)</label>
           <input
             type="range"
             min="16"
             max="72"
             value={fontSize}
             onChange={(e) => setFontSize(Number(e.target.value))} // ✅ Aplicar inmediatamente
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            className="w-full h-2 bg-blue-950 rounded-lg appearance-none cursor-pointer"
           />
-          <span className="text-xs text-gray-500">{fontSize}px</span>
+          <span className="text-xs text-red-950">{fontSize}px</span>
         </div>
 
         {/* Tipo de letra */}
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">✍️ Tipo de Letra</label>
+          <label className=" text-black block text-sm font-medium mb-1">✍️ Tipo de Letra</label>
           <select
             value={fontFamily}
             onChange={(e) => setFontFamily(e.target.value)} // ✅ Aplicar inmediatamente
-            className="w-full p-1 border border-gray-300 rounded text-sm"
+            className="w-full bg-blue-950 p-1 border border-gray-300 rounded text-sm"
           >
             <option value="sans-serif">Letra separada (Sans-serif)</option>
             <option value="cursive">Letra cursiva (Cursive)</option>

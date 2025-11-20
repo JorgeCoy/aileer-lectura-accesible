@@ -13,15 +13,17 @@ import { getModeById } from "../config/modes";
 import { themeBackgrounds } from "../config/themeBackgrounds"; // ✅ Importar fondos
 import SettingsPanel from "../components/SettingsPanel"; // ✅ Importar el panel
 import SideBar from "../components/SideBar"; // ✅ Importar la nueva barra lateral
+import AppContext from "../context/AppContext"; // ✅ Importar AppContext
 import { motion } from "framer-motion"; // ✅ Importar motions
 
 const GenericReadingView = ({ modeId }) => {
   const { theme, setTheme } = useContext(ThemeContext);
+  const { setCurrentView } = useContext(AppContext); // ✅ Acceder a setCurrentView
   const [readingTechnique, setReadingTechnique] = useState("singleWord");
-  const [fontSize, setFontSize] = useState(32); // ✅ Nuevo estado
-  const [fontFamily, setFontFamily] = useState("sans-serif"); // ✅ Nuevo estado
-    const [isPlaying, setIsPlaying] = useState(false); // ✅ Estado para ocultar panel izquierdo
-  const [isMobile, setIsMobile] = useState(false); // ✅ Estado para detectar móvil
+  const [fontSize, setFontSize] = useState(32);
+  const [fontFamily, setFontFamily] = useState("sans-serif");
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
 
 
@@ -105,14 +107,14 @@ const GenericReadingView = ({ modeId }) => {
   // ✅ Funciones para los iconos de la barra lateral
   const handleHomeClick = () => {
     // Aquí puedes navegar al inicio o reiniciar la vista
-    console.log("Ir al inicio");
+      setCurrentView('start'); // ✅ Volver al menú de inicio
   };
 
 
 
   // ✅ Definir el panel izquierdo (ahora solo texto y PDF)
   const leftPanel = (
-    <div className={`transition-all duration-300 ${isPlaying ? 'hidden md:block' : ''} ${isMobile && isPlaying ? 'hidden' : ''}`}>
+    <div className={`transition-all duration-300 ${isPlaying ? 'hidden' : ''}`}> {/* ✅ Ahora se oculta en todos los tamaños */}
       <div className="mb-4">
         <textarea
           className="w-full p-3 bg-gray-100 rounded text-gray-900 resize-y min-h-[120px] font-sans"
@@ -256,7 +258,7 @@ const GenericReadingView = ({ modeId }) => {
           theme={currentTheme}
           leftPanel={leftPanel}
           rightPanel={rightPanel}
-          controlsPanel={controlsPanel}
+          isPlaying={isPlaying} // ✅ Pasar estado para ajustar el layout
         />
       </div>
 
