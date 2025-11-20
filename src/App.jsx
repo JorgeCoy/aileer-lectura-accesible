@@ -52,15 +52,8 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Botón de volver al inicio */}
-      {currentView !== 'start' && (
-        <button
-          onClick={() => setCurrentView('start')}
-          className="fixed top-4 left-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition"
-        >
-          ← Inicio
-        </button>
-      )}
+      {/* ✅ Botón de volver al inicio → Eliminado */}
+      {/* El icono 🏠 en la SideBar cumple esta función ahora */}
 
       {/* Renderizado condicional */}
       {renderView()}
