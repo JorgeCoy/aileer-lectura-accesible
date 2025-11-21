@@ -6,15 +6,25 @@ const HighlightedWord = ({ word, fontSize = 32, fontFamily = "sans-serif", theme
 
   const mid = Math.floor(word.length / 2);
 
-  // ✅ Definir estilos dinámicos
+  // ✅ Definir estilos dinámicos con fuentes reales
   const dynamicStyles = {
     fontSize: `${fontSize}px`,
-    fontFamily: fontFamily === "cursive" ? "cursive" : fontFamily,
     lineHeight: "1.2",
+    color: theme === "cinematic" || theme === "gray" || theme === "focus" 
+      ? "white" // Letra blanca si fondo oscuro
+      : "black", // Letra negra si fondo claro
   };
 
+  // ✅ Mapear fontFamily a una fuente real
+  let actualFontFamily = fontFamily;
+  if (fontFamily === "cursive") {
+    actualFontFamily = "'Dancing Script', cursive"; // ✅ Fuente real de cursiva
+  } else if (fontFamily === "dyslexic") {
+    actualFontFamily = "'OpenDyslexic', sans-serif"; // ✅ Fuente para dislexia
+  }
+
   return (
-    <div style={dynamicStyles}>
+    <div style={{ ...dynamicStyles, fontFamily: actualFontFamily }}>
       {word.slice(0, mid)}
       <span className="bg-yellow-400 text-white px-2 py-1 rounded">
         {word[mid]}

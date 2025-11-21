@@ -26,16 +26,34 @@ const ReadingLayout = ({
         </header>
 
         {/* Contenedor principal */}
-        <div className={`flex flex-col md:flex-row gap-6 flex-1 ${isPlaying ? 'md:flex-col' : ''}`}>
+        <div className={`flex flex-col md:flex-row gap-6 flex-1`}>
           {/* Panel Izquierdo */}
-          <div className={`${theme.card} p-4 rounded-lg shadow-lg w-full md:w-1/3 transition ${isPlaying ? 'hidden md:block' : ''}`} style={{ display: isPlaying ? 'none' : 'block' }}>
+          <motion.div
+            initial={false} // ✅ No animar en el primer render
+            animate={{
+              width: isPlaying ? 0 : "33.333%", // ✅ Cambiar ancho: 1/3 -> 0
+              opacity: isPlaying ? 0 : 1,       // ✅ Cambiar opacidad: 1 -> 0
+              display: isPlaying ? "none" : "block", // ✅ Ocultar con display
+            }}
+            transition={{ duration: 0.5, ease: "easeInOut" }} // ✅ Duración y tipo de transición
+            className={`${theme.card} p-4 rounded-lg shadow-lg md:w-1/3 flex-shrink-0`} // ✅ Ajustar clases para que el ancho funcione
+            style={{ overflow: 'hidden' }} // ✅ Evitar desbordes durante la animación
+          >
             {leftPanel}
-          </div>
+          </motion.div>
 
           {/* Panel Derecho */}
-          <div className={`${theme.card} p-6 rounded-lg shadow-lg flex flex-col items-center justify-center w-full ${isPlaying ? 'md:w-full' : 'md:w-2/3'} transition`}>
+          <motion.div
+            initial={false} // ✅ No animar en el primer render
+            animate={{
+              width: isPlaying ? "100%" : "66.666%", // ✅ Cambiar ancho: 2/3 -> 100%
+              opacity: 1,                           // ✅ Mantener opacidad en 1
+            }}
+            transition={{ duration: 0.5, ease: "easeInOut" }} // ✅ Duración y tipo de transición
+            className={`${theme.card} p-6 rounded-lg shadow-lg flex flex-col items-center justify-center md:w-2/3`} // ✅ Ajustar clases para que el ancho funcione
+          >
             {rightPanel}
-          </div>
+          </motion.div>
         </div>
       </motion.div>
     </AnimatePresence>

@@ -100,7 +100,7 @@ const ConfigMenu = ({
             className="w-full bg-blue-950 p-1 border border-gray-300 rounded text-sm"
           >
             <option value="sans-serif">Letra separada (Sans-serif)</option>
-            <option value="cursive">Letra cursiva (Cursive)</option>
+            <option value="cursive">Letra cursiva (Dancing Script)</option> {/* ✅ Nombre más descriptivo */}
             <option value="dyslexic">Letra dislexia (OpenDyslexic)</option>
           </select>
         </div>
