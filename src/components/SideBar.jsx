@@ -13,13 +13,13 @@ const SideBar = ({
   onHomeClick,
   voiceEnabled, 
   setVoiceEnabled,
-  // ✅ Añadir las props faltantes
   speed,
   setSpeed,
   fontSize,
   setFontSize,
   fontFamily,
   setFontFamily,
+  isCountingDown, // ✅ Recibir isCountingDown
 }) => {
   const [isConfigOpen, setIsConfigOpen] = useState(false); // ✅ Estado para el menú de configuración
 
@@ -63,9 +63,9 @@ const SideBar = ({
         {/* Icono de Iniciar */}
         <button
           onClick={startReading}
-          disabled={isRunning || !hasText}
+          disabled={isRunning || !hasText || isCountingDown} // ✅ Deshabilitar si está contando
           className={`p-2 mb-2 rounded-full transition flex items-center justify-center ${
-            isRunning || !hasText
+            isRunning || !hasText || isCountingDown
               ? "text-gray-500 cursor-not-allowed"
               : "hover:bg-gray-700"
           }`}
@@ -77,9 +77,9 @@ const SideBar = ({
         {/* Icono de Pausar */}
         <button
           onClick={pauseReading}
-          disabled={!isRunning}
+          disabled={!isRunning || isCountingDown} // ✅ Deshabilitar si está contando
           className={`p-2 mb-2 rounded-full transition flex items-center justify-center ${
-            !isRunning
+            !isRunning || isCountingDown
               ? "text-gray-500 cursor-not-allowed"
               : "hover:bg-gray-700"
           }`}
@@ -91,9 +91,9 @@ const SideBar = ({
         {/* Icono de Reanudar */}
         <button
           onClick={resumeReading}
-          disabled={isRunning}
+          disabled={isRunning || isCountingDown} // ✅ Deshabilitar si está contando
           className={`p-2 mb-2 rounded-full transition flex items-center justify-center ${
-            isRunning
+            isRunning || isCountingDown
               ? "text-gray-500 cursor-not-allowed"
               : "hover:bg-gray-700"
           }`}
@@ -105,7 +105,12 @@ const SideBar = ({
         {/* Icono de Detener */}
         <button
           onClick={stopReading}
-          className="p-2 mb-2 rounded-full hover:bg-gray-700 transition flex items-center justify-center"
+          disabled={isCountingDown} // ✅ Deshabilitar si está contando
+          className={`p-2 mb-2 rounded-full hover:bg-gray-700 transition flex items-center justify-center ${
+            isCountingDown
+              ? "text-gray-500 cursor-not-allowed"
+              : "hover:bg-gray-700"
+          }`}
           aria-label="Detener lectura"
         >
           ⏹️
