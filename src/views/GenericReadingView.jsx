@@ -25,9 +25,7 @@ const GenericReadingView = ({ modeId }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-
-
-    // ✅ Detectar si es móvil
+  // ✅ Detectar si es móvil
   useEffect(() => {
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -58,7 +56,7 @@ const GenericReadingView = ({ modeId }) => {
     pauseReading,
     resumeReading,
     stopReading,
-    handlePdfUpload,  
+    handlePdfUpload,
     showHistory,
     setShowHistory,
     history,
@@ -92,9 +90,8 @@ const GenericReadingView = ({ modeId }) => {
     setIsPlaying(isRunning);
   }, [isRunning]);
 
-
   const mode = getModeById(modeId); // ✅ Obtener metadatos del modo
-  
+
   if (!mode) {
     return <div>Modo no encontrado</div>; // ✅ Ahora está permitido
   }
@@ -109,10 +106,8 @@ const GenericReadingView = ({ modeId }) => {
   // ✅ Funciones para los iconos de la barra lateral
   const handleHomeClick = () => {
     // Aquí puedes navegar al inicio o reiniciar la vista
-      setCurrentView('start'); // ✅ Volver al menú de inicio
+    setCurrentView('start'); // ✅ Volver al menú de inicio
   };
-
-
 
   // ✅ Definir el panel izquierdo (ahora solo texto y PDF)
   const leftPanel = (
@@ -143,94 +138,94 @@ const GenericReadingView = ({ modeId }) => {
   );
 
   // ✅ Definir el panel derecho
-const rightPanel = (
-  <motion.div
-    key={theme + countdownValue} // ✅ Añadir countdownValue al key para forzar renderizado
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    transition={{ duration: 0.5 }}
-    style={{
-      backgroundImage: `url(${backgroundUrl})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundRepeat: "no-repeat",
-      minHeight: isMobile ? "50vh" : "400px", // ✅ Ajustar altura en móvil
-      width: "100%",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-      borderRadius: "12px",
-      padding: "2rem",
-      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-      overflow: "hidden",
-    }}
-    className="text-center"
-  >
-    {/* ✅ Mostrar conteo regresivo si está activo */}
-    {isCountingDown ? (
-<motion.div
-    key={countdownValue}
-    initial={{ scale: 0.8, opacity: 0 }}
-    animate={{ scale: 1.5, opacity: 1 }}
-    transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
-    className="flex flex-col items-center justify-center"
-  >
-    <span
-      className="text-9xl md:text-[280px] font-black leading-none"
+  const rightPanel = (
+    <motion.div
+      key={theme + countdownValue} // ✅ Añadir countdownValue al key para forzar renderizado
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
       style={{
-        color: "white",
-        textShadow: 
-          "0 0 40px rgba(0,0,0,0.9), " +
-          "0 0 80px rgba(0,0,0,0.7), " +
-          "8px 8px 20px black, " +
-          "-8px -8px 20px black",
-        WebkitTextStroke: "6px black",
+        backgroundImage: `url(${backgroundUrl})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        minHeight: isMobile ? "50vh" : "400px", // ✅ Ajustar altura en móvil
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: "12px",
+        padding: "2rem",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+        overflow: "hidden",
       }}
+      className="text-center"
     >
-      {countdownValue === 0 ? "¡GO!" : countdownValue}
-    </span>
-    <p className="mt-12 text-4xl font-bold text-white drop-shadow-2xl">
-      {countdownValue === 0 ? "¡A LEER!" : "Preparándote..."}
-    </p>
-  </motion.div>
-    ) : (
-      <>
-        {/* Contenido */}
-        <h2 className="text-xl font-semibold mb-4 opacity-70">
-          {theme === "professional"
-            ? `Palabra ${currentIndex + 1}/${words.length}`
-            : isRunning
-            ? `Palabra ${currentIndex + 1}/${words.length}`
-            : words.length > 0
-            ? "Presiona iniciar para leer"
-            : "Leyendo..."}
-        </h2>
+      {/* ✅ Mostrar conteo regresivo si está activo */}
+      {isCountingDown ? (
+        <motion.div
+          key={countdownValue}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1.5, opacity: 1 }}
+          transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
+          className="flex flex-col items-center justify-center"
+        >
+          <span
+            className="text-9xl md:text-[280px] font-black leading-none"
+            style={{
+              color: "white",
+              textShadow:
+                "0 0 40px rgba(0,0,0,0.9), " +
+                "0 0 80px rgba(0,0,0,0.7), " +
+                "8px 8px 20px black, " +
+                "-8px -8px 20px black",
+              WebkitTextStroke: "6px black",
+            }}
+          >
+            {countdownValue === 0 ? "¡GO!" : countdownValue}
+          </span>
+          <p className="mt-12 text-4xl font-bold text-white drop-shadow-2xl">
+            {countdownValue === 0 ? "¡A LEER!" : "Preparándote..."}
+          </p>
+        </motion.div>
+      ) : (
+        <>
+          {/* Contenido */}
+          <h2 className="text-xl font-semibold mb-4 opacity-70">
+            {theme === "professional"
+              ? `Palabra ${currentIndex + 1}/${words.length}`
+              : isRunning
+                ? `Palabra ${currentIndex + 1}/${words.length}`
+                : words.length > 0
+                  ? "Presiona iniciar para leer"
+                  : "Leyendo..."}
+          </h2>
 
-        <div className="min-h-[100px] flex items-center justify-center">
-          <HighlightedWord
-            word={words[currentIndex] || ""}
-            fontSize={fontSize}
-            fontFamily={fontFamily}
-            theme={theme} // ✅ Pasar el tema
-          />
-        </div>
+          <div className="min-h-[100px] flex items-center justify-center">
+            <HighlightedWord
+              word={words[currentIndex] || ""}
+              fontSize={fontSize}
+              fontFamily={fontFamily}
+              theme={theme} // ✅ Pasar el tema
+            />
+          </div>
 
-        <p className="mt-4 text-gray-600 text-sm">
-          {theme === "focus"
-            ? "Modo lectura Zen"
-            : theme === "cinematic"
-            ? "Modo inmersivo cinematográfico"
-            : theme === "professional"
-            ? "Modo profesional"
-            : theme === "vintage"
-            ? "Modo clásico"
-            : "Modo relajado"}
-        </p>
-      </>
-    )}
-  </motion.div>
-);
+          <p className="mt-4 text-gray-600 text-sm">
+            {theme === "focus"
+              ? "Modo lectura Zen"
+              : theme === "cinematic"
+                ? "Modo inmersivo cinematográfico"
+                : theme === "professional"
+                  ? "Modo profesional"
+                  : theme === "vintage"
+                    ? "Modo clásico"
+                    : "Modo relajado"}
+          </p>
+        </>
+      )}
+    </motion.div>
+  );
 
   // ✅ Definir los selectores como controlsPanel
   const controlsPanel = (
@@ -273,15 +268,17 @@ const rightPanel = (
         stopReading={stopReading}
         setShowHistory={setShowHistory}
         onHomeClick={handleHomeClick}
-        voiceEnabled={voiceEnabled} // ✅ Pasar estado de voz
-        setVoiceEnabled={setVoiceEnabled} // ✅ Pasar función para cambiar estado de voz   
-        speed={speed} // ✅ Añadir esta línea     
+        voiceEnabled={voiceEnabled}
+        setVoiceEnabled={setVoiceEnabled}
+        speed={speed}
         setSpeed={setSpeed}
         fontSize={fontSize}
         setFontSize={setFontSize}
         fontFamily={fontFamily}
         setFontFamily={setFontFamily}
-         isCountingDown={isCountingDown} 
+        isCountingDown={isCountingDown}
+        currentIndex={currentIndex}
+        totalWords={words.length}
       />
 
       {/* ✅ Layout principal (ajustado para dejar espacio a la barra lateral) */}
@@ -292,10 +289,9 @@ const rightPanel = (
           theme={currentTheme}
           leftPanel={leftPanel}
           rightPanel={rightPanel}
-          isPlaying={isPlaying} // ✅ Pasar estado para ajustar el layout
+          isPlaying={isPlaying}
         />
       </div>
-
 
       {/* Modal del historial */}
       <HistoryModal
