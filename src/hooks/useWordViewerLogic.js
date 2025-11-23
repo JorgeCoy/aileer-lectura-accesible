@@ -12,6 +12,7 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
 
   const [text, setText] = useState("");
   const [words, setWords] = useState([]);
+  const [voiceEnabled, setVoiceEnabled] = useState(false); // ✅ Estado de voz elevado
 
   // ✅ Separar lógica según modo
   const parseText = useCallback((text) => {
@@ -24,10 +25,10 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
 
   useEffect(() => {
     if (text) {
-      console.log("🚀 si (text)");
+      // console.log("🚀 si (text)");
       setWords(parseText(text));
     } else {
-      console.log("🚀 no hay texto, reiniciar");
+      // console.log("🚀 no hay texto, reiniciar");
       setWords([]);
     }
   }, [text, parseText]);
@@ -46,8 +47,15 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     startReading,
     pauseReading,
     resumeReading,
-    stopReading
-  } = useReadingEngine({ words, options });
+    stopReading,
+    nextWord // ✅ Obtener nextWord
+  } = useReadingEngine({
+    words,
+    options: {
+      ...options,
+      disableTimer: voiceEnabled // ✅ Desactivar timer si hay voz
+    }
+  });
 
   // ✅ Sincronizar reinicio cuando se borra el texto
   useEffect(() => {
@@ -78,15 +86,15 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
   };
 
   // ✅ Usar hook de Voz
-  const {
-    voiceEnabled,
-    setVoiceEnabled
-  } = useSpeech({
+  useSpeech({
     currentWord: words[currentIndex],
     isPlaying: isRunning,
     isCountingDown,
     speed,
-    maxSpeed: options.maxSpeed
+    maxSpeed: options.maxSpeed,
+    onWordEnd: nextWord, // ✅ Sincronización por eventos
+    voiceEnabled, // ✅ Pasar estado
+    setVoiceEnabled // ✅ Pasar setter
   });
 
   return {
@@ -99,8 +107,8 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     countdownValue,
     speed,
     setSpeed,
-    voiceEnabled,
-    setVoiceEnabled,
+    voiceEnabled, // ✅ Devolver estado
+    setVoiceEnabled, // ✅ Devolver setter
     startReading,
     pauseReading,
     resumeReading,

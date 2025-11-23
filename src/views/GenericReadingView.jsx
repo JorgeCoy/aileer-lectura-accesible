@@ -131,9 +131,6 @@ const GenericReadingView = ({ modeId }) => {
           setSelectedPage={setSelectedPage}
         />
       )}
-
-      {/* Opcional: Mantener SpeedSlider si lo necesitas, pero ahora está en Configuración */}
-      {/* <SpeedSlider speed={speed} setSpeed={setSpeed} /> */}
     </div>
   );
 
@@ -175,17 +172,12 @@ const GenericReadingView = ({ modeId }) => {
             className="text-9xl md:text-[280px] font-black leading-none"
             style={{
               color: "white",
-              textShadow:
-                "0 0 40px rgba(0,0,0,0.9), " +
-                "0 0 80px rgba(0,0,0,0.7), " +
-                "8px 8px 20px black, " +
-                "-8px -8px 20px black",
-              WebkitTextStroke: "6px black",
+              textShadow: "0 10px 30px rgba(0,0,0,0.3)", // ✅ Sombra suave y moderna
             }}
           >
             {countdownValue === 0 ? "¡GO!" : countdownValue}
           </span>
-          <p className="mt-12 text-4xl font-bold text-white drop-shadow-2xl">
+          <p className="mt-12 text-4xl font-bold text-white drop-shadow-lg">
             {countdownValue === 0 ? "¡A LEER!" : "Preparándote..."}
           </p>
         </motion.div>
@@ -227,35 +219,6 @@ const GenericReadingView = ({ modeId }) => {
     </motion.div>
   );
 
-  // ✅ Definir los selectores como controlsPanel
-  const controlsPanel = (
-    <>
-      <select
-        value={theme}
-        onChange={(e) => setTheme(e.target.value)}
-        className={`px-4 py-2 rounded-lg ${currentTheme.card} border focus:ring-2 focus:ring-blue-400 transition`}
-      >
-        <option value="minimalist">🧼 Minimalista</option>
-        <option value="cinematic">🎬 Cinemático</option>
-        <option value="zen">🌿 Zen</option>
-        <option value="professional">💻 Profesional</option>
-        <option value="vintage">📜 Vintage</option>
-        <option value="focus">🎯 Enfoque</option>
-        <option value="gray">⚫ Gris elegante</option>
-      </select>
-
-      <select
-        value={readingTechnique}
-        onChange={(e) => setReadingTechnique(e.target.value)}
-        className={`px-4 py-2 rounded-lg ${currentTheme.card} border focus:ring-2 focus:ring-green-400 transition`}
-      >
-        <option value="singleWord">🅰️ Una palabra</option>
-        <option value="lineThreePoints">📖 Línea en tres puntos</option>
-        <option value="paragraphFocus">🧠 Párrafo con foco</option>
-      </select>
-    </>
-  );
-
   return (
     <>
       {/* ✅ Barra lateral con iconos */}
@@ -279,6 +242,12 @@ const GenericReadingView = ({ modeId }) => {
         isCountingDown={isCountingDown}
         currentIndex={currentIndex}
         totalWords={words.length}
+        // ✅ Nuevas props para configuración
+        theme={theme}
+        setTheme={setTheme}
+        readingTechnique={readingTechnique}
+        setReadingTechnique={setReadingTechnique}
+        currentTheme={currentTheme}
       />
 
       {/* ✅ Layout principal (ajustado para dejar espacio a la barra lateral) */}

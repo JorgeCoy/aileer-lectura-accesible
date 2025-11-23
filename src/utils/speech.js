@@ -8,7 +8,7 @@ export const estimateWordDuration = (word, baseSpeed = 300) => {
 };
 
 
-export const speakWord = (word, lang = 'es-ES') => {
+export const speakWord = (word, lang = 'es-ES', onEnd = null) => {
   if ('speechSynthesis' in window) {
     // ✅ Detener la voz actual antes de leer la nueva
     window.speechSynthesis.cancel();
@@ -19,9 +19,14 @@ export const speakWord = (word, lang = 'es-ES') => {
     utterance.pitch = 1; // Tono de la voz (1 = normal)
     utterance.volume = 1; // Volumen (1 = máximo)
 
+    if (onEnd) {
+      utterance.onend = onEnd;
+    }
+
     window.speechSynthesis.speak(utterance);
   } else {
     console.warn('La API de voz no está disponible en este navegador.');
+    if (onEnd) onEnd(); // Fallback para continuar si no hay voz
   }
 };
 

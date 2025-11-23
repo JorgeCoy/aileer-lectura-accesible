@@ -31,8 +31,13 @@ const SideBar = ({
   fontFamily,
   setFontFamily,
   isCountingDown,
-  currentIndex, // ✅ Recibir índice actual
-  totalWords, // ✅ Recibir total de palabras
+  currentIndex,
+  totalWords,
+  theme, // ✅ Nueva prop
+  setTheme, // ✅ Nueva prop
+  readingTechnique, // ✅ Nueva prop
+  setReadingTechnique, // ✅ Nueva prop
+  currentTheme, // ✅ Nueva prop
 }) => {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
 
@@ -107,7 +112,7 @@ const SideBar = ({
         )}
 
         {/* ✅ Grupo Central: Controles de Reproducción */}
-        <div className="flex flex-col items-center w-full">
+        <div className={`flex flex-col items-center w-full ${isRunning ? "justify-center h-full" : "mt-auto mb-auto"}`}>
           {/* Iniciar / Reanudar (Solo visible si NO está corriendo) */}
           {!isRunning && (
             <button
@@ -157,6 +162,12 @@ const SideBar = ({
         setFontSize={setFontSize}
         fontFamily={fontFamily}
         setFontFamily={setFontFamily}
+        // ✅ Pasar nuevas props
+        theme={theme}
+        setTheme={setTheme}
+        readingTechnique={readingTechnique}
+        setReadingTechnique={setReadingTechnique}
+        currentTheme={currentTheme}
       />
     </>
   );

@@ -1,11 +1,19 @@
 // src/config/themeBackgrounds.js
 
+import minimalist from "../assets/backgrounds/minimalist.png";
+import cinematic from "../assets/backgrounds/cinematic.png";
+import zen from "../assets/backgrounds/zen.png";
+import professional from "../assets/backgrounds/professional.png";
+import vintage from "../assets/backgrounds/vintage.png";
+import focus from "../assets/backgrounds/focus.png";
+import gray from "../assets/backgrounds/gray.png";
+
 export const themeBackgrounds = {
-  minimalist: "/src/assets/backgrounds/minimalist.png",
-  cinematic: "/src/assets/backgrounds/cinematic.png",
-  zen: "/src/assets/backgrounds/zen.png",
-  professional: "/src/assets/backgrounds/professional.png",
-  vintage: "/src/assets/backgrounds/vintage.png",
-  focus: "/src/assets/backgrounds/focus.png",
-  gray: "/src/assets/backgrounds/gray.png",
+  minimalist,
+  cinematic,
+  zen,
+  professional,
+  vintage,
+  focus,
+  gray,
 };

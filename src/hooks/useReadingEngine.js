@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 
 const useReadingEngine = ({ words, options }) => {
-    const { enableAutoPause, autoPauseInterval, autoPauseDuration } = options;
+    const { enableAutoPause, autoPauseInterval, autoPauseDuration, disableTimer } = options; // ✅ disableTimer añadido
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
@@ -30,6 +30,15 @@ const useReadingEngine = ({ words, options }) => {
         setCurrentIndex(0);
     }, []);
 
+    // ✅ Función para avanzar manualmente (usada por la voz)
+    const nextWord = useCallback(() => {
+        if (isRunning && currentIndex < words.length - 1) {
+            setCurrentIndex(prev => prev + 1);
+        } else if (currentIndex >= words.length - 1) {
+            setIsRunning(false); // Detener al final
+        }
+    }, [isRunning, currentIndex, words.length]);
+
     // ✅ Efecto para manejar el conteo regresivo
     useEffect(() => {
         let countdownInterval;
@@ -50,7 +59,7 @@ const useReadingEngine = ({ words, options }) => {
 
     // ✅ Efecto que controla la lectura palabra por palabra
     useEffect(() => {
-        if (isCountingDown) return;
+        if (isCountingDown || disableTimer) return; // ✅ Si disableTimer es true, no usar intervalo
 
         if (isRunning && words.length > 0 && currentIndex < words.length - 1) {
             const interval = setInterval(() => {
@@ -63,7 +72,7 @@ const useReadingEngine = ({ words, options }) => {
                 setIsRunning(false);
             }
         }
-    }, [isRunning, words, currentIndex, speed, isCountingDown]);
+    }, [isRunning, words, currentIndex, speed, isCountingDown, disableTimer]);
 
     // ✅ Efecto para pausas automáticas
     useEffect(() => {
@@ -92,7 +101,8 @@ const useReadingEngine = ({ words, options }) => {
         startReading,
         pauseReading,
         resumeReading,
-        stopReading
+        stopReading,
+        nextWord // ✅ Exportar nextWord
     };
 };
 
