@@ -4,6 +4,7 @@ import AppContext from './AppContext'; // Importamos el contexto
 
 const AppProvider = ({ children }) => {
   const [currentView, setCurrentView] = useState('start');
+  const [previousView, setPreviousView] = useState('start'); // 🔥 Nueva: rastrear vista anterior
   const [teacherTheme, setTeacherTheme] = useState(() => {
     return localStorage.getItem('teacherTheme') || 'minimal';
   });
@@ -12,10 +13,17 @@ const AppProvider = ({ children }) => {
     localStorage.setItem('teacherTheme', teacherTheme);
   }, [teacherTheme]);
 
+  // 🔥 Wrapper para setCurrentView que guarda la vista anterior
+  const navigateToView = (newView) => {
+    setPreviousView(currentView); // Guardar vista actual antes de cambiar
+    setCurrentView(newView);
+  };
+
   return (
     <AppContext.Provider value={{
       currentView,
-      setCurrentView,
+      setCurrentView: navigateToView, // Usar el wrapper
+      previousView, // 🔥 Exponer previousView
       teacherTheme,
       setTeacherTheme
     }}>

@@ -7,6 +7,7 @@ import TeacherView from './views/TeacherView';
 import KidView from './views/KidView';
 import BabyView from './views/BabyView';
 import KidTdahView from './views/KidTdahView';
+import WarmUpView from './views/WarmUpView';
 
 const AppContent = () => {
   const { currentView, setCurrentView } = React.useContext(AppContext);
@@ -44,6 +45,8 @@ const AppContent = () => {
             <KidTdahView />
           </ThemeProvider>
         );
+      case 'warmup':
+        return <WarmUpView />;
       case 'start':
       default:
         return <StartScreen />;
