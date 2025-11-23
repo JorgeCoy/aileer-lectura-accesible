@@ -1,8 +1,8 @@
-@import "tailwindcss";
-
 /* ✅ Añadir fuentes personalizadas */
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
+@import "tailwindcss";
 
 body {
   margin: 0;
@@ -22,5 +22,6 @@ body {
   width: 8px;
   height: 100px;
   padding: 0 5px;
-  margin: 0 auto; /* Centrar el slider */
+  margin: 0 auto;
+  /* Centrar el slider */
 }
