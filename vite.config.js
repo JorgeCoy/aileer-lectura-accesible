@@ -17,6 +17,10 @@ export default defineConfig({
         short_name: 'aLeer',
         description: 'Herramienta de lectura accesible y entrenamiento visual',
         theme_color: '#ffffff',
+        start_url: './',
+        scope: './',
+        display: 'standalone',
+        background_color: '#ffffff',
         icons: [
           {
             src: 'pwa-192x192.png',
