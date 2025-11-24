@@ -13,7 +13,7 @@ import {
   BookOpenIcon,
   EyeIcon,
   FireIcon,
-  DocumentArrowUpIcon // ✅ Icono para subir PDF
+  DocumentArrowUpIcon
 } from "@heroicons/react/24/solid";
 
 const SideBar = ({
@@ -41,11 +41,14 @@ const SideBar = ({
   readingTechnique,
   setReadingTechnique,
   currentTheme,
-  handlePdfUpload // ✅ Nueva prop
+  handlePdfUpload,
+  voices,
+  selectedVoice,
+  setSelectedVoice
 }) => {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
-  const { setCurrentView, streak } = useContext(AppContext);
-  const fileInputRef = useRef(null); // ✅ Referencia al input oculto
+  const { setCurrentView, goToView, streak } = useContext(AppContext);
+  const fileInputRef = useRef(null);
 
   const handleSettingsClick = () => {
     setIsConfigOpen(!isConfigOpen);
@@ -60,14 +63,13 @@ const SideBar = ({
     if (!file) return;
 
     try {
-      // Importación dinámica de pdfjs-dist
       const pdfjsLib = await import("pdfjs-dist");
       pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({
         data: arrayBuffer,
-        disableFontFace: true, // ✅ Intentar mejorar extracción si hay fuentes raras
+        disableFontFace: true,
       }).promise;
       const pages = [];
 
@@ -87,7 +89,6 @@ const SideBar = ({
     }
   };
 
-  // Lógica inteligente para Play/Resume
   const canResume = currentIndex > 0 && currentIndex < totalWords - 1;
 
   const handlePlayClick = () => {
@@ -98,7 +99,6 @@ const SideBar = ({
     }
   };
 
-  // Clases comunes para los botones
   const buttonClass = "p-3 mb-3 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg hover:scale-110";
   const activeClass = "bg-blue-600 text-white hover:bg-blue-500";
   const inactiveClass = "bg-gray-700 text-gray-300 hover:bg-gray-600";
@@ -110,10 +110,8 @@ const SideBar = ({
         className={`fixed left-0 top-0 h-full bg-gray-900/95 backdrop-blur-md text-white flex flex-col items-center py-6 z-50 shadow-2xl transition-all duration-500 ease-in-out ${isRunning ? "w-20 justify-center" : "w-20 justify-start"
           }`}
       >
-        {/* Grupo Superior: Inicio, Config, Voz, Historial (Se ocultan al leer) */}
         {!isRunning && (
           <div className="flex flex-col items-center w-full">
-            {/* Inicio */}
             <button
               onClick={onHomeClick}
               className={`${buttonClass} ${inactiveClass}`}
@@ -123,7 +121,6 @@ const SideBar = ({
               <HomeIcon className="w-6 h-6" />
             </button>
 
-            {/* Indicador de Racha */}
             <div className="mb-6 flex flex-col items-center group cursor-help" title={`Racha actual: ${streak} días`}>
               <div className="p-2 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.3)] animate-pulse group-hover:scale-110 transition-transform">
                 <FireIcon className="w-6 h-6" />
@@ -131,7 +128,6 @@ const SideBar = ({
               <span className="text-[10px] font-bold text-orange-300 mt-1">{streak}</span>
             </div>
 
-            {/* Configuración */}
             <button
               onClick={handleSettingsClick}
               className={`${buttonClass} ${isConfigOpen ? activeClass : inactiveClass}`}
@@ -141,7 +137,6 @@ const SideBar = ({
               <Cog6ToothIcon className="w-6 h-6" />
             </button>
 
-            {/* Voz */}
             <button
               onClick={() => setVoiceEnabled(!voiceEnabled)}
               className={`${buttonClass} ${voiceEnabled ? "bg-green-600 hover:bg-green-500" : inactiveClass}`}
@@ -151,7 +146,6 @@ const SideBar = ({
               {voiceEnabled ? <SpeakerWaveIcon className="w-6 h-6" /> : <SpeakerXMarkIcon className="w-6 h-6" />}
             </button>
 
-            {/* ✅ Subir PDF */}
             <button
               onClick={onUploadClick}
               className={`${buttonClass} ${inactiveClass}`}
@@ -169,7 +163,6 @@ const SideBar = ({
               aria-hidden="true"
             />
 
-            {/* Historial */}
             <button
               onClick={() => setShowHistory(true)}
               className={`${buttonClass} ${inactiveClass}`}
@@ -179,9 +172,8 @@ const SideBar = ({
               <BookOpenIcon className="w-6 h-6" />
             </button>
 
-            {/* Ejercicios */}
             <button
-              onClick={() => setCurrentView('warmup')}
+              onClick={() => goToView('warmup')}
               className={`${buttonClass} ${inactiveClass}`}
               title="Ejercicios de Calentamiento"
               aria-label="Ejercicios de Calentamiento"
@@ -193,9 +185,7 @@ const SideBar = ({
           </div>
         )}
 
-        {/* Grupo Central: Controles de Reproducción */}
         <div className={`flex flex-col items-center w-full ${isRunning ? "justify-center h-full" : "mt-auto mb-auto"}`}>
-          {/* Iniciar / Reanudar */}
           {!isRunning && (
             <button
               onClick={handlePlayClick}
@@ -209,7 +199,6 @@ const SideBar = ({
             </button>
           )}
 
-          {/* Pausar */}
           {isRunning && (
             <button
               onClick={pauseReading}
@@ -222,7 +211,6 @@ const SideBar = ({
             </button>
           )}
 
-          {/* Detener */}
           {(isRunning || hasText) && (
             <button
               onClick={stopReading}
@@ -237,7 +225,6 @@ const SideBar = ({
         </div>
       </div>
 
-      {/* Menú de configuración */}
       <ConfigMenu
         isOpen={isConfigOpen}
         onClose={() => setIsConfigOpen(false)}
@@ -252,6 +239,9 @@ const SideBar = ({
         readingTechnique={readingTechnique}
         setReadingTechnique={setReadingTechnique}
         currentTheme={currentTheme}
+        voices={voices}
+        selectedVoice={selectedVoice}
+        setSelectedVoice={setSelectedVoice}
       />
     </>
   );

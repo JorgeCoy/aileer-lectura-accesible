@@ -1,20 +1,22 @@
-// src/hooks/useWordViewerLogic.jsx
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import { modeOptions } from "../config/modeOptions";
 import useReadingEngine from "./useReadingEngine";
 import useSpeech from "./useSpeech";
 import useHistory from "./useHistory";
 import usePdf from "./usePdf";
+import ThemeContext from "../context/ThemeContext";
 
 const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
   const defaultOptions = modeOptions[mode] || modeOptions.adult;
   const options = { ...defaultOptions, ...customOptions };
 
+  const { theme, setTheme } = useContext(ThemeContext);
+
   const [text, setText] = useState("");
   const [words, setWords] = useState([]);
-  const [voiceEnabled, setVoiceEnabled] = useState(false); // ✅ Estado de voz elevado
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
 
-  // ✅ Separar lógica según modo
+  // Separar lógica según modo
   const parseText = useCallback((text) => {
     if (mode === "child") {
       return text.split(/[\s]+/);
@@ -25,15 +27,13 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
 
   useEffect(() => {
     if (text) {
-      // console.log("🚀 si (text)");
       setWords(parseText(text));
     } else {
-      // console.log("🚀 no hay texto, reiniciar");
       setWords([]);
     }
   }, [text, parseText]);
 
-  // ✅ Usar el motor de lectura
+  // Usar el motor de lectura
   const {
     currentIndex,
     setCurrentIndex,
@@ -48,23 +48,23 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     pauseReading,
     resumeReading,
     stopReading,
-    nextWord // ✅ Obtener nextWord
+    nextWord
   } = useReadingEngine({
     words,
     options: {
       ...options,
-      disableTimer: voiceEnabled // ✅ Desactivar timer si hay voz
+      disableTimer: voiceEnabled
     }
   });
 
-  // ✅ Sincronizar reinicio cuando se borra el texto
+  // Sincronizar reinicio cuando se borra el texto
   useEffect(() => {
     if (!text) {
       stopReading();
     }
   }, [text, stopReading]);
 
-  // ✅ Usar hook de PDF
+  // Usar hook de PDF
   const {
     pdfPages,
     selectedPage,
@@ -78,11 +78,12 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     addPageNote,
     readingStats,
     readingProgress,
-    pdfFile, // ✅ Exponer archivo PDF
-    pdfName
+    pdfFile,
+    pdfName,
+    updatePageText
   } = usePdf({ enablePdf: options.enablePdf, setText, isRunning });
 
-  // ✅ Usar hook de Historial
+  // Usar hook de Historial
   const {
     showHistory,
     setShowHistory,
@@ -95,17 +96,26 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     setSelectedPage(item.page || 0);
   };
 
-  // ✅ Usar hook de Voz
-  useSpeech({
+  // Usar hook de Voz
+  const {
+    voices,
+    selectedVoice,
+    setSelectedVoice
+  } = useSpeech({
     currentWord: words[currentIndex],
     isPlaying: isRunning,
     isCountingDown,
     speed,
     maxSpeed: options.maxSpeed,
-    onWordEnd: nextWord, // ✅ Sincronización por eventos
-    voiceEnabled, // ✅ Pasar estado
-    setVoiceEnabled // ✅ Pasar setter
+    onWordEnd: nextWord,
+    voiceEnabled,
+    setVoiceEnabled
   });
+
+  // Estado local para readingTechnique si no viene del contexto (por ahora local)
+  const [readingTechnique, setReadingTechnique] = useState("singleWord");
+  const [fontSize, setFontSize] = useState(options.fontSize || 32);
+  const [fontFamily, setFontFamily] = useState(options.fontFamily || "sans-serif");
 
   return {
     text,
@@ -117,8 +127,11 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     countdownValue,
     speed,
     setSpeed,
-    voiceEnabled, // ✅ Devolver estado
-    setVoiceEnabled, // ✅ Devolver setter
+    voiceEnabled,
+    setVoiceEnabled,
+    voices,
+    selectedVoice,
+    setSelectedVoice,
     startReading,
     pauseReading,
     resumeReading,
@@ -139,8 +152,17 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     addPageNote,
     readingStats,
     readingProgress,
-    pdfFile, // ✅ Devolver archivo
-    pdfName
+    pdfFile,
+    pdfName,
+    updatePageText,
+    theme,
+    setTheme,
+    readingTechnique,
+    setReadingTechnique,
+    fontSize,
+    setFontSize,
+    fontFamily,
+    setFontFamily
   };
 };
 

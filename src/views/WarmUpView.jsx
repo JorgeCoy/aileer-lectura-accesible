@@ -5,7 +5,7 @@ import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts';
 import { PlayIcon, PauseIcon, ArrowLeftIcon } from '@heroicons/react/24/solid';
 
 const WarmUpView = () => {
-  const { setCurrentView, previousView } = useContext(AppContext);
+  const { goBack } = useContext(AppContext); // ✅ Usar goBack
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(5);
   const [mode, setMode] = useState('reading-path');
@@ -32,10 +32,10 @@ const WarmUpView = () => {
       if (next && mode === 'tachisto') startTachisto();
       if (next && mode === 'schulte') generateSchulte();
     },
-    onEsc: () => setCurrentView(previousView),
+    onEsc: () => goBack(), // ✅ Usar goBack
     onArrowUp: () => setSpeed(s => Math.min(s + 0.5, 10)),
     onArrowDown: () => setSpeed(s => Math.max(s - 0.5, 1)),
-  }, [isPlaying, mode, previousView]);
+  }, [isPlaying, mode, goBack]);
 
   const containerRef = useRef(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -217,7 +217,7 @@ const WarmUpView = () => {
 
       {/* Botón Volver - Regresa a la vista anterior */}
       <button
-        onClick={() => setCurrentView(previousView)}
+        onClick={() => goBack()} // ✅ Usar goBack
         className="absolute top-4 left-4 z-50 p-3 bg-white/20 backdrop-blur-lg rounded-full text-white hover:bg-white/30 transition-all shadow-xl"
         aria-label="Volver"
       >

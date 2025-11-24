@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { speakWord, stopSpeech, estimateWordDuration } from "../utils/speech";
+import { speakWord, stopSpeech, estimateWordDuration, getVoices } from "../utils/speech";
 
 const useSpeech = ({
   currentWord,
@@ -11,7 +11,42 @@ const useSpeech = ({
   voiceEnabled, // ✅ Recibir estado
   setVoiceEnabled // ✅ Recibir setter
 }) => {
-  // const [voiceEnabled, setVoiceEnabled] = useState(false); // ❌ Eliminado estado interno
+  const [voices, setVoices] = useState([]);
+  const [selectedVoice, setSelectedVoice] = useState(null);
+
+  // ✅ Cargar voces disponibles
+  useEffect(() => {
+    const loadVoices = () => {
+      const availableVoices = getVoices();
+      setVoices(availableVoices);
+
+      // Seleccionar una voz por defecto (preferiblemente Google Español o Microsoft Helena/Sabina)
+      if (availableVoices.length > 0 && !selectedVoice) {
+        const defaultVoice = availableVoices.find(v => v.lang.startsWith('es') && (v.name.includes('Google') || v.name.includes('Microsoft'))) || availableVoices.find(v => v.lang.startsWith('es'));
+        if (defaultVoice) {
+          setSelectedVoice(defaultVoice);
+        }
+      }
+    };
+
+    loadVoices();
+
+    if (window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    return () => {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, [selectedVoice]);
+
+  // ✅ Calcular tasa de velocidad (rate) basada en ms/palabra
+  // Base: 300ms/palabra ~= rate 1.0
+  // Si speed = 600ms (más lento), rate = 0.5
+  // Si speed = 150ms (más rápido), rate = 2.0
+  const speechRate = Math.min(Math.max(300 / speed, 0.1), 10);
 
   // ✅ Desactivar voz si la velocidad es muy alta (configuración general)
   useEffect(() => {
@@ -35,9 +70,9 @@ const useSpeech = ({
 
     if (isPlaying && voiceEnabled && currentWord) {
       // console.log("🚀 Reproduce voz para palabra:", currentWord);
-      speakWord(currentWord, 'es-ES', onWordEnd); // ✅ Pasar callback
+      speakWord(currentWord, 'es-ES', onWordEnd, speechRate, selectedVoice); // ✅ Pasar rate y voz
     }
-  }, [currentWord, isPlaying, voiceEnabled, isCountingDown, onWordEnd]);
+  }, [currentWord, isPlaying, voiceEnabled, isCountingDown, onWordEnd, speechRate, selectedVoice]);
 
   // ✅ Efecto que detiene la voz inmediatamente si se inhabilita
   useEffect(() => {
@@ -55,7 +90,11 @@ const useSpeech = ({
     };
   }, []);
 
-  return {}; // ✅ Ya no necesitamos devolver el estado
+  return {
+    voices,
+    selectedVoice,
+    setSelectedVoice
+  };
 };
 
 export default useSpeech;

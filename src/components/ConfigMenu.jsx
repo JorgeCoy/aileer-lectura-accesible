@@ -3,7 +3,8 @@ import React, { useRef, useEffect } from "react";
 import {
   XMarkIcon,
   AdjustmentsHorizontalIcon,
-  LanguageIcon
+  LanguageIcon,
+  SpeakerWaveIcon
 } from "@heroicons/react/24/outline";
 
 const ConfigMenu = ({
@@ -15,10 +16,13 @@ const ConfigMenu = ({
   setFontSize,
   fontFamily,
   setFontFamily,
-  theme, // ✅ Nueva prop
-  setTheme, // ✅ Nueva prop
-  readingTechnique, // ✅ Nueva prop
-  setReadingTechnique, // ✅ Nueva prop
+  theme,
+  setTheme,
+  readingTechnique,
+  setReadingTechnique,
+  voices,
+  selectedVoice,
+  setSelectedVoice
 }) => {
   const menuRef = useRef(null);
 
@@ -167,6 +171,31 @@ const ConfigMenu = ({
               <option value="dyslexic">🧠 OpenDyslexic (Dislexia y TDAH)</option>
             </select>
           </div>
+
+          {/* Voz */}
+          {voices && voices.length > 0 && (
+            <div>
+              <label className="text-gray-700 text-sm font-semibold mb-2 flex items-center gap-2">
+                <SpeakerWaveIcon className="w-4 h-4" /> Voz
+              </label>
+              <select
+                value={selectedVoice ? selectedVoice.name : ""}
+                onChange={(e) => {
+                  const voice = voices.find(v => v.name === e.target.value);
+                  setSelectedVoice(voice);
+                }}
+                className="w-full p-2 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none text-sm transition-all text-gray-900"
+              >
+                {voices
+                  .filter(v => v.lang.startsWith('es')) // Filtrar solo español
+                  .map((voice) => (
+                    <option key={voice.name} value={voice.name}>
+                      {voice.name.replace(/Microsoft|Google|Desktop/g, '').trim()} ({voice.lang})
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
     </>

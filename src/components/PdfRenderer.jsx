@@ -1,9 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 
-const PdfRenderer = ({ file, pageNumber }) => {
+const PdfRenderer = forwardRef(({ file, pageNumber, zoom = 1 }, ref) => {
     const canvasRef = useRef(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Exponer método para obtener la imagen del canvas
+    useImperativeHandle(ref, () => ({
+        getImageBlob: async () => {
+            if (!canvasRef.current) return null;
+            return new Promise(resolve => canvasRef.current.toBlob(resolve));
+        }
+    }));
 
     useEffect(() => {
         let isMounted = true;
@@ -20,7 +28,7 @@ const PdfRenderer = ({ file, pageNumber }) => {
                 if (isMounted) setLoading(true);
                 setError(null);
 
-                console.log("PdfRenderer: Iniciando renderizado...", { pageNumber });
+                console.log("PdfRenderer: Iniciando renderizado...", { pageNumber, zoom });
 
                 const pdfjsLib = await import("pdfjs-dist");
                 // Asegurar que usamos la versión correcta del worker
@@ -49,8 +57,18 @@ const PdfRenderer = ({ file, pageNumber }) => {
 
                 // Obtener dimensiones del contenedor padre
                 const containerWidth = canvas.parentElement?.clientWidth || 600;
+                const containerHeight = canvas.parentElement?.clientHeight || 800;
+
                 const viewport = page.getViewport({ scale: 1.0 });
-                const scale = (containerWidth - 32) / viewport.width; // -32 para padding
+
+                // Calcular escalas para ancho y alto
+                const scaleWidth = (containerWidth - 32) / viewport.width; // -32 padding
+                const scaleHeight = (containerHeight - 32) / viewport.height;
+
+                // Usar la menor escala para asegurar que quepa completo (contain)
+                // Y multiplicar por el factor de zoom
+                const scale = Math.min(scaleWidth, scaleHeight) * zoom;
+
                 const scaledViewport = page.getViewport({ scale });
 
                 canvas.height = scaledViewport.height;
@@ -84,10 +102,10 @@ const PdfRenderer = ({ file, pageNumber }) => {
                 renderTask.cancel();
             }
         };
-    }, [file, pageNumber]);
+    }, [file, pageNumber, zoom]);
 
     return (
-        <div className="w-full flex flex-col items-center justify-center bg-gray-900 rounded-lg overflow-hidden min-h-[300px]">
+        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 rounded-lg overflow-auto min-h-[300px]">
             {loading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-900/50 z-10">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -98,10 +116,10 @@ const PdfRenderer = ({ file, pageNumber }) => {
                     <p>{error}</p>
                 </div>
             ) : (
-                <canvas ref={canvasRef} className="shadow-lg max-w-full" />
+                <canvas ref={canvasRef} className="shadow-lg max-w-none" />
             )}
         </div>
     );
-};
+});
 
 export default PdfRenderer;

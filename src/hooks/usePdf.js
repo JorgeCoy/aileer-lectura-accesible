@@ -85,8 +85,10 @@ const usePdf = ({ enablePdf, setText, isRunning = false }) => {
 
     // Sincronizar texto con página actual
     useEffect(() => {
-        if (selectedPage > 0 && pdfPages[selectedPage - 1]) {
-            setText(pdfPages[selectedPage - 1]);
+        if (selectedPage > 0) {
+            const pageContent = pdfPages[selectedPage - 1];
+            // Si hay contenido, lo ponemos. Si no (undefined/null/""), limpiamos el texto.
+            setText(pageContent || "");
         }
     }, [selectedPage, pdfPages, setText]);
 
@@ -174,6 +176,21 @@ const usePdf = ({ enablePdf, setText, isRunning = false }) => {
         }
     };
 
+    // === ACTUALIZACIÓN DE TEXTO (OCR) ===
+    const updatePageText = (pageNumber, newText) => {
+        setPdfPages(prev => {
+            const newPages = [...prev];
+            if (pageNumber > 0 && pageNumber <= newPages.length) {
+                newPages[pageNumber - 1] = newText;
+            }
+            return newPages;
+        });
+        // Si es la página actual, actualizar el texto visible inmediatamente
+        if (pageNumber === selectedPage) {
+            setText(newText);
+        }
+    };
+
     return {
         pdfPages,
         selectedPage,
@@ -195,6 +212,7 @@ const usePdf = ({ enablePdf, setText, isRunning = false }) => {
         goToPreviousPage,
         exportProgress,
         importProgress,
+        updatePageText, // ✅ Exponer función
     };
 };
 
