@@ -1,15 +1,15 @@
 // src/components/SettingsPanel.jsx
 import React, { useState, useEffect } from "react";
 
-const SettingsPanel = ({ 
-  isOpen, 
-  onClose, 
-  speed, 
-  setSpeed, 
-  fontSize, 
-  setFontSize, 
-  fontFamily, 
-  setFontFamily 
+const SettingsPanel = ({
+  isOpen,
+  onClose,
+  speed,
+  setSpeed,
+  fontSize,
+  setFontSize,
+  fontFamily,
+  setFontFamily
 }) => {
   const [localSpeed, setLocalSpeed] = useState(speed);
   const [localFontSize, setLocalFontSize] = useState(fontSize);
@@ -85,16 +85,19 @@ const SettingsPanel = ({
         <select
           value={localFontFamily}
           onChange={handleFontFamilyChange}
-          className="w-full p-2 border border-gray-300 rounded"
+          className="w-full p-2 border border-gray-300 rounded text-gray-900"
         >
-          <option value="sans-serif">Letra separada (Sans-serif)</option>
-          <option value="cursive">Letra cursiva (Cursive)</option>
-          <option value="dyslexic">Letra dislexia (OpenDyslexic)</option>
+          <option value="sans-serif">📖 Sans Serif (Clara y moderna)</option>
+          <option value="serif">📚 Serif (Clásica y formal)</option>
+          <option value="monospace">⌨️ Monospace (Código y precisión)</option>
+          <option value="'Comic Sans MS', cursive">😊 Comic Sans (Amigable para niños)</option>
+          <option value="cursive">✨ Dancing Script (Cursiva elegante)</option>
+          <option value="dyslexic">🧠 OpenDyslexic (Dislexia y TDAH)</option>
         </select>
       </div>
 
       {/* Botón Aplicar → Eliminado, se aplica en tiempo real */}
-      { <button
+      {<button
         onClick={onClose}
         className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
       >

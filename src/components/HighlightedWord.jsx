@@ -10,7 +10,7 @@ const HighlightedWord = ({ word, fontSize = 32, fontFamily = "sans-serif", theme
   const dynamicStyles = {
     fontSize: `${fontSize}px`,
     lineHeight: "1.2",
-    color: theme === "cinematic" || theme === "gray" || theme === "focus" 
+    color: theme === "cinematic" || theme === "gray" || theme === "focus"
       ? "white" // Letra blanca si fondo oscuro
       : "black", // Letra negra si fondo claro
   };
@@ -18,10 +18,11 @@ const HighlightedWord = ({ word, fontSize = 32, fontFamily = "sans-serif", theme
   // ✅ Mapear fontFamily a una fuente real
   let actualFontFamily = fontFamily;
   if (fontFamily === "cursive") {
-    actualFontFamily = "'Dancing Script', cursive"; // ✅ Fuente real de cursiva
+    actualFontFamily = "'Dancing Script', cursive"; // ✅ Fuente cursiva elegante
   } else if (fontFamily === "dyslexic") {
-    actualFontFamily = "'OpenDyslexic', sans-serif"; // ✅ Fuente para dislexia
+    actualFontFamily = "'OpenDyslexic', sans-serif"; // ✅ Fuente para dislexia y TDAH
   }
+  // Las demás fuentes (sans-serif, serif, monospace, Comic Sans) se pasan directamente
 
   return (
     <div style={{ ...dynamicStyles, fontFamily: actualFontFamily }}>

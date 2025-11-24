@@ -69,8 +69,18 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     pdfPages,
     selectedPage,
     setSelectedPage,
-    handlePdfUpload
-  } = usePdf({ enablePdf: options.enablePdf, setText });
+    handlePdfUpload,
+    goToNextPage,
+    goToPreviousPage,
+    bookmarks,
+    toggleBookmark,
+    pageNotes,
+    addPageNote,
+    readingStats,
+    readingProgress,
+    pdfFile, // ✅ Exponer archivo PDF
+    pdfName
+  } = usePdf({ enablePdf: options.enablePdf, setText, isRunning });
 
   // ✅ Usar hook de Historial
   const {
@@ -121,6 +131,16 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     pdfPages,
     selectedPage,
     setSelectedPage,
+    goToNextPage,
+    goToPreviousPage,
+    bookmarks,
+    toggleBookmark,
+    pageNotes,
+    addPageNote,
+    readingStats,
+    readingProgress,
+    pdfFile, // ✅ Devolver archivo
+    pdfName
   };
 };
 

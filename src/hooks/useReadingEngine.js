@@ -21,6 +21,11 @@ const useReadingEngine = ({ words, options }) => {
         }
     }, [words]);
 
+    // ✅ Resetear índice cuando cambian las palabras (nuevo texto/página)
+    useEffect(() => {
+        setCurrentIndex(0);
+    }, [words]);
+
     const pauseReading = useCallback(() => setIsRunning(false), []);
     const resumeReading = useCallback(() => setIsRunning(true), []);
 
