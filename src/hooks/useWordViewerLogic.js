@@ -15,6 +15,7 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
   const [text, setText] = useState("");
   const [words, setWords] = useState([]);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [inputMode, setInputMode] = useState(null); // 'text' | 'pdf' | null
 
   // Separar lógica según modo
   const parseText = useCallback((text) => {
@@ -136,7 +137,10 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     pauseReading,
     resumeReading,
     stopReading,
-    handlePdfUpload,
+    handlePdfUpload: (e) => {
+      handlePdfUpload(e);
+      setInputMode('pdf');
+    },
     showHistory,
     setShowHistory,
     history,
@@ -162,7 +166,9 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     fontSize,
     setFontSize,
     fontFamily,
-    setFontFamily
+    setFontFamily,
+    inputMode,
+    setInputMode
   };
 };
 

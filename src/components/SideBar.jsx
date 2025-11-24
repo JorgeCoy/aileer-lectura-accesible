@@ -13,7 +13,8 @@ import {
   BookOpenIcon,
   EyeIcon,
   FireIcon,
-  DocumentArrowUpIcon
+  DocumentArrowUpIcon,
+  PencilSquareIcon
 } from "@heroicons/react/24/solid";
 
 const SideBar = ({
@@ -44,7 +45,9 @@ const SideBar = ({
   handlePdfUpload,
   voices,
   selectedVoice,
-  setSelectedVoice
+  setSelectedVoice,
+  inputMode,
+  setInputMode
 }) => {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const { setCurrentView, goToView, streak } = useContext(AppContext);
@@ -146,22 +149,34 @@ const SideBar = ({
               {voiceEnabled ? <SpeakerWaveIcon className="w-6 h-6" /> : <SpeakerXMarkIcon className="w-6 h-6" />}
             </button>
 
-            <button
-              onClick={onUploadClick}
-              className={`${buttonClass} ${inactiveClass}`}
-              title="Subir PDF"
-              aria-label="Subir archivo PDF"
-            >
-              <DocumentArrowUpIcon className="w-6 h-6" />
-            </button>
-            <input
-              type="file"
-              accept=".pdf"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-              aria-hidden="true"
-            />
+            {/* Botón de Cargar PDF */}
+            <div className="relative group">
+              <button
+                onClick={onUploadClick}
+                className={`${buttonClass} ${inputMode === 'pdf' ? 'bg-purple-600 text-white ring-2 ring-purple-400' : inactiveClass}`}
+                title="Subir PDF"
+              >
+                <DocumentArrowUpIcon className="w-6 h-6" />
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept=".pdf"
+                className="hidden"
+              />
+            </div>
+
+            {/* Botón de Texto Manual */}
+            <div className="relative group">
+              <button
+                onClick={() => setInputMode('text')}
+                className={`${buttonClass} ${inputMode === 'text' ? 'bg-blue-600 text-white ring-2 ring-blue-400' : inactiveClass}`}
+                title="Escribir Texto"
+              >
+                <PencilSquareIcon className="w-6 h-6" />
+              </button>
+            </div>
 
             <button
               onClick={() => setShowHistory(true)}
