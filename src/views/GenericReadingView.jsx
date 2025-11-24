@@ -72,7 +72,9 @@ const GenericReadingView = ({ modeId }) => {
     updatePageText,
     voices,
     selectedVoice,
-    setSelectedVoice
+    setSelectedVoice,
+    inputMode,
+    setInputMode
   } = useWordViewerLogic();
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -92,9 +94,10 @@ const GenericReadingView = ({ modeId }) => {
       isRunning,
       theme,
       fontFamily,
-      fontSize
+      fontSize,
+      inputMode
     });
-  }, [pdfFile, selectedPage, text, words, isRunning, theme, fontFamily, fontSize]);
+  }, [pdfFile, selectedPage, text, words, isRunning, theme, fontFamily, fontSize, inputMode]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -141,7 +144,7 @@ const GenericReadingView = ({ modeId }) => {
         }
       }
     },
-    onEsc: () => setCurrentView('start'),
+    onEsc: () => window.location.reload(), // Simple reload for now to go home
     onArrowUp: () => setSpeed(s => Math.min(s + 10, 1000)),
     onArrowDown: () => setSpeed(s => Math.max(s - 10, 50)),
   }), [isRunning, words, currentIndex, isCountingDown, startReading, pauseReading, resumeReading, goToNextPage, goToPreviousPage, setSpeed]);
@@ -159,6 +162,7 @@ const GenericReadingView = ({ modeId }) => {
   const subtitle = mode.subtitle;
 
   const handleHomeClick = () => {
+    window.location.reload();
   };
 
   const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.25, 3.0));
@@ -218,148 +222,164 @@ const GenericReadingView = ({ modeId }) => {
   };
 
   const leftPanel = (
-    <div className={`transition-all duration-300 h-full flex flex-col ${isPlaying ? 'hidden' : ''}`}>
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {pdfPages.length > 0 ? (
-          <div className="space-y-4 flex flex-col h-full">
-            <div className="flex items-center justify-between shrink-0">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+    <div className={`
+      w-full
+      flex flex-col gap-4 transition-all duration-500 ease-in-out
+      ${isRunning && !isMobile ? "opacity-0 -translate-x-full absolute pointer-events-none" : "opacity-100 translate-x-0 relative"}
+    `}>
+      <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 shadow-2xl border border-white/10 h-[calc(100vh-120px)] flex flex-col relative overflow-hidden group hover:border-white/20 transition-colors">
+
+        {/* Header del Panel */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            {inputMode === 'pdf' ? (
+              <>
                 <DocumentTextIcon className="w-6 h-6 text-purple-400" />
-                {pdfName}
-              </h3>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400">
-                  Página {selectedPage} de {pdfPages.length}
-                </span>
-              </div>
-            </div>
+                Visor PDF
+              </>
+            ) : inputMode === 'text' ? (
+              <>
+                <PencilIcon className="w-6 h-6 text-blue-400" />
+                Entrada de Texto
+              </>
+            ) : (
+              <>
+                <DocumentTextIcon className="w-6 h-6 text-gray-400" />
+                Selecciona una Fuente
+              </>
+            )}
+          </h2>
 
-            {/* Vista Previa del PDF (Canvas) */}
-            <div className="relative bg-gray-900 rounded-xl overflow-hidden shadow-lg border border-gray-700 flex-1 min-h-0 flex items-center justify-center">
-              {pdfFile && selectedPage > 0 ? (
-                <PdfRenderer
-                  ref={pdfRendererRef}
-                  file={pdfFile}
-                  pageNumber={selectedPage}
-                  zoom={zoomLevel}
-                />
-              ) : (
-                <div className="text-center p-6">
-                  <DocumentTextIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-400 font-medium">Vista previa no disponible</p>
-                  <p className="text-xs text-gray-500 mt-2">Sube el PDF nuevamente para ver las páginas.</p>
-                </div>
-              )}
-
-              {showNotes && (
-                <div className="absolute inset-0 bg-gray-900/95 backdrop-blur-sm p-4 transition-all duration-300 z-20">
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-sm font-medium text-gray-300">
-                      Notas de la página {selectedPage}
-                    </label>
-                    <button
-                      onClick={() => setShowNotes(false)}
-                      className="text-gray-400 hover:text-white"
-                    >
-                      <XMarkIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <textarea
-                    value={pageNotes[selectedPage] || ""}
-                    onChange={(e) => addPageNote(selectedPage, e.target.value)}
-                    placeholder="Escribe tus notas aquí..."
-                    className="w-full h-[calc(100%-40px)] bg-gray-800 text-white p-3 rounded-lg resize-none focus:ring-2 focus:ring-purple-500 outline-none"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Controles de Página y Zoom */}
-            <div className="flex items-center justify-between bg-gray-900 p-3 rounded-xl border border-gray-700 shrink-0">
+          {inputMode === 'pdf' && (
+            <div className="flex items-center gap-2">
               <button
-                onClick={goToPreviousPage}
-                disabled={selectedPage <= 1 || isScanning}
-                className="p-2 hover:bg-gray-800 rounded-lg disabled:opacity-50 transition-colors"
+                onClick={handleScanPage}
+                disabled={isScanning}
+                className={`p-2 rounded-lg transition-colors ${isScanning ? 'bg-gray-600 cursor-wait' : 'bg-blue-600 hover:bg-blue-500 text-white'}`}
+                title="Escanear página actual con OCR"
               >
-                <ChevronLeftIcon className="w-6 h-6 text-white" />
-              </button>
-
-              <div className="flex gap-2 items-center">
-                {/* Controles de Zoom */}
-                <div className="flex items-center bg-gray-800 rounded-lg mr-2">
-                  <button
-                    onClick={handleZoomOut}
-                    className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-l-lg transition-colors"
-                    title="Reducir Zoom"
-                  >
-                    <MagnifyingGlassMinusIcon className="w-4 h-4" />
-                  </button>
-                  <span className="text-xs text-gray-300 w-12 text-center font-mono">
-                    {Math.round(zoomLevel * 100)}%
-                  </span>
-                  <button
-                    onClick={handleZoomIn}
-                    className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-r-lg transition-colors"
-                    title="Aumentar Zoom"
-                  >
-                    <MagnifyingGlassPlusIcon className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {!isPlaying && (
-                  <button
-                    onClick={() => setShowNotes(!showNotes)}
-                    className={`p-2 rounded-lg transition-colors ${showNotes ? 'bg-purple-600 text-white' : 'hover:bg-gray-800 text-gray-400'}`}
-                    title="Ver/Editar Notas"
-                  >
-                    <PencilIcon className="w-5 h-5" />
-                  </button>
+                {isScanning ? (
+                  <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                ) : (
+                  <MagnifyingGlassIcon className="w-5 h-5" />
                 )}
-
+              </button>
+              <div className="flex items-center bg-gray-800 rounded-lg p-1">
                 <button
-                  onClick={() => toggleBookmark(selectedPage)}
-                  className={`p-2 rounded-lg transition-colors ${bookmarks.some(b => b.pageNumber === selectedPage)
-                    ? "text-yellow-400 hover:bg-gray-800"
-                    : "text-gray-400 hover:bg-gray-800"
-                    }`}
-                  title="Marcar página"
+                  onClick={() => setZoomLevel(z => Math.max(0.5, z - 0.1))}
+                  className="p-1 hover:bg-gray-700 rounded text-gray-300"
                 >
-                  {bookmarks.some(b => b.pageNumber === selectedPage) ? (
-                    <BookmarkSolidIcon className="w-5 h-5" />
-                  ) : (
-                    <BookmarkOutlineIcon className="w-5 h-5" />
-                  )}
+                  <MagnifyingGlassMinusIcon className="w-4 h-4" />
+                </button>
+                <span className="text-xs text-gray-400 w-12 text-center">{Math.round(zoomLevel * 100)}%</span>
+                <button
+                  onClick={() => setZoomLevel(z => Math.min(3.0, z + 0.1))}
+                  className="p-1 hover:bg-gray-700 rounded text-gray-300"
+                >
+                  <MagnifyingGlassPlusIcon className="w-4 h-4" />
                 </button>
               </div>
+            </div>
+          )}
+        </div>
 
-              <button
-                onClick={goToNextPage}
-                disabled={selectedPage >= pdfPages.length || isScanning}
-                className="p-2 hover:bg-gray-800 rounded-lg disabled:opacity-50 transition-colors"
+        {/* Contenido del Panel */}
+        <div className="flex-1 overflow-hidden relative rounded-xl bg-gray-900/50">
+          {inputMode === 'pdf' ? (
+            pdfFile ? (
+              <PdfRenderer
+                pdfFile={pdfFile}
+                pageNumber={selectedPage}
+                scale={zoomLevel}
+                onPageChange={setSelectedPage}
+                onTextExtracted={(text) => {
+                  console.log("Texto extraído del PDF:", text.substring(0, 50) + "...");
+                  setText(text);
+                }}
+                ref={pdfRendererRef}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                <DocumentTextIcon className="w-16 h-16 mb-4 opacity-50" />
+                <p>No hay PDF cargado</p>
+                <p className="text-sm mt-2">Sube un archivo desde el menú lateral</p>
+              </div>
+            )
+          ) : inputMode === 'text' ? (
+            <textarea
+              className="w-full h-full bg-transparent text-white p-4 resize-none focus:outline-none font-mono text-lg leading-relaxed placeholder-gray-600"
+              placeholder="Escribe o pega tu texto aquí para comenzar la lectura..."
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              spellCheck="false"
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-gray-400 p-4 text-center">
+              <div className="bg-gray-800/50 p-6 rounded-full mb-6">
+                <DocumentTextIcon className="w-16 h-16 opacity-50" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">¿Qué quieres leer hoy?</h3>
+              <p className="text-gray-400 mb-8">
+                Selecciona una opción en la barra lateral izquierda para comenzar.
+              </p>
+              <div className="flex gap-4">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="p-3 bg-blue-600/20 rounded-lg text-blue-400">
+                    <PencilIcon className="w-6 h-6" />
+                  </div>
+                  <span className="text-xs">Escribir</span>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <div className="p-3 bg-purple-600/20 rounded-lg text-purple-400">
+                    <DocumentTextIcon className="w-6 h-6" />
+                  </div>
+                  <span className="text-xs">PDF</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Overlay de Carga OCR */}
+          <AnimatePresence>
+            {isScanning && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center z-50"
               >
-                <ChevronRightIcon className="w-6 h-6 text-white" />
-              </button>
+                <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-blue-400 font-medium animate-pulse">Procesando texto con IA...</p>
+                <p className="text-sm text-gray-500 mt-2">{ocrProgress}% completado</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Footer del Panel (Solo PDF) */}
+        {inputMode === 'pdf' && pdfFile && (
+          <div className="mt-4 flex justify-between items-center text-sm text-gray-400 border-t border-gray-700 pt-3">
+            <div className="flex items-center gap-4">
+              <span>Página {selectedPage} de {pdfPages.length || 1}</span>
             </div>
 
-            {/* Texto extraído (Debug) */}
-            <details className="mt-4 shrink-0">
-              <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-300">Ver texto extraído (Debug)</summary>
-              <p className="mt-2 text-sm text-gray-400 font-mono bg-gray-900 p-2 rounded max-h-40 overflow-y-auto">
-                {text.substring(0, 500)}...
-              </p>
-            </details>
-
+            <div className="flex items-center gap-2">
+              <button
+                onClick={goToPreviousPage}
+                disabled={selectedPage <= 1}
+                className="p-2 hover:bg-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeftIcon className="w-5 h-5" />
+              </button>
+              <button
+                onClick={goToNextPage}
+                disabled={selectedPage >= (pdfPages.length || 1)}
+                className="p-2 hover:bg-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRightIcon className="w-5 h-5" />
+              </button>
+            </div>
           </div>
-        ) : (
-          <textarea
-            className="w-full flex-1 p-4 bg-gray-50 rounded-lg text-gray-900 resize-none font-sans border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            placeholder="Pega o escribe el texto aquí..."
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            disabled={isRunning}
-            aria-label="Texto a leer"
-            style={{ minHeight: "300px" }}
-          />
         )}
       </div>
     </div>
@@ -414,7 +434,7 @@ const GenericReadingView = ({ modeId }) => {
       ) : (
         <>
           <h2 className="text-xl font-semibold mb-4 opacity-70">
-            {pdfFile && words.length === 0 ? (
+            {inputMode === 'pdf' && words.length === 0 ? (
               <div className="flex flex-col items-center gap-4">
                 <p className="text-gray-500 italic">No se encontró texto en esta página</p>
                 <button
@@ -498,6 +518,8 @@ const GenericReadingView = ({ modeId }) => {
         voices={voices}
         selectedVoice={selectedVoice}
         setSelectedVoice={setSelectedVoice}
+        inputMode={inputMode}
+        setInputMode={setInputMode}
       />
 
       <div className="ml-24 transition-all duration-300">
