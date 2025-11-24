@@ -1,143 +1,270 @@
-// src/views/GenericReadingView.jsx
-import React, { useContext, useState, useEffect } from "react";
-import useWordViewerLogic from "../hooks/useWordViewerLogic";
-import ReadingControls from "../components/ReadingControls";
+import React, { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  PlayIcon,
+  PauseIcon,
+  StopIcon,
+  ArrowPathIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  DocumentTextIcon,
+  BookmarkIcon as BookmarkOutlineIcon,
+  PencilIcon,
+  XMarkIcon
+} from "@heroicons/react/24/outline";
+import { BookmarkIcon as BookmarkSolidIcon } from "@heroicons/react/24/solid";
 import HighlightedWord from "../components/HighlightedWord";
-import SpeedSlider from "../components/SpeedSlider";
-import PdfUpload from "../components/PdfUpload";
-import HistoryModal from "../components/HistoryModal";
-import ThemeContext from "../context/ThemeContext";
-import { adultThemes } from "../config/themes";
 import ReadingLayout from "../components/ReadingLayout";
-import { getModeById } from "../config/modes";
-import { themeBackgrounds } from "../config/themeBackgrounds"; // ✅ Importar fondos
-import SettingsPanel from "../components/SettingsPanel"; // ✅ Importar el panel
-import SideBar from "../components/SideBar"; // ✅ Importar la nueva barra lateral
-import AppContext from "../context/AppContext"; // ✅ Importar AppContext
-import { motion } from "framer-motion"; // ✅ Importar motions
+import SideBar from "../components/SideBar";
+import HistoryModal from "../components/HistoryModal";
+import PdfRenderer from "../components/PdfRenderer"; // ✅ Importar PdfRenderer
+import useWordViewerLogic from "../hooks/useWordViewerLogic";
+import { adultThemes } from "../config/themes";
+import { themeBackgrounds } from "../config/themeBackgrounds"; // ✅ Ruta corregida
+import { getModeById } from "../config/modes"; // ✅ Ruta corregida
 
 const GenericReadingView = ({ modeId }) => {
-  const { theme, setTheme } = useContext(ThemeContext);
-  const { setCurrentView } = useContext(AppContext); // ✅ Acceder a setCurrentView
-  const [readingTechnique, setReadingTechnique] = useState("singleWord");
-  const [fontSize, setFontSize] = useState(32);
-  const [fontFamily, setFontFamily] = useState("sans-serif");
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // ✅ Detectar si es móvil
-  useEffect(() => {
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkIsMobile();
-    window.addEventListener('resize', checkIsMobile);
-
-    return () => {
-      window.removeEventListener('resize', checkIsMobile);
-    };
-  }, []);
-
-  // ✅ Llamar al hook antes de cualquier condición
   const {
-    text,
-    setText,
     words,
     currentIndex,
     isRunning,
-    isCountingDown, // ✅ Añadir esta línea
-    countdownValue, // ✅ Añadir esta línea
     speed,
     setSpeed,
-    voiceEnabled,
-    setVoiceEnabled,
+    fontSize,
+    setFontSize,
+    fontFamily,
+    setFontFamily,
     startReading,
     pauseReading,
     resumeReading,
     stopReading,
-    handlePdfUpload,
+    text,
+    setText,
+    history,
     showHistory,
     setShowHistory,
-    history,
     selectFromHistory,
+    voiceEnabled,
+    setVoiceEnabled,
+    isCountingDown,
+    countdownValue,
+    theme,
+    setTheme,
+    readingTechnique,
+    setReadingTechnique,
+    isPlaying,
+
+    // ✅ PDF Props
     pdfPages,
     selectedPage,
     setSelectedPage,
-  } = useWordViewerLogic(modeId);
+    pdfName,
+    bookmarks,
+    toggleBookmark,
+    pageNotes,
+    addPageNote,
+    goToNextPage,
+    goToPreviousPage,
+    handlePdfUpload,
+    pdfFile // ✅ Archivo PDF crudo
+  } = useWordViewerLogic();
 
-  // ✅ Cargar ajustes de usuario desde localStorage
-  useEffect(() => {
-    const savedSettings = localStorage.getItem(`userSettings-${modeId}`);
-    if (savedSettings) {
-      const settings = JSON.parse(savedSettings);
-      setFontSize(settings.fontSize || 32);
-      setFontFamily(settings.fontFamily || "sans-serif");
-    }
-  }, [modeId]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [showNotes, setShowNotes] = useState(false); // Estado para mostrar notas
 
-  // ✅ Guardar ajustes de usuario en localStorage
   useEffect(() => {
-    const settings = {
-      fontSize,
-      fontFamily,
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Shortcuts de teclado
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        if (isRunning) pauseReading();
+        else if (currentIndex > 0) resumeReading();
+        else startReading();
+      } else if (e.code === "ArrowLeft") {
+        goToPreviousPage();
+      } else if (e.code === "ArrowRight") {
+        goToNextPage();
+      }
     };
-    localStorage.setItem(`userSettings-${modeId}`, JSON.stringify(settings));
-  }, [fontSize, fontFamily, modeId]);
 
-  // ✅ Actualizar isPlaying cuando cambia isRunning
-  useEffect(() => {
-    setIsPlaying(isRunning);
-  }, [isRunning]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isRunning, currentIndex, startReading, pauseReading, resumeReading, goToNextPage, goToPreviousPage]);
 
-  const mode = getModeById(modeId); // ✅ Obtener metadatos del modo
+  // Gestos táctiles (Swipe)
+  const swipeHandlers = useMemo(() => ({
+    onSwipedLeft: () => goToNextPage(),
+    onSwipedRight: () => goToPreviousPage(),
+    onTap: () => {
+      if (!isCountingDown) {
+        if (isRunning) {
+          pauseReading();
+        } else {
+          if (currentIndex >= words.length - 1) {
+            startReading();
+          } else {
+            resumeReading();
+          }
+        }
+      }
+    },
+    onEsc: () => setCurrentView('start'),
+    onArrowUp: () => setSpeed(s => Math.min(s + 10, 1000)),
+    onArrowDown: () => setSpeed(s => Math.max(s - 10, 50)),
+  }), [isRunning, words, currentIndex, isCountingDown, startReading, pauseReading, resumeReading, goToNextPage, goToPreviousPage, setSpeed]);
+
+  const mode = getModeById(modeId);
 
   if (!mode) {
-    return <div>Modo no encontrado</div>; // ✅ Ahora está permitido
+    return <div>Modo no encontrado</div>;
   }
 
   const currentTheme = adultThemes[theme] || adultThemes.minimalist;
-  const backgroundUrl = themeBackgrounds[theme] || themeBackgrounds.minimalist; // ✅ Fondo según tema
+  const backgroundUrl = themeBackgrounds[theme] || themeBackgrounds.minimalist;
 
-  // ✅ Ahora usamos los metadatos del modo
   const title = mode.label;
   const subtitle = mode.subtitle;
 
-  // ✅ Funciones para los iconos de la barra lateral
   const handleHomeClick = () => {
-    // Aquí puedes navegar al inicio o reiniciar la vista
-    setCurrentView('start'); // ✅ Volver al menú de inicio
+    // setCurrentView('start'); // Esto debería venir de props o contexto si se usa
   };
 
-  // ✅ Definir el panel izquierdo (ahora solo texto y PDF)
+  // ✅ Definir el panel izquierdo (ahora con controles PDF)
   const leftPanel = (
-    <div className={`transition-all duration-300 ${isPlaying ? 'hidden' : ''}`}> {/* ✅ Ahora se oculta en todos los tamaños */}
-      <div className="mb-4">
-        <textarea
-          className="w-full p-3 bg-gray-100 rounded text-gray-900 resize-y min-h-[120px] font-sans"
-          placeholder="Pega o escribe el texto aquí..."
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          disabled={isRunning}
-        />
-      </div>
+    <div className={`transition-all duration-300 h-full flex flex-col ${isPlaying ? 'hidden' : ''}`}>
+      <div className="flex-1 flex flex-col">
+        {pdfPages.length > 0 ? (
+          <div className="space-y-6">
+            {/* Cabecera PDF */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <DocumentTextIcon className="w-6 h-6 text-purple-400" />
+                {pdfName}
+              </h3>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-400">
+                  Página {selectedPage} de {pdfPages.length}
+                </span>
+              </div>
+            </div>
 
-      {/* Solo mostrar PDF si el modo lo permite */}
-      {mode.id !== "child" && (
-        <PdfUpload
-          handlePdfUpload={handlePdfUpload}
-          pdfPages={pdfPages}
-          selectedPage={selectedPage}
-          setSelectedPage={setSelectedPage}
-        />
-      )}
+            {/* Vista Previa del PDF (Canvas) */}
+            <div className="relative bg-gray-900 rounded-xl overflow-hidden shadow-lg border border-gray-700 min-h-[400px] flex items-center justify-center">
+              {pdfFile ? (
+                <PdfRenderer file={pdfFile} pageNumber={selectedPage} />
+              ) : (
+                <div className="text-center p-6">
+                  <DocumentTextIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400 font-medium">Vista previa no disponible</p>
+                  <p className="text-xs text-gray-500 mt-2">Sube el PDF nuevamente para ver las páginas.</p>
+                </div>
+              )}
+
+              {/* Overlay de Notas (Solo si está activado) */}
+              {showNotes && (
+                <div className="absolute inset-0 bg-gray-900/95 backdrop-blur-sm p-4 transition-all duration-300 z-20">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-medium text-gray-300">
+                      Notas de la página {selectedPage}
+                    </label>
+                    <button
+                      onClick={() => setShowNotes(false)}
+                      className="text-gray-400 hover:text-white"
+                    >
+                      <XMarkIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <textarea
+                    value={pageNotes[selectedPage] || ""}
+                    onChange={(e) => addPageNote(selectedPage, e.target.value)}
+                    placeholder="Escribe tus notas aquí..."
+                    className="w-full h-[calc(100%-40px)] bg-gray-800 text-white p-3 rounded-lg resize-none focus:ring-2 focus:ring-purple-500 outline-none"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Controles de Página */}
+            <div className="flex items-center justify-between bg-gray-900 p-3 rounded-xl border border-gray-700">
+              <button
+                onClick={goToPreviousPage}
+                disabled={selectedPage <= 1}
+                className="p-2 hover:bg-gray-800 rounded-lg disabled:opacity-50 transition-colors"
+              >
+                <ChevronLeftIcon className="w-6 h-6 text-white" />
+              </button>
+
+              <div className="flex gap-2">
+                {/* Botón Toggle Notas (Solo visible si pausado o stop) */}
+                {!isPlaying && (
+                  <button
+                    onClick={() => setShowNotes(!showNotes)}
+                    className={`p-2 rounded-lg transition-colors ${showNotes ? 'bg-purple-600 text-white' : 'hover:bg-gray-800 text-gray-400'}`}
+                    title="Ver/Editar Notas"
+                  >
+                    <PencilIcon className="w-5 h-5" />
+                  </button>
+                )}
+
+                <button
+                  onClick={() => toggleBookmark(selectedPage)}
+                  className={`p-2 rounded-lg transition-colors ${bookmarks.some(b => b.pageNumber === selectedPage)
+                    ? "text-yellow-400 hover:bg-gray-800"
+                    : "text-gray-400 hover:bg-gray-800"
+                    }`}
+                  title="Marcar página"
+                >
+                  {bookmarks.some(b => b.pageNumber === selectedPage) ? (
+                    <BookmarkSolidIcon className="w-5 h-5" />
+                  ) : (
+                    <BookmarkOutlineIcon className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+
+              <button
+                onClick={goToNextPage}
+                disabled={selectedPage >= pdfPages.length}
+                className="p-2 hover:bg-gray-800 rounded-lg disabled:opacity-50 transition-colors"
+              >
+                <ChevronRightIcon className="w-6 h-6 text-white" />
+              </button>
+            </div>
+
+            {/* Texto extraído (Oculto visualmente pero útil para debug si se necesita) */}
+            <details className="mt-4">
+              <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-300">Ver texto extraído (Debug)</summary>
+              <p className="mt-2 text-sm text-gray-400 font-mono bg-gray-900 p-2 rounded max-h-40 overflow-y-auto">
+                {text.substring(0, 500)}...
+              </p>
+            </details>
+
+          </div>
+        ) : (
+          <textarea
+            className="w-full flex-1 p-4 bg-gray-50 rounded-lg text-gray-900 resize-none font-sans border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            placeholder="Pega o escribe el texto aquí..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            disabled={isRunning}
+            aria-label="Texto a leer"
+            style={{ minHeight: "300px" }}
+          />
+        )}
+      </div>
     </div>
   );
 
   // ✅ Definir el panel derecho
   const rightPanel = (
     <motion.div
-      key={theme + countdownValue} // ✅ Añadir countdownValue al key para forzar renderizado
+      key={theme + countdownValue}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -146,8 +273,9 @@ const GenericReadingView = ({ modeId }) => {
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
-        minHeight: isMobile ? "50vh" : "400px", // ✅ Ajustar altura en móvil
         width: "100%",
+        height: "100%",
+        minHeight: isMobile ? "50vh" : "500px",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -157,33 +285,31 @@ const GenericReadingView = ({ modeId }) => {
         boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
         overflow: "hidden",
       }}
-      className="text-center"
+      className="text-center relative"
     >
-      {/* ✅ Mostrar conteo regresivo si está activo */}
       {isCountingDown ? (
         <motion.div
           key={countdownValue}
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1.5, opacity: 1 }}
-          transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
-          className="flex flex-col items-center justify-center"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 1.1, opacity: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="flex flex-col items-center justify-center p-12 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl"
         >
           <span
-            className="text-9xl md:text-[280px] font-black leading-none"
+            className="text-8xl md:text-9xl font-black leading-none bg-clip-text text-transparent bg-gradient-to-br from-white to-white/70"
             style={{
-              color: "white",
-              textShadow: "0 10px 30px rgba(0,0,0,0.3)", // ✅ Sombra suave y moderna
+              filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.2))",
             }}
           >
-            {countdownValue === 0 ? "¡GO!" : countdownValue}
+            {countdownValue === 0 ? "¡YA!" : countdownValue}
           </span>
-          <p className="mt-12 text-4xl font-bold text-white drop-shadow-lg">
-            {countdownValue === 0 ? "¡A LEER!" : "Preparándote..."}
+          <p className="mt-6 text-2xl md:text-3xl font-bold text-white/90 tracking-wide">
+            {countdownValue === 0 ? "¡A LEER!" : "Prepárate..."}
           </p>
         </motion.div>
       ) : (
         <>
-          {/* Contenido */}
           <h2 className="text-xl font-semibold mb-4 opacity-70">
             {theme === "professional"
               ? `Palabra ${currentIndex + 1}/${words.length}`
@@ -191,15 +317,17 @@ const GenericReadingView = ({ modeId }) => {
                 ? `Palabra ${currentIndex + 1}/${words.length}`
                 : words.length > 0
                   ? "Presiona iniciar para leer"
-                  : "Leyendo..."}
+                  : pdfFile
+                    ? "No se encontró texto en esta página (posiblemente sea una imagen)"
+                    : "Leyendo..."}
           </h2>
 
-          <div className="min-h-[100px] flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center w-full">
             <HighlightedWord
               word={words[currentIndex] || ""}
               fontSize={fontSize}
               fontFamily={fontFamily}
-              theme={theme} // ✅ Pasar el tema
+              theme={theme}
             />
           </div>
 
@@ -221,7 +349,6 @@ const GenericReadingView = ({ modeId }) => {
 
   return (
     <>
-      {/* ✅ Barra lateral con iconos */}
       <SideBar
         isRunning={isRunning}
         hasText={text.trim().length > 0}
@@ -242,16 +369,15 @@ const GenericReadingView = ({ modeId }) => {
         isCountingDown={isCountingDown}
         currentIndex={currentIndex}
         totalWords={words.length}
-        // ✅ Nuevas props para configuración
         theme={theme}
         setTheme={setTheme}
         readingTechnique={readingTechnique}
         setReadingTechnique={setReadingTechnique}
         currentTheme={currentTheme}
+        handlePdfUpload={handlePdfUpload}
       />
 
-      {/* ✅ Layout principal (ajustado para dejar espacio a la barra lateral) */}
-      <div className="ml-16"> {/* ✅ Margen izquierdo para la barra lateral */}
+      <div className="ml-24 transition-all duration-300">
         <ReadingLayout
           title={title}
           subtitle={subtitle}
@@ -262,7 +388,6 @@ const GenericReadingView = ({ modeId }) => {
         />
       </div>
 
-      {/* Modal del historial */}
       <HistoryModal
         showHistory={showHistory}
         setShowHistory={setShowHistory}

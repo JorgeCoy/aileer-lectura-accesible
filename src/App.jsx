@@ -1,6 +1,7 @@
+// src/App.jsx
 import React from 'react';
-import AppContext from './context/AppContext';
-import ThemeProvider from './context/ThemeProvider'; // ✅ Importa el nuevo proveedor genérico
+import AppContext from './context/AppContext';     // ← ¡ESTO FALTABA!
+import ThemeProvider from './context/ThemeProvider';
 import StartScreen from './views/StartScreen';
 import AdultView from './views/AdultView';
 import TeacherView from './views/TeacherView';
@@ -10,41 +11,20 @@ import KidTdahView from './views/KidTdahView';
 import WarmUpView from './views/WarmUpView';
 
 const AppContent = () => {
-  const { currentView, setCurrentView } = React.useContext(AppContext);
+  const { currentView } = React.useContext(AppContext); // ← Ahora SÍ existe
 
-  // Función para renderizar vistas con su proveedor correspondiente
   const renderView = () => {
     switch (currentView) {
       case 'adult':
-        return (
-          <ThemeProvider viewName="adult"> {/* ✅ Usar ThemeProvider con viewName */}
-            <AdultView />
-          </ThemeProvider>
-        );
+        return <ThemeProvider viewName="adult"><AdultView /></ThemeProvider>;
       case 'teacher':
-        return (
-          <ThemeProvider viewName="teacher"> {/* ✅ Usar ThemeProvider con viewName */}
-            <TeacherView />
-          </ThemeProvider>
-        );
+        return <ThemeProvider viewName="teacher"><TeacherView /></ThemeProvider>;
       case 'kid':
-        return (
-          <ThemeProvider viewName="kid"> {/* ✅ Usar ThemeProvider con viewName */}
-            <KidView />
-          </ThemeProvider>
-        );
+        return <ThemeProvider viewName="kid"><KidView /></ThemeProvider>;
       case 'baby':
-        return (
-          <ThemeProvider viewName="baby"> {/* ✅ Usar ThemeProvider con viewName */}
-            <BabyView />
-          </ThemeProvider>
-        );
+        return <ThemeProvider viewName="baby"><BabyView /></ThemeProvider>;
       case 'ninos_tdah':
-        return (
-          <ThemeProvider viewName="ninos_tdah"> {/* ✅ Usar ThemeProvider con viewName */}
-            <KidTdahView />
-          </ThemeProvider>
-        );
+        return <ThemeProvider viewName="ninos_tdah"><KidTdahView /></ThemeProvider>;
       case 'warmup':
         return <WarmUpView />;
       case 'start':
@@ -55,10 +35,6 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen">
-      {/* ✅ Botón de volver al inicio → Eliminado */}
-      {/* El icono 🏠 en la SideBar cumple esta función ahora */}
-
-      {/* Renderizado condicional */}
       {renderView()}
     </div>
   );

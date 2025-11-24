@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo, useContext } from 'react';
 import { motion } from 'framer-motion';
 import AppContext from '../context/AppContext';
-import { PlayIcon, PauseIcon, Cog6ToothIcon, ArrowLeftIcon } from '@heroicons/react/24/solid';
+import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts';
+import { PlayIcon, PauseIcon, ArrowLeftIcon } from '@heroicons/react/24/solid';
 
 const WarmUpView = () => {
   const { setCurrentView, previousView } = useContext(AppContext);
@@ -22,6 +23,19 @@ const WarmUpView = () => {
   const [showTachisto, setShowTachisto] = useState(false);
   const [tachistoGuess, setTachistoGuess] = useState('');
   const [tachistoCorrect, setTachistoCorrect] = useState(null);
+
+  // Atajos de teclado
+  useKeyboardShortcuts({
+    onSpace: () => {
+      const next = !isPlaying;
+      setIsPlaying(next);
+      if (next && mode === 'tachisto') startTachisto();
+      if (next && mode === 'schulte') generateSchulte();
+    },
+    onEsc: () => setCurrentView(previousView),
+    onArrowUp: () => setSpeed(s => Math.min(s + 0.5, 10)),
+    onArrowDown: () => setSpeed(s => Math.max(s - 0.5, 1)),
+  }, [isPlaying, mode, previousView]);
 
   const containerRef = useRef(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -205,6 +219,7 @@ const WarmUpView = () => {
       <button
         onClick={() => setCurrentView(previousView)}
         className="absolute top-4 left-4 z-50 p-3 bg-white/20 backdrop-blur-lg rounded-full text-white hover:bg-white/30 transition-all shadow-xl"
+        aria-label="Volver"
       >
         <ArrowLeftIcon className="w-7 h-7" />
       </button>
@@ -332,6 +347,7 @@ const WarmUpView = () => {
                 if (next && mode === 'schulte') generateSchulte();
               }}
               className="p-4 md:p-6 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-2xl transition hover:scale-110"
+              aria-label={isPlaying ? "Pausar" : "Iniciar"}
             >
               {isPlaying ? <PauseIcon className="w-8 h-8 md:w-12 md:h-12" /> : <PlayIcon className="w-8 h-8 md:w-12 md:h-12" />}
             </button>
@@ -354,7 +370,7 @@ const WarmUpView = () => {
               <span>Velocidad</span>
               <span className="text-cyan-400">{speed.toFixed(1)}x</span>
             </div>
-            <input type="range" min="1" max="10" step="0.1" value={speed} onChange={(e) => setSpeed(parseFloat(e.target.value))} className="w-full h-3 bg-gray-700 rounded-full accent-cyan-500 shadow-inner" />
+            <input type="range" min="1" max="10" step="0.1" value={speed} onChange={(e) => setSpeed(parseFloat(e.target.value))} className="w-full h-3 bg-gray-700 rounded-full accent-cyan-500 shadow-inner" aria-label="Control de velocidad" />
           </div>
         </div>
       </motion.div>

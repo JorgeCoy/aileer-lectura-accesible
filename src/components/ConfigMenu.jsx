@@ -159,11 +159,12 @@ const ConfigMenu = ({
               onChange={(e) => setFontFamily(e.target.value)}
               className="w-full p-2 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-purple-500 outline-none text-sm transition-all text-gray-900"
             >
-              <option value="sans-serif">Sans Serif</option>
-              <option value="serif">Serif</option>
-              <option value="monospace">Monospace</option>
-              <option value="'Comic Sans MS', cursive">Comic Sans</option>
-              <option value="'Open Dyslexic', sans-serif">Open Dyslexic</option>
+              <option value="sans-serif">📖 Sans Serif (Clara y moderna)</option>
+              <option value="serif">📚 Serif (Clásica y formal)</option>
+              <option value="monospace">⌨️ Monospace (Código y precisión)</option>
+              <option value="'Comic Sans MS', cursive">😊 Comic Sans (Amigable para niños)</option>
+              <option value="cursive">✨ Dancing Script (Cursiva elegante)</option>
+              <option value="dyslexic">🧠 OpenDyslexic (Dislexia y TDAH)</option>
             </select>
           </div>
         </div>
