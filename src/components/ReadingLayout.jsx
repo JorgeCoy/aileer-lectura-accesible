@@ -1,44 +1,61 @@
 // src/components/ReadingLayout.jsx
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
-const ReadingLayout = ({ 
-  leftPanel, 
-  rightPanel, 
-  theme, 
-  title, 
-  subtitle,
-  isPlaying // ✅ Recibir estado para ajustar el layout
-}) => {
+const ReadingLayout = ({ title, subtitle, theme, leftPanel, rightPanel, isPlaying }) => {
+  // Fallback seguro para theme
+  const themeGradient = theme?.bgGradient || 'from-gray-900 to-black';
+
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        initial={{ opacity: 0, filter: "blur(6px)" }}
-        animate={{ opacity: 1, filter: "blur(0px)" }}
-        exit={{ opacity: 0, filter: "blur(8px)" }}
-        transition={{ duration: 0.6, ease: "easeInOut" }}
-        className={`min-h-screen ${theme.bg} p-4 md:p-6 flex flex-col transition-all duration-700`}
-      >
-        {/* Header */}
-        <header className="mb-6 text-center">
-          <h1 className="text-3xl font-serif font-bold">{title}</h1>
-          <p className="text-gray-500 mt-2">{subtitle}</p>
-        </header>
+    <div className={`min-h-screen bg-gradient-to-br ${themeGradient} flex flex-col items-center justify-center px-6 py-12 transition-colors duration-700`}>
+      {/* Header */}
+      <header className={`text-center mb-10 transition-opacity duration-500 ${isPlaying ? 'opacity-0 h-0 overflow-hidden mb-0' : 'opacity-100'}`}>
+        <h1 className="text-5xl md:text-7xl font-black text-current drop-shadow-2xl tracking-tight">
+          {title}
+        </h1>
+        <p className="text-xl md:text-2xl opacity-70 mt-3 font-light">
+          {subtitle}
+        </p>
+      </header>
 
-        {/* Contenedor principal */}
-        <div className={`flex flex-col md:flex-row gap-6 flex-1 ${isPlaying ? 'md:flex-col' : ''}`}>
-          {/* Panel Izquierdo */}
-          <div className={`${theme.card} p-4 rounded-lg shadow-lg w-full md:w-1/3 transition ${isPlaying ? 'hidden md:block' : ''}`} style={{ display: isPlaying ? 'none' : 'block' }}>
-            {leftPanel}
-          </div>
+      {/* Main Content */}
+      <div className={`w-full max-w-7xl grid gap-10 items-start transition-all duration-700 ${isPlaying ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
 
-          {/* Panel Derecho */}
-          <div className={`${theme.card} p-6 rounded-lg shadow-lg flex flex-col items-center justify-center w-full ${isPlaying ? 'md:w-full' : 'md:w-2/3'} transition`}>
-            {rightPanel}
-          </div>
-        </div>
-      </motion.div>
-    </AnimatePresence>
+        {/* Panel Izquierdo - Se oculta completamente al leer */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{
+            opacity: isPlaying ? 0 : 1,
+            y: isPlaying ? -20 : 0,
+            height: isPlaying ? 0 : 'auto',
+            display: isPlaying ? 'none' : 'block'
+          }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="w-full"
+        >
+          {leftPanel}
+        </motion.div>
+
+        {/* Panel Derecho - Ocupa todo el espacio al leer */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{
+            opacity: rightPanel ? 1 : 0,
+            scale: rightPanel ? 1 : 0.95,
+            width: isPlaying ? '100%' : 'auto'
+          }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className={`w-full h-full min-h-96 ${isPlaying ? 'flex justify-center' : ''}`}
+        >
+          {rightPanel}
+        </motion.div>
+      </div>
+
+      {/* Footer opcional */}
+      <footer className={`mt-16 text-center opacity-50 text-sm transition-opacity duration-500 ${isPlaying ? 'opacity-0 h-0 overflow-hidden mt-0' : ''}`}>
+        <p>AILEER — Lectura accesible para todos ❤️</p>
+      </footer>
+    </div>
   );
 };
 

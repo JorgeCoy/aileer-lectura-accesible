@@ -1,76 +1,53 @@
-// src/config/themes.js
+// src/config/themes.js - VERSIÓN DEFINITIVA 200%
 export const adultThemes = {
   minimalist: {
-    bg: "bg-[#fafafa] text-neutral-800",
-    card: "bg-white border border-neutral-200 shadow-sm",
-    button: "bg-neutral-800 text-white hover:bg-neutral-700 transition",
+    textColor: "#e2e8f0",
+    highlight: "#60a5fa",
+    bgGradient: "from-gray-900 to-black"
   },
   cinematic: {
-    bg: "bg-[#0c0c0c] text-white",
-    card: "bg-[#1a1a1a] border border-[#2c2c2c]",
-    button: "bg-[#e50914] text-white hover:bg-[#b00710] transition",
+    textColor: "#e0e7ff",
+    highlight: "#c084fc",
+    bgGradient: "from-purple-950 to-blue-950"
   },
   zen: {
-    bg: "bg-[#f3f2ec] text-[#444]",
-    card: "bg-white border border-[#dfdbcf]",
-    button: "bg-[#93b58b] text-white hover:bg-[#82a67b] transition",
+    textColor: "#ccfbf1",
+    highlight: "#5eead4",
+    bgGradient: "from-emerald-950 to-teal-950"
   },
   professional: {
-    bg: "bg-[#f4f6f8] text-[#1a1a1a]",
-    card: "bg-white border border-[#d0d7de]",
-    button: "bg-[#2b2b52] text-white hover:bg-[#1f1f3b] transition",
+    textColor: "#dbeafe",
+    highlight: "#93c5fd",
+    bgGradient: "from-slate-900 to-blue-950"
   },
   vintage: {
-    bg: "bg-[#fbf3e0] text-[#4b3b2b]",
-    card: "bg-[#fff8e6] border border-[#e2cfa3]",
-    button: "bg-[#c3a46d] text-white hover:bg-[#b18b58] transition",
+    textColor: "#fef3c7",
+    highlight: "#fbbf24",
+    bgGradient: "from-amber-950 to-orange-950"
   },
   focus: {
-    bg: "bg-[#fdfdfd] text-[#111]",
-    card: "bg-white border border-[#ddd]",
-    button: "bg-[#0077cc] text-white hover:bg-[#0062a6] transition",
+    textColor: "#e0e7ff",
+    highlight: "#93c5fd",
+    bgGradient: "from-indigo-950 to-purple-950"
   },
-  gray: {
-    bg: "bg-[#f0f0f0] text-[#111]",
-    card: "bg-white border border-[#ccc]",
-    button: "bg-gray-500 text-white hover:bg-gray-600 transition",
+  ocean: {
+    textColor: "#bfdbfe",
+    highlight: "#38bdf8",
+    bgGradient: "from-sky-950 to-blue-950"
   },
-};
-
-export const themeStyles = {
-  minimalist: {
-    base: "bg-neutral-800 hover:bg-neutral-700",
-    stop: "bg-red-500 hover:bg-red-600",
-    history: "bg-gray-600 hover:bg-gray-700",
+  sunset: {
+    textColor: "#fefce8",
+    highlight: "#fbbf24",
+    bgGradient: "from-orange-900 to-red-900"
   },
-  cinematic: {
-    base: "bg-red-700 hover:bg-red-800",
-    stop: "bg-red-900 hover:bg-red-950",
-    history: "bg-gray-800 hover:bg-gray-900",
+  forest: {
+    textColor: "#dcfce7",
+    highlight: "#86efac",
+    bgGradient: "from-green-950 to-emerald-950"
   },
-  zen: {
-    base: "bg-emerald-600 hover:bg-emerald-700",
-    stop: "bg-amber-700 hover:bg-amber-800",
-    history: "bg-emerald-500 hover:bg-emerald-600",
-  },
-  professional: {
-    base: "bg-blue-700 hover:bg-blue-800",
-    stop: "bg-gray-700 hover:bg-gray-800",
-    history: "bg-blue-500 hover:bg-blue-600",
-  },
-  vintage: {
-    base: "bg-amber-600 hover:bg-amber-700",
-    stop: "bg-orange-800 hover:bg-orange-900",
-    history: "bg-amber-500 hover:bg-amber-600",
-  },
-  focus: {
-    base: "bg-blue-600 hover:bg-blue-700",
-    stop: "bg-blue-800 hover:bg-blue-900",
-    history: "bg-blue-500 hover:bg-blue-600",
-  },
-  gray: {
-    base: "bg-gray-500 hover:bg-gray-600",
-    stop: "bg-gray-700 hover:bg-gray-800",
-    history: "bg-gray-400 hover:bg-gray-500",
-  },
+  cosmic: {
+    textColor: "#e0e7ff",
+    highlight: "#a78bfa",
+    bgGradient: "from-indigo-950 to-purple-950"
+  }
 };

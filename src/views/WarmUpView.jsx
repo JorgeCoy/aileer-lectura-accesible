@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useContext } from 'react';
-import { motion } from 'framer-motion';
+
+import { motion, AnimatePresence } from 'framer-motion';
 import AppContext from '../context/AppContext';
 import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts';
 import { PlayIcon, PauseIcon, ArrowLeftIcon } from '@heroicons/react/24/solid';
@@ -23,6 +24,40 @@ const WarmUpView = () => {
   const [showTachisto, setShowTachisto] = useState(false);
   const [tachistoGuess, setTachistoGuess] = useState('');
   const [tachistoCorrect, setTachistoCorrect] = useState(null);
+
+  // Session Log
+  const [sessionLog, setSessionLog] = useState([]);
+  const startTimeRef = useRef(null);
+
+  const modeNames = {
+    'reading-path': 'Libro Abierto',
+    'saccade-horizontal': 'Saltos Horizontales',
+    'four-corners': 'Cuatro Esquinas',
+    'infinity-loop': 'Infinity Loop',
+    'circle-pursuit': 'Seguimiento Circular',
+    'near-far': 'Foco Cerca/Lejos',
+    'peripheral': 'Visión Periférica',
+    'schulte': 'Schulte Table',
+    'tachisto': 'Tachistoscopia'
+  };
+
+  useEffect(() => {
+    if (isPlaying) {
+      startTimeRef.current = Date.now();
+    } else {
+      if (startTimeRef.current) {
+        const duration = (Date.now() - startTimeRef.current) / 1000;
+        if (duration > 2) { // Log if > 2 seconds
+          setSessionLog(prev => [{
+            id: Date.now(),
+            mode: modeNames[mode] || mode,
+            duration: duration
+          }, ...prev]);
+        }
+        startTimeRef.current = null;
+      }
+    }
+  }, [isPlaying]);
 
   // Atajos de teclado
   useKeyboardShortcuts({
@@ -224,6 +259,29 @@ const WarmUpView = () => {
         <ArrowLeftIcon className="w-7 h-7" />
       </button>
 
+      {/* Session Log - Panel Flotante Izquierdo */}
+      <div className="absolute left-4 top-20 bottom-24 w-64 pointer-events-none z-40 flex flex-col justify-start gap-2 overflow-hidden">
+        <AnimatePresence>
+          {sessionLog.map((log) => (
+            <motion.div
+              key={log.id}
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              className="bg-black/40 backdrop-blur-md border border-white/10 p-3 rounded-xl text-white shadow-lg pointer-events-auto"
+            >
+              <div className="text-xs text-blue-300 font-bold uppercase tracking-wider mb-1">
+                {new Date(log.id).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </div>
+              <div className="font-medium text-sm">{log.mode}</div>
+              <div className="text-xs text-gray-400 mt-1">
+                Duración: <span className="text-white">{log.duration < 60 ? `${Math.round(log.duration)}s` : `${Math.floor(log.duration / 60)}m ${Math.round(log.duration % 60)}s`}</span>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
       {/* Libro */}
       <div ref={containerRef} className="relative w-full max-w-7xl aspect-[3/2] flex shadow-2xl">
         <div className="flex-1 bg-[#fdfbf7] rounded-l-lg border-r-4 border-gray-400 shadow-inner" />
@@ -299,9 +357,9 @@ const WarmUpView = () => {
           {isPlaying && !['schulte', 'tachisto', 'peripheral'].includes(mode) && (
             <motion.div
               key={resetKey + mode}
-              className="absolute w-12 h-12 md:w-20 md:h-20 rounded-full bg-blue-500 z-50 pointer-events-none"
+              className="absolute w-6 h-6 md:w-10 md:h-10 rounded-full bg-blue-500 z-50 pointer-events-none"
               style={{
-                boxShadow: "0 0 100px 40px rgba(59,130,246,0.9)",
+                boxShadow: "0 0 20px 5px rgba(59,130,246,0.6)",
                 background: "radial-gradient(circle at 30% 30%, #60a5fa, #3b82f6)"
               }}
               animate={currentAnim.animate}
@@ -346,13 +404,13 @@ const WarmUpView = () => {
                 if (next && mode === 'tachisto') startTachisto();
                 if (next && mode === 'schulte') generateSchulte();
               }}
-              className="p-4 md:p-6 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-2xl transition hover:scale-110"
+              className="p-3 md:p-4 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-2xl transition hover:scale-110"
               aria-label={isPlaying ? "Pausar" : "Iniciar"}
             >
-              {isPlaying ? <PauseIcon className="w-8 h-8 md:w-12 md:h-12" /> : <PlayIcon className="w-8 h-8 md:w-12 md:h-12" />}
+              {isPlaying ? <PauseIcon className="w-6 h-6 md:w-8 md:h-8" /> : <PlayIcon className="w-6 h-6 md:w-8 md:h-8" />}
             </button>
 
-            <select value={mode} onChange={(e) => { setIsPlaying(false); setMode(e.target.value); setResetKey(k => k + 1); }} className="bg-gray-800/90 text-white px-4 py-3 md:px-6 md:py-4 rounded-xl text-sm md:text-lg flex-1">
+            <select value={mode} onChange={(e) => { setIsPlaying(false); setMode(e.target.value); setResetKey(k => k + 1); }} className="bg-black/40 backdrop-blur-md border border-white/10 text-white px-4 py-3 md:px-6 md:py-3 rounded-xl text-sm md:text-base flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
               <option value="reading-path">Libro Abierto</option>
               <option value="saccade-horizontal">Saltos Horizontales</option>
               <option value="four-corners">Cuatro Esquinas</option>

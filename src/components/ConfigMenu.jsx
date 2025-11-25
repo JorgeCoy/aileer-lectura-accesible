@@ -99,7 +99,10 @@ const ConfigMenu = ({
               <option value="professional">💻 Profesional</option>
               <option value="vintage">📜 Vintage</option>
               <option value="focus">🎯 Enfoque</option>
-              <option value="gray">⚫ Gris elegante</option>
+              <option value="ocean">🌊 Océano</option>
+              <option value="sunset">🌅 Atardecer</option>
+              <option value="forest">🌲 Bosque</option>
+              <option value="cosmic">🌌 Cósmico</option>
             </select>
           </div>
 
@@ -111,9 +114,13 @@ const ConfigMenu = ({
               onChange={(e) => setReadingTechnique(e.target.value)}
               className="w-full p-2 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none text-sm transition-all text-gray-900"
             >
-              <option value="singleWord">🅰️ Una palabra</option>
-              <option value="lineThreePoints">📖 Línea en tres puntos</option>
-              <option value="paragraphFocus">🧠 Párrafo con foco</option>
+              <option value="singleWord">🅰️ Una palabra (RSVP)</option>
+              <option value="bionic">🧠 Biónica (Bionic Reading)</option>
+              <option value="chunking">📦 Chunking (Grupos)</option>
+              <option value="lineFocus">📏 Línea por Puntos (Line Focus)</option>
+              <option value="paragraphFocus">¶ Párrafo con Foco (Paragraph Focus)</option>
+              <option value="spritz">⚡ Meta-guide (Spritz)</option>
+              <option value="saccade">👀 Entrenamiento Sacádico</option>
             </select>
           </div>
 
