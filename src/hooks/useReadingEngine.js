@@ -66,10 +66,23 @@ const useReadingEngine = ({ words, options }) => {
     useEffect(() => {
         if (isCountingDown || disableTimer) return; // ✅ Si disableTimer es true, no usar intervalo
 
+        let multiplier = options.speedMultiplier || 1;
+
+        // Lógica de velocidad dinámica para Line Focus
+        if (options.readingTechnique === 'lineFocus' && words.length > 0 && words[currentIndex]) {
+            // Calculamos la longitud de la "palabra" actual (que es una línea)
+            const wordCount = words[currentIndex].split(' ').length;
+            // Ajustamos el multiplicador: 1 palabra = 1x, 10 palabras = 10x
+            // Podemos añadir un factor de corrección si se siente muy lento/rápido
+            multiplier = wordCount;
+        }
+
+        const currentSpeed = speed * multiplier;
+
         if (isRunning && words.length > 0 && currentIndex < words.length - 1) {
             const interval = setInterval(() => {
                 setCurrentIndex(prev => prev + 1);
-            }, speed);
+            }, currentSpeed);
 
             return () => clearInterval(interval);
         } else {
@@ -77,7 +90,7 @@ const useReadingEngine = ({ words, options }) => {
                 setIsRunning(false);
             }
         }
-    }, [isRunning, words, currentIndex, speed, isCountingDown, disableTimer]);
+    }, [isRunning, words, currentIndex, speed, isCountingDown, disableTimer, options.speedMultiplier, options.readingTechnique]);
 
     // ✅ Efecto para pausas automáticas
     useEffect(() => {

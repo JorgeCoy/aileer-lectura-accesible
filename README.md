@@ -1,78 +1,45 @@
-# 📖 AILEER — Lectura Accesible para Todos
+# aLeer - Entrenador de Lectura Avanzada 🚀
 
-> *“No necesitas tener tiempo. Solo necesitas tener corazón.”*
+**aLeer** es una aplicación web moderna diseñada para mejorar tu velocidad de lectura, comprensión y salud visual mediante técnicas avanzadas y ejercicios interactivos.
 
-AILEER es una herramienta de lectura rápida y accesible, diseñada para padres, docentes, personas con TDAH y quienes necesitan leer sin distracciones. Nace de la necesidad real de un padre en Bogotá que quiere ayudar a sus hijos a leer, aunque solo tenga 10 minutos al día.
+## ✨ Características Principales
 
----
+### 📖 Modos de Entrada
+*   **Texto Manual**: Pega cualquier texto y comienza a leer al instante.
+*   **PDF con OCR**: Sube tus archivos PDF. Si son imágenes escaneadas, nuestro sistema OCR integrado (Tesseract.js) extraerá el texto automáticamente por página.
 
-## 🌱 ¿Por qué existe?
+### 🧠 Técnicas de Lectura
+Ofrecemos múltiples modos para adaptarse a tu estilo y objetivos de entrenamiento:
+1.  **Una Palabra (RSVP)**: Presentación Visual Serial Rápida. Una palabra a la vez para máxima velocidad.
+2.  **Biónica (Bionic Reading)**: Resalta el inicio de las palabras para guiar al cerebro y facilitar la lectura.
+3.  **Chunking**: Agrupa palabras (de 2 a 5) para aumentar el campo visual.
+4.  **Línea por Puntos (Line Focus)**: Muestra una línea completa con una guía visual que marca el ritmo. Ideal para simular lectura natural controlada.
+5.  **Párrafo con Foco (Paragraph Focus)**: Muestra bloques de texto (páginas estáticas) resaltando la palabra actual y atenuando el resto para mantener el contexto sin distracciones.
+6.  **Meta-guide (Spritz)**: Alinea el "Punto Óptimo de Reconocimiento" (ORP) de cada palabra en un eje central, eliminando la necesidad de mover los ojos.
+7.  **Entrenamiento Sacádico**: Las palabras aparecen en posiciones aleatorias para entrenar la precisión y velocidad de los movimientos oculares.
 
-- Tengo dos hijos de 5 y 1 años.  
-- Y quiero que lean… sin presión. Sin ruido. Con gusto.
+### 🎨 Personalización Visual
+*   **Temas**: Minimalista, Cinemático, Zen, Profesional, Vintage, Enfoque, Océano, Atardecer, Bosque, Cósmico.
+*   **Fuentes**: Sans Serif, Serif, Monospace, Comic Sans, Dancing Script, y **OpenDyslexic** (especial para dislexia).
+*   **Ajustes**: Control total de velocidad (WPM) y tamaño de fuente.
 
-AILEER nació de eso.
+### 🏋️ Ejercicios de Calentamiento
+*   **Seguimiento Ocular**: Una bola en movimiento guía tus ojos en patrones horizontales (lectura) y verticales (escaneo) para calentar los músculos oculares antes de leer.
 
----
+### 🔊 Lectura en Voz Alta (TTS)
+*   Integración con las voces del sistema para leer el texto en voz alta mientras sigues visualmente.
 
-## ✅ Características
+## 🛠️ Tecnologías Utilizadas
+*   **Frontend**: React, Vite
+*   **Estilos**: Tailwind CSS
+*   **Animaciones**: Framer Motion
+*   **OCR**: Tesseract.js
+*   **Iconos**: Heroicons
 
-| Funcionalidad | Descripción |
-|---------------|-------------|
-| 🎨 Temas visuales | Minimalista, Cinemático, Zen, Profesional, Vintage, Focus, Gris |
-| 📚 Modos personalizados | Adulto, Niños, Bebés, Profesor, TDAH |
-| 🗣️ Voz en texto | Sincronizada con la velocidad de lectura |
-| 🖥️ Atajos de teclado | Espacio (pausar), Flechas (avanzar), Esc (cerrar historial) |
-| 📄 Lectura de PDF | Carga y navegación por páginas |
-| 🕒 Velocidad ajustable | Desde 10ms hasta 1000ms |
-| 💾 Historial de lectura | Guarda tus textos para volver a ellos |
-| 🧠 Enfoque en accesibilidad | Sin publicidad, sin cobros, sin distracciones |
-
----
-
-## 🛠️ Tecnologías
-
-- React + Vite  
-- Framer Motion (animaciones)  
-- Web Speech API (voz)  
-- Tailwind CSS (diseño)  
-- localStorage (persistencia)  
-- JavaScript moderno (sin frameworks pesados)
-
----
-
-## 📂 Estructura del proyecto
-src/
-├── views/ # Vistas por modo (Adulto, Niño, etc.)
-├── hooks/ # Lógica central: useWordViewerLogic
-├── components/ # Botones, controles, sliders
-├── context/ # ThemeContext, AppContext
-├── config/ # Temas, modos, opciones
-├── utils/ # speakWord, stopSpeech, estimateWordDuration
-└── assets/ # Texturas de papel, íconos
-
+## 🚀 Cómo Iniciar
+1.  Clona el repositorio.
+2.  Instala las dependencias: `npm install`
+3.  Inicia el servidor de desarrollo: `npm run dev`
 
 ---
-
-## 🧪 Cómo probarlo
-
-1. Clona el repositorio  
-2. Ejecuta: `npm install`  
-3. Ejecuta: `npm run dev`  
-4. Abre: `http://localhost:5173`
-
----
-
-## ❤️ ¿Cómo puedes ayudar?
-
-- ¿Eres docente? Prueba con tus alumnos.  
-- ¿Eres padre? Usa AILEER con tus hijos.  
-- ¿Eres desarrollador? Ayúdanos a mejorar.  
-- ¿Tienes un producto accesible? Queremos colaborar.
-
-**No necesitas dinero. Solo necesitas empatía.**
-
----
-
-> _“AILEER no es una app. Es un abrazo en forma de palabra.”_  
-> — Jorge Coy, Bogotá, 2025
+*Desarrollado con ❤️ para potenciar tu mente.*
