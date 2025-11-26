@@ -6,7 +6,10 @@
 
 ### 📖 Modos de Entrada
 *   **Texto Manual**: Pega cualquier texto y comienza a leer al instante.
-*   **PDF con OCR**: Sube tus archivos PDF. Si son imágenes escaneadas, nuestro sistema OCR integrado (Tesseract.js) extraerá el texto automáticamente por página.
+*   **PDF Inteligente**: Sube tus archivos PDF y disfruta de una experiencia de estudio completa.
+    *   **OCR Integrado**: Extrae texto de imágenes escaneadas automáticamente.
+    *   **Gestión de Estudio**: Agrega **marcadores**, toma **notas por página** y rastrea tu **progreso de lectura**.
+    *   **Persistencia**: Tu progreso, notas y marcadores se guardan automáticamente para que retomes donde lo dejaste.
 
 ### 🧠 Técnicas de Lectura
 Ofrecemos múltiples modos para adaptarse a tu estilo y objetivos de entrenamiento:

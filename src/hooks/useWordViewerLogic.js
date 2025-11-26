@@ -1,4 +1,3 @@
-// src/hooks/useWordViewerLogic.js
 import { useState, useEffect, useCallback, useContext } from "react";
 import { modeOptions } from "../config/modeOptions";
 import useReadingEngine from "./useReadingEngine";
@@ -76,67 +75,6 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     }
   }, [text, parseText, readingTechnique]);
 
-  // Calcular multiplicador dinámico basado en la longitud de la línea actual
-  // Esto asegura que líneas cortas pasen rápido y largas lento
-  // Nota: currentIndex viene del hook de abajo, pero necesitamos pasarlo como opción.
-  // React manejará esto en el siguiente render.
-  // Para el primer render, usamos 1.
-
-  // PROBLEMA: No podemos usar currentIndex antes de llamar a useReadingEngine.
-  // SOLUCIÓN: useReadingEngine maneja el intervalo. Podemos pasar una función o valor que cambie.
-  // Pero useReadingEngine toma 'options' como argumento inicial.
-  // Sin embargo, el useEffect dentro de useReadingEngine depende de options.speedMultiplier.
-  // Así que si cambiamos options.speedMultiplier en cada render, el efecto se reiniciará con la nueva velocidad.
-
-  // Necesitamos una referencia a words y currentIndex que aún no tenemos.
-  // Pero words ya lo tenemos. currentIndex NO.
-  // Así que tenemos que hacer esto en dos pasos o asumir que el hook useReadingEngine expone currentIndex.
-
-  // Vamos a usar un estado local o ref para el multiplicador si es necesario, pero
-  // lo más limpio es que useReadingEngine acepte el multiplicador dinámico.
-  // Como no puedo acceder a currentIndex ANTES de llamar al hook,
-  // voy a tener que pasar una prop al hook que sea "calculateMultiplier(index)".
-  // O simplemente, como el hook devuelve currentIndex, en el siguiente render
-  // calculamos el multiplicador y se lo pasamos de nuevo.
-
-  // Para evitar el error de "access before initialization", definimos currentIndex con un valor por defecto
-  // o usamos un estado separado. Pero useReadingEngine controla el estado.
-
-  // TRUCO: El hook se ejecuta, devuelve currentIndex (0).
-  // Calculamos multiplier = words[0].length.
-  // Pasamos multiplier al hook.
-  // El hook usa ese multiplier en su useEffect.
-  // Cuando currentIndex cambia a 1, el componente se re-renderiza.
-  // Calculamos multiplier = words[1].length.
-  // Pasamos multiplier al hook.
-  // El hook actualiza su intervalo.
-
-  // PERO: currentIndex es devuelto POR el hook.
-  // No puedo usar `const { currentIndex } = useReadingEngine(...)` y luego pasar `currentIndex` a `useReadingEngine`.
-
-  // SOLUCIÓN: Modificar useReadingEngine para que calcule el multiplicador internamente si se le pasa una opción "dynamicSpeed".
-  // O, más simple: Mover la lógica de velocidad variable DENTRO de useReadingEngine.
-
-  // Por ahora, para no romper useReadingEngine, vamos a hacer un pequeño hack:
-  // Usar un estado externo para el multiplicador que se actualiza cuando cambia currentIndex.
-  // Pero eso causaría un render extra.
-
-  // MEJOR: Modificar useReadingEngine para aceptar `words` y calcular la velocidad basada en la palabra actual si una flag está activa.
-
-  // VOY A MODIFICAR useReadingEngine LIGÉRAMENTE en el siguiente paso.
-  // Por ahora, dejaré el multiplicador en 1 o fijo en 8 para que compile, y luego ajusto useReadingEngine.
-
-  // ESPERA, en el código anterior (que funcionaba con 8), pasaba:
-  // speedMultiplier: readingTechnique === 'lineFocus' ? 8 : 1
-
-  // Si quiero que sea dinámico, necesito que useReadingEngine sepa calcularlo.
-  // Voy a pasar `speedMultiplier: 1` por ahora y modificar useReadingEngine para que,
-  // si `autoCalculateSpeed` es true, use la longitud de la palabra actual.
-
-  // O mejor: Pasemos `readingTechnique` a useReadingEngine y que él decida.
-
-  // Para este archivo, lo dejaré preparado.
-
   const {
     currentIndex,
     setCurrentIndex,
@@ -157,14 +95,11 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     options: {
       ...options,
       disableTimer: voiceEnabled,
-      // Pasamos una función o flag para velocidad dinámica?
-      // Por ahora pasamos 1 y lo arreglamos en useReadingEngine
       speedMultiplier: 1,
-      readingTechnique // Pasamos la técnica para que el motor sepa qué hacer
+      readingTechnique
     }
   });
 
-  // 2. LUEGO: Hooks que dependen de isRunning
   const {
     pdfPages,
     selectedPage,
@@ -176,14 +111,15 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     toggleBookmark,
     pageNotes,
     addPageNote,
+    removePageNote,
     readingStats,
     readingProgress,
     pdfFile,
     pdfName,
-    updatePageText
+    updatePageText,
+    exportProgress
   } = usePdf({ enablePdf: options.enablePdf, setText, isRunning });
 
-  // MODIFICADO: Cambia inputMode al subir PDF
   const handlePdfUpload = (pdfText, pages, file) => {
     originalHandlePdfUpload(pdfText, pages, file);
     setInputMode('pdf');
@@ -199,7 +135,7 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
   const selectFromHistory = (item) => {
     setText(item.text);
     setSelectedPage(item.page || 0);
-    setInputMode(item.type || 'text'); // si guardas tipo en historial
+    setInputMode(item.type || 'text');
   };
 
   const {
@@ -250,11 +186,13 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     toggleBookmark,
     pageNotes,
     addPageNote,
+    removePageNote,
     readingStats,
     readingProgress,
     pdfFile,
     pdfName,
     updatePageText,
+    exportProgress,
     theme,
     setTheme,
     readingTechnique,

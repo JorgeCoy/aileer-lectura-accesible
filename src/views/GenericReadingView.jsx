@@ -280,30 +280,13 @@ const GenericReadingView = ({ modeId }) => {
         isCountingDown={isCountingDown}
         currentIndex={currentIndex}
         totalWords={words.length}
-        theme={theme}
-        setTheme={setTheme}
-        readingTechnique={readingTechnique}
-        setReadingTechnique={setReadingTechnique}
-        currentTheme={currentTheme}
-        handlePdfUpload={handlePdfUpload}
-        voices={voices}
-        selectedVoice={selectedVoice}
-        setSelectedVoice={setSelectedVoice}
-        inputMode={inputMode}
-        setInputMode={setInputMode}
-        onHomeClick={() => setCurrentView('start')}
+        subtitle={mode.subtitle}
+        theme={currentTheme}
+        leftPanel={leftPanel}
+        rightPanel={rightPanel}
+        isPlaying={isRunning}
       />
-
-      <div className="ml-20 min-h-screen">
-        <ReadingLayout
-          title={mode.label}
-          subtitle={mode.subtitle}
-          theme={currentTheme}
-          leftPanel={leftPanel}
-          rightPanel={rightPanel}
-          isPlaying={isRunning}
-        />
-      </div>
+    </div >
 
       <HistoryModal
         showHistory={showHistory}
