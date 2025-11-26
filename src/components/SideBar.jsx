@@ -1,6 +1,6 @@
-// src/components/SideBar.jsx
 import React, { useState, useContext, useRef } from "react";
 import ConfigMenu from "./ConfigMenu";
+import PdfSidebarButton from "./PdfSidebarButton";
 import AppContext from "../context/AppContext";
 import {
   HomeIcon,
@@ -14,7 +14,6 @@ import {
   BookOpenIcon,
   EyeIcon,
   FireIcon,
-  DocumentArrowUpIcon,
   PencilSquareIcon
 } from "@heroicons/react/24/solid";
 
@@ -48,45 +47,26 @@ const SideBar = ({
   selectedVoice,
   setSelectedVoice,
   inputMode,
-  setInputMode
+  setInputMode,
+  pdfPages,
+  selectedPage,
+  setSelectedPage,
+  pdfName,
+  readingProgress,
+  bookmarks,
+  toggleBookmark,
+  pageNotes,
+  addPageNote,
+  removePageNote,
+  goToNextPage,
+  goToPreviousPage,
+  exportProgress
 }) => {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const { setCurrentView, goToView, streak } = useContext(AppContext);
-  const fileInputRef = useRef(null);
 
   const handleSettingsClick = () => {
     setIsConfigOpen(!isConfigOpen);
-  };
-
-  const onUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    try {
-      const pdfjsLib = await import("pdfjs-dist");
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      const pages = [];
-
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map(item => item.str).join(" ");
-        pages.push(pageText);
-      }
-
-      const allText = pages.join("\n\n");
-      handlePdfUpload(allText, pages, file);
-    } catch (error) {
-      console.error("Error loading PDF:", error);
-      alert("Error al cargar el PDF. Intenta con otro archivo.");
-    }
   };
 
   const canResume = currentIndex > 0 && currentIndex < totalWords - 1;
@@ -136,23 +116,23 @@ const SideBar = ({
               <PencilSquareIcon className="w-6 h-6" />
             </button>
 
-            {/* Botón PDF */}
-            <div className="relative">
-              <button
-                onClick={onUploadClick}
-                className={`${buttonClass} ${inputMode === 'pdf' ? 'bg-purple-600 ring-4 ring-purple-400/50' : inactiveClass}`}
-                title="Cargar PDF"
-              >
-                <DocumentArrowUpIcon className="w-6 h-6" />
-              </button>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                accept=".pdf"
-                className="hidden"
-              />
-            </div>
+            {/* Botón PDF Avanzado */}
+            <PdfSidebarButton
+              handlePdfUpload={handlePdfUpload}
+              pdfPages={pdfPages}
+              selectedPage={selectedPage}
+              setSelectedPage={setSelectedPage}
+              pdfName={pdfName}
+              readingProgress={readingProgress}
+              bookmarks={bookmarks}
+              toggleBookmark={toggleBookmark}
+              pageNotes={pageNotes}
+              addPageNote={addPageNote}
+              removePageNote={removePageNote}
+              goToNextPage={goToNextPage}
+              goToPreviousPage={goToPreviousPage}
+              exportProgress={exportProgress}
+            />
 
             <button onClick={() => setShowHistory(true)} className={`${buttonClass} ${inactiveClass}`} title="Historial">
               <BookOpenIcon className="w-6 h-6" />
