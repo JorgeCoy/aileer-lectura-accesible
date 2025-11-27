@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback, useContext } from "react";
+import { useState, useEffect, useCallback, useContext, useRef } from "react";
 import { modeOptions } from "../config/modeOptions";
 import useReadingEngine from "./useReadingEngine";
 import useSpeech from "./useSpeech";
 import useHistory from "./useHistory";
 import usePdf from "./usePdf";
+import useGlobalStats from "./useGlobalStats";
 import ThemeContext from "../context/ThemeContext";
 
 const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
@@ -20,6 +21,11 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
   const [readingTechnique, setReadingTechnique] = useState("singleWord");
   const [fontSize, setFontSize] = useState(options.fontSize || 32);
   const [fontFamily, setFontFamily] = useState(options.fontFamily || "sans-serif");
+
+  // Stats Integration
+  const { stats, updateStats, achievements, newAchievement, clearNewAchievement } = useGlobalStats();
+  const sessionStartTime = useRef(null);
+  const wordsReadInSession = useRef(0);
 
   const parseText = useCallback((text) => {
     // Lógica de Chunking
@@ -99,6 +105,27 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
       readingTechnique
     }
   });
+
+  // Track session stats
+  useEffect(() => {
+    if (isRunning && !isCountingDown) {
+      sessionStartTime.current = Date.now();
+    } else if (!isRunning && sessionStartTime.current) {
+      // Session ended
+      const duration = (Date.now() - sessionStartTime.current) / 1000;
+      const wpm = Math.round(60000 / speed);
+
+      // Estimate words read based on time and speed (more accurate than index diff for chunks)
+      // Or use index difference if available. Let's use duration * (wpm / 60)
+      const estimatedWords = Math.round(duration * (wpm / 60));
+
+      if (duration > 1) { // Ignore accidental clicks < 1s
+        updateStats(estimatedWords, duration, wpm);
+      }
+
+      sessionStartTime.current = null;
+    }
+  }, [isRunning, isCountingDown, speed, updateStats]);
 
   const {
     pdfPages,
@@ -202,7 +229,12 @@ const useWordViewerLogic = (mode = "adult", customOptions = {}) => {
     fontFamily,
     setFontFamily,
     inputMode,
-    setInputMode
+    setInputMode,
+    // Stats
+    stats,
+    achievements,
+    newAchievement,
+    clearNewAchievement
   };
 };
 

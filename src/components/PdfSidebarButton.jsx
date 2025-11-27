@@ -28,6 +28,8 @@ const PdfSidebarButton = ({
     goToNextPage,
     goToPreviousPage,
     exportProgress,
+    isMobileOpen,
+    Label
 }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [activeTab, setActiveTab] = useState("pages"); // pages, bookmarks, notes, stats
@@ -44,7 +46,7 @@ const PdfSidebarButton = ({
 
         try {
             const pdfjsLib = await import("pdfjs-dist");
-            pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+            pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -84,28 +86,32 @@ const PdfSidebarButton = ({
         }
     };
 
+    // ✅ Clases dinámicas para botones
+    const buttonClass = `mb-3 rounded-xl transition-all duration-300 flex items-center shadow-md hover:shadow-lg hover:scale-105 relative ${isMobileOpen ? "w-full px-4 py-3 justify-start" : "p-3 justify-center"
+        } ${hasPdf ? "bg-purple-600 text-white hover:bg-purple-500" : "bg-gray-700 text-gray-300 hover:bg-gray-600"}`;
+
     return (
         <>
             {/* Botón principal en sidebar */}
             <button
                 onClick={() => (hasPdf ? setIsExpanded(!isExpanded) : fileInputRef.current?.click())}
-                className={`p-3 mb-3 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg hover:scale-110 relative ${hasPdf ? "bg-purple-600 text-white hover:bg-purple-500" : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                    }`}
+                className={buttonClass}
                 aria-label={hasPdf ? "Gestionar PDF" : "Subir PDF"}
                 title={hasPdf ? `${pdfName} (${Math.round(readingProgress)}%)` : "Subir PDF"}
             >
-                <DocumentTextIcon className="w-6 h-6" />
+                <DocumentTextIcon className="w-6 h-6 flex-shrink-0" />
+                {Label && <Label text={hasPdf ? "Gestionar PDF" : "Subir PDF"} />}
 
                 {/* Badge con número de páginas */}
-                {hasPdf && (
+                {hasPdf && !isMobileOpen && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                         {pdfPages.length}
                     </span>
                 )}
 
                 {/* Barra de progreso circular */}
-                {hasPdf && readingProgress > 0 && (
-                    <svg className="absolute inset-0 w-full h-full -rotate-90">
+                {hasPdf && readingProgress > 0 && !isMobileOpen && (
+                    <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none">
                         <circle
                             cx="50%"
                             cy="50%"
@@ -145,10 +151,10 @@ const PdfSidebarButton = ({
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -300 }}
                         transition={{ type: "spring", damping: 25 }}
-                        className="fixed left-16 top-0 h-full w-96 bg-gray-900 text-white shadow-2xl z-50 flex flex-col"
+                        className="fixed left-0 md:left-16 top-0 h-full w-full md:w-96 bg-gray-900 text-white shadow-2xl z-50 flex flex-col"
                     >
                         {/* Header */}
-                        <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+                        <div className="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900">
                             <div className="flex-1 min-w-0">
                                 <h3 className="font-bold text-lg truncate">{pdfName}</h3>
                                 <p className="text-sm text-gray-400">
@@ -165,7 +171,7 @@ const PdfSidebarButton = ({
                         </div>
 
                         {/* Tabs */}
-                        <div className="flex border-b border-gray-700">
+                        <div className="flex border-b border-gray-700 bg-gray-900">
                             {[
                                 { id: "pages", label: "Páginas", icon: DocumentTextIcon },
                                 { id: "bookmarks", label: "Marcadores", icon: BookmarkSolidIcon },
@@ -176,8 +182,8 @@ const PdfSidebarButton = ({
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`flex-1 p-3 flex items-center justify-center gap-2 transition ${activeTab === tab.id
-                                            ? "bg-gray-800 text-white border-b-2 border-purple-500"
-                                            : "text-gray-400 hover:bg-gray-800"
+                                        ? "bg-gray-800 text-white border-b-2 border-purple-500"
+                                        : "text-gray-400 hover:bg-gray-800"
                                         }`}
                                 >
                                     <tab.icon className="w-4 h-4" />
@@ -187,7 +193,7 @@ const PdfSidebarButton = ({
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 overflow-y-auto p-4">
+                        <div className="flex-1 overflow-y-auto p-4 bg-gray-900">
                             {/* Tab: Páginas */}
                             {activeTab === "pages" && (
                                 <div className="space-y-3">
@@ -229,8 +235,8 @@ const PdfSidebarButton = ({
                                                     key={pageNum}
                                                     onClick={() => setSelectedPage(pageNum)}
                                                     className={`w-full p-3 rounded-lg text-left transition flex items-center justify-between ${selectedPage === pageNum
-                                                            ? "bg-purple-600 text-white"
-                                                            : "bg-gray-800 hover:bg-gray-700"
+                                                        ? "bg-purple-600 text-white"
+                                                        : "bg-gray-800 hover:bg-gray-700"
                                                         }`}
                                                 >
                                                     <span className="font-medium">Página {pageNum}</span>
@@ -251,8 +257,8 @@ const PdfSidebarButton = ({
                                     <button
                                         onClick={() => toggleBookmark(selectedPage)}
                                         className={`w-full p-3 rounded-lg flex items-center justify-center gap-2 ${isBookmarked
-                                                ? "bg-yellow-600 hover:bg-yellow-500"
-                                                : "bg-gray-800 hover:bg-gray-700"
+                                            ? "bg-yellow-600 hover:bg-yellow-500"
+                                            : "bg-gray-800 hover:bg-gray-700"
                                             }`}
                                     >
                                         {isBookmarked ? <BookmarkSolidIcon className="w-5 h-5" /> : <BookmarkOutlineIcon className="w-5 h-5" />}

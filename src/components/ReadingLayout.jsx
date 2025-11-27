@@ -22,33 +22,37 @@ const ReadingLayout = ({ title, subtitle, theme, leftPanel, rightPanel, isPlayin
       <div className={`w-full max-w-7xl grid gap-10 items-start transition-all duration-700 ${isPlaying ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
 
         {/* Panel Izquierdo - Se oculta completamente al leer */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{
-            opacity: isPlaying ? 0 : 1,
-            y: isPlaying ? -20 : 0,
-            height: isPlaying ? 0 : 'auto',
-            display: isPlaying ? 'none' : 'block'
-          }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="w-full"
-        >
-          {leftPanel}
-        </motion.div>
+        {leftPanel && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{
+              opacity: isPlaying ? 0 : 1,
+              y: isPlaying ? -20 : 0,
+              height: isPlaying ? 0 : 'auto',
+              display: isPlaying ? 'none' : 'block'
+            }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="w-full"
+          >
+            {leftPanel}
+          </motion.div>
+        )}
 
         {/* Panel Derecho - Ocupa todo el espacio al leer */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{
-            opacity: rightPanel ? 1 : 0,
-            scale: rightPanel ? 1 : 0.95,
-            width: isPlaying ? '100%' : 'auto'
-          }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          className={`w-full h-full min-h-96 ${isPlaying ? 'flex justify-center' : ''}`}
-        >
-          {rightPanel}
-        </motion.div>
+        {rightPanel && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{
+              opacity: rightPanel ? 1 : 0,
+              scale: rightPanel ? 1 : 0.95,
+              width: isPlaying ? '100%' : 'auto'
+            }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className={`w-full h-full min-h-96 ${isPlaying ? 'flex justify-center' : ''}`}
+          >
+            {rightPanel}
+          </motion.div>
+        )}
       </div>
 
       {/* Footer opcional */}

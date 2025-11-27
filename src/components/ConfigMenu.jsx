@@ -128,7 +128,12 @@ const ConfigMenu = ({
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="text-gray-700 text-sm font-semibold">Velocidad</label>
-              <span className="text-blue-600 text-xs font-bold bg-blue-100 px-2 py-1 rounded-full">{speed} ms</span>
+              <div className="flex gap-2">
+                <span className="text-gray-500 text-xs font-medium self-center">
+                  ~{Math.round(60000 / speed)} ppm
+                </span>
+                <span className="text-blue-600 text-xs font-bold bg-blue-100 px-2 py-1 rounded-full">{speed} ms</span>
+              </div>
             </div>
             <input
               type="range"

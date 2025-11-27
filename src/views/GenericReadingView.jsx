@@ -9,6 +9,7 @@ import SaccadeReader from "../components/SaccadeReader";
 import ReadingLayout from "../components/ReadingLayout";
 import SideBar from "../components/SideBar";
 import HistoryModal from "../components/HistoryModal";
+import StatsModal from "../components/StatsModal";
 import PdfRenderer from "../components/PdfRenderer";
 import useWordViewerLogic from "../hooks/useWordViewerLogic";
 import { adultThemes } from "../config/themes";
@@ -27,7 +28,9 @@ const GenericReadingView = ({ modeId }) => {
     readingTechnique, setReadingTechnique, pdfPages, selectedPage, setSelectedPage,
     pdfName, bookmarks, toggleBookmark, pageNotes, addPageNote, goToNextPage,
     goToPreviousPage, handlePdfUpload, pdfFile, updatePageText, voices,
-    selectedVoice, setSelectedVoice, inputMode, setInputMode
+    selectedVoice, setSelectedVoice, inputMode, setInputMode,
+    removePageNote, exportProgress, readingProgress,
+    stats, achievements, newAchievement, clearNewAchievement
   } = useWordViewerLogic();
 
   const { setCurrentView } = useContext(AppContext);
@@ -35,6 +38,7 @@ const GenericReadingView = ({ modeId }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [ocrProgress, setOcrProgress] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1.0);
+  const [showStats, setShowStats] = useState(false);
   const pdfRendererRef = useRef(null);
 
   const mode = getModeById(modeId);
@@ -71,27 +75,19 @@ const GenericReadingView = ({ modeId }) => {
     }
   };
 
-  const leftPanel = (
-    <div className="w-full h-full flex items-center justify-center p-8">
-      <div className="w-full max-w-4xl">
-        {/* Estado inicial - Elige modo */}
-        {inputMode === null && (
-          <div className="text-center">
-            <h1 className="text-8xl font-black text-white mb-8 tracking-tighter">AILEER</h1>
-            <p className="text-2xl text-gray-400">Elige en la barra lateral<br />cómo quieres leer hoy</p>
-          </div>
-        )}
-
+  const leftPanel = inputMode === null ? null : (
+    <div className="w-full h-full flex items-center justify-center p-4 md:p-8">
+      <div className="w-full max-w-4xl h-full md:h-auto flex flex-col justify-center">
         {/* Modo Texto Manual */}
         {inputMode === 'text' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20 h-full min-h-96"
+            className="bg-white/10 backdrop-blur-xl rounded-3xl p-4 md:p-8 shadow-2xl border border-white/20 h-auto min-h-[50vh] md:min-h-96 flex flex-col"
           >
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">Escribe tu texto</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6 text-center">Escribe tu texto</h2>
             <textarea
-              className="w-full h-full min-h-96 bg-transparent text-white placeholder-gray-500 text-lg resize-none focus:outline-none"
+              className="w-full flex-1 bg-transparent text-white placeholder-gray-500 text-base md:text-lg resize-none focus:outline-none min-h-[300px]"
               placeholder="Escribe o pega aquí tu texto para leer..."
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -105,9 +101,9 @@ const GenericReadingView = ({ modeId }) => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-white/20"
+            className="bg-white/10 backdrop-blur-xl rounded-3xl p-4 md:p-6 shadow-2xl border border-white/20"
           >
-            <h2 className="text-xl font-bold text-white mb-4 truncate">{pdfName || "PDF cargado"}</h2>
+            <h2 className="text-lg md:text-xl font-bold text-white mb-4 truncate">{pdfName || "PDF cargado"}</h2>
 
             <div className="relative bg-black/50 rounded-2xl overflow-hidden mb-4">
               <PdfRenderer
@@ -125,19 +121,19 @@ const GenericReadingView = ({ modeId }) => {
             </div>
 
             <div className="flex justify-between items-center text-gray-300">
-              <span className="text-sm">Página {selectedPage} de {pdfPages.length}</span>
+              <span className="text-xs md:text-sm">Página {selectedPage} de {pdfPages.length}</span>
               <div className="flex gap-3">
                 <button
                   onClick={goToPreviousPage}
                   disabled={selectedPage <= 1}
-                  className="p-3 bg-gray-800 rounded-xl hover:bg-gray-700 disabled:opacity-50 transition"
+                  className="p-2 md:p-3 bg-gray-800 rounded-xl hover:bg-gray-700 disabled:opacity-50 transition"
                 >
                   ←
                 </button>
                 <button
                   onClick={goToNextPage}
                   disabled={selectedPage >= pdfPages.length}
-                  className="p-3 bg-gray-800 rounded-xl hover:bg-gray-700 disabled:opacity-50 transition"
+                  className="p-2 md:p-3 bg-gray-800 rounded-xl hover:bg-gray-700 disabled:opacity-50 transition"
                 >
                   →
                 </button>
@@ -162,14 +158,16 @@ const GenericReadingView = ({ modeId }) => {
     </div>
   );
 
-  const rightPanel = (
+  const showRightPanel = inputMode !== null && (isRunning || (inputMode === 'pdf' && words.length > 0));
+
+  const rightPanel = (!showRightPanel && !isCountingDown) ? null : (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: inputMode !== null ? 1 : 0, scale: inputMode !== null ? 1 : 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.6 }}
       className="w-full h-full flex flex-col justify-center items-center relative"
       style={{
-        backgroundImage: inputMode !== null ? backgroundUrl : 'linear-gradient(135deg, #0f0f23, #1a1a2e)',
+        backgroundImage: backgroundUrl,
         backgroundSize: "cover",
         backgroundPosition: "center"
       }}
@@ -197,13 +195,6 @@ const GenericReadingView = ({ modeId }) => {
         </motion.div>
       ) : (
         <>
-          {inputMode === null && (
-            <div className="text-center">
-              <h1 className="text-7xl font-black text-white mb-8">AILEER</h1>
-              <p className="text-2xl text-white/70">Elige en la barra lateral</p>
-            </div>
-          )}
-
           {inputMode !== null && words.length === 0 && inputMode === 'pdf' && (
             <button onClick={handleScanPage} className="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-xl text-xl">
               Escanear página con OCR
@@ -260,7 +251,7 @@ const GenericReadingView = ({ modeId }) => {
   );
 
   return (
-    <>
+    <div className="flex min-h-screen bg-gray-900">
       <SideBar
         isRunning={isRunning}
         hasText={text.trim().length > 0}
@@ -269,6 +260,7 @@ const GenericReadingView = ({ modeId }) => {
         resumeReading={resumeReading}
         stopReading={stopReading}
         setShowHistory={setShowHistory}
+        onHomeClick={() => setCurrentView('start')}
         voiceEnabled={voiceEnabled}
         setVoiceEnabled={setVoiceEnabled}
         speed={speed}
@@ -280,21 +272,58 @@ const GenericReadingView = ({ modeId }) => {
         isCountingDown={isCountingDown}
         currentIndex={currentIndex}
         totalWords={words.length}
-        subtitle={mode.subtitle}
-        theme={currentTheme}
-        leftPanel={leftPanel}
-        rightPanel={rightPanel}
-        isPlaying={isRunning}
+        theme={theme}
+        setTheme={setTheme}
+        readingTechnique={readingTechnique}
+        setReadingTechnique={setReadingTechnique}
+        currentTheme={currentTheme}
+        handlePdfUpload={handlePdfUpload}
+        voices={voices}
+        selectedVoice={selectedVoice}
+        setSelectedVoice={setSelectedVoice}
+        inputMode={inputMode}
+        setInputMode={setInputMode}
+        pdfPages={pdfPages}
+        selectedPage={selectedPage}
+        setSelectedPage={setSelectedPage}
+        pdfName={pdfName}
+        readingProgress={readingProgress}
+        bookmarks={bookmarks}
+        toggleBookmark={toggleBookmark}
+        pageNotes={pageNotes}
+        addPageNote={addPageNote}
+        removePageNote={removePageNote}
+        goToNextPage={goToNextPage}
+        goToPreviousPage={goToPreviousPage}
+        exportProgress={exportProgress}
+        setShowStats={setShowStats}
       />
-    </div >
+
+      <div className="w-full md:ml-20 transition-all duration-300">
+        <ReadingLayout
+          title="AILEER"
+          subtitle={mode.subtitle}
+          theme={currentTheme}
+          leftPanel={leftPanel}
+          rightPanel={rightPanel}
+          isPlaying={isRunning || isCountingDown}
+        />
+      </div>
 
       <HistoryModal
-        showHistory={showHistory}
-        setShowHistory={setShowHistory}
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
         history={history}
-        selectFromHistory={selectFromHistory}
+        onSelect={selectFromHistory}
       />
-    </>
+
+      <StatsModal
+        isOpen={showStats}
+        onClose={() => setShowStats(false)}
+        stats={stats}
+        achievements={achievements}
+      />
+    </div>
   );
 };
 
