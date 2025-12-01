@@ -19,35 +19,61 @@ const LineReader = ({
     if (fontFamily === "dyslexic") actualFont = "'OpenDyslexic', sans-serif";
     if (fontFamily === "comic") actualFont = "'Comic Neue', cursive";
 
-    // Calcular duración total de la animación en segundos
-    // speed es el intervalo base (ej. 200ms). multiplier es 8.
-    // Duración total = 200 * 8 = 1600ms = 1.6s
-    const duration = (speed * multiplier) / 1000;
+    // Calcular duración basada en la longitud de la línea (palabras)
+    // speed es ms por palabra (aprox). 
+    // Si speed = 200ms, una línea de 5 palabras debería tomar 1000ms (1s).
+    const wordCount = line.split(' ').length;
+    // Ajuste fino: agregamos un pequeño buffer base para líneas muy cortas
+    const baseDuration = (wordCount * speed) / 1000;
+    const duration = Math.max(0.8, baseDuration); // Mínimo 0.8s para que no sea instantáneo
 
     return (
-        <div className="relative w-full max-w-4xl mx-auto p-8 rounded-xl overflow-hidden">
-            {/* Texto de la línea */}
-            <div
-                className="text-center leading-relaxed tracking-wide mb-4"
-                style={{
-                    fontSize: `${fontSize}px`,
-                    fontFamily: actualFont,
-                    color: themeStyle.textColor,
-                }}
-            >
-                {line}
-            </div>
+        <div className="relative w-full max-w-4xl mx-auto p-4 md:p-8 flex items-center justify-center min-h-[200px]">
+            {/* Contenedor tipo tarjeta para agrupar visualmente */}
+            <div className="relative w-full bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 md:p-10 shadow-xl overflow-hidden">
 
-            {/* Guía visual animada */}
-            <div className="w-full h-1 bg-gray-700/30 rounded-full mt-2 overflow-hidden relative">
-                <motion.div
-                    key={line} // Reinicia la animación cuando cambia la línea
-                    initial={{ x: "-100%" }}
-                    animate={{ x: "0%" }}
-                    transition={{ duration: duration, ease: "linear" }}
-                    className="absolute top-0 left-0 w-full h-full"
-                    style={{ backgroundColor: themeStyle.highlight }}
-                />
+                {/* Texto de la línea */}
+                <div className="relative">
+                    <div
+                        className="text-center leading-relaxed tracking-wide mb-6 relative z-10"
+                        style={{
+                            fontSize: `${fontSize}px`,
+                            fontFamily: actualFont,
+                            color: themeStyle.textColor,
+                        }}
+                    >
+                        {line}
+                    </div>
+
+                    {/* Overlay de desenfoque (Trailing Blur) */}
+                    {/* Se mueve de izquierda a derecha, desenfocando lo que queda atrás */}
+                    <motion.div
+                        key={`blur-${line}`}
+                        initial={{ width: "0%" }}
+                        animate={{ width: "100%" }}
+                        transition={{ duration: duration, ease: "linear" }}
+                        className="absolute top-0 left-0 h-full z-20 pointer-events-none"
+                        style={{
+                            backdropFilter: "blur(4px)",
+                            WebkitBackdropFilter: "blur(4px)",
+                            background: "linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)",
+                            maskImage: "linear-gradient(to right, black 90%, transparent 100%)",
+                            WebkitMaskImage: "linear-gradient(to right, black 90%, transparent 100%)"
+                        }}
+                    />
+                </div>
+
+                {/* Guía visual animada (Barra de progreso) */}
+                <div className="w-full h-1.5 bg-gray-700/30 rounded-full mt-2 overflow-hidden relative">
+                    <motion.div
+                        key={line} // Reinicia la animación cuando cambia la línea
+                        initial={{ x: "-100%" }}
+                        animate={{ x: "0%" }}
+                        transition={{ duration: duration, ease: "linear" }}
+                        className="absolute top-0 left-0 w-full h-full"
+                        style={{ backgroundColor: themeStyle.highlight }}
+                    />
+                </div>
             </div>
         </div>
     );

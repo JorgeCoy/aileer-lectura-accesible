@@ -10,14 +10,14 @@ const useReadingEngine = ({ words, options }) => {
     const [speed, setSpeed] = useState(300);
 
     const startReading = useCallback(() => {
-        console.log("🚀 startReading llamado");
+        console.warn("🚀 startReading llamado");
         if (words.length > 0) {
             setIsCountingDown(true);
             setCountdownValue(5);
             setCurrentIndex(0);
-            console.log("✅ Conteo iniciado, palabras:", words);
+            console.warn("✅ Conteo iniciado, palabras:", words.length);
         } else {
-            console.log("❌ No hay palabras para leer");
+            console.warn("❌ No hay palabras para leer");
         }
     }, [words]);
 

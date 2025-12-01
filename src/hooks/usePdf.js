@@ -70,7 +70,7 @@ const usePdf = ({ enablePdf, setText, isRunning = false }) => {
                 totalTimeReading: prev.totalTimeReading + timeSpent,
             }));
         };
-    }, [selectedPage, isRunning]);
+    }, [selectedPage, isRunning, pageStartTime]);
 
     // Marcar página como leída
     useEffect(() => {

@@ -10,7 +10,6 @@ const WarmUpView = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(5);
   const [mode, setMode] = useState('reading-path');
-  const [showControls, setShowControls] = useState(true);
   const [isFlipping, setIsFlipping] = useState(false);
   const [resetKey, setResetKey] = useState(0);
 
@@ -387,8 +386,6 @@ const WarmUpView = () => {
       {/* Controles */}
       <motion.div
         animate={{ opacity: isPlaying ? 0.15 : 1 }}
-        onMouseEnter={() => isPlaying && setShowControls(true)}
-        onMouseLeave={() => isPlaying && setShowControls(false)}
         className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-2xl p-4 md:p-8 rounded-3xl border border-white/30 shadow-2xl z-50 w-[92%] md:w-auto"
       >
         <div className="flex flex-col gap-4 md:gap-6">

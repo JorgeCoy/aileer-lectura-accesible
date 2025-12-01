@@ -32,6 +32,28 @@ Ofrecemos múltiples modos para adaptarse a tu estilo y objetivos de entrenamien
 ### 🔊 Lectura en Voz Alta (TTS)
 *   Integración con las voces del sistema para leer el texto en voz alta mientras sigues visualmente.
 
+## 📱 Funcionamiento Offline (PWA)
+
+**aLeer está diseñado para funcionar completamente sin conexión a internet**, ideal para:
+
+- **Zonas rurales** sin acceso continuo a internet
+- **Viajes** en avión, tren o áreas remotas
+- **Escuelas** con infraestructura limitada
+- **Usuarios** con planes de datos limitados
+
+### ✅ Características Offline:
+- **Lectura completa** sin conexión
+- **Progreso guardado** automáticamente localmente
+- **Planes de estudio** accesibles sin internet
+- **Tests de evaluación** funcionales offline
+- **Fuentes especializadas** (OpenDyslexic) incluidas localmente
+- **PDF processing** sin dependencias externas
+
+### 🔄 Sincronización Inteligente:
+- Cuando recuperes conexión, **los datos se sincronizan automáticamente**
+- **Indicador de conectividad** muestra el estado de conexión
+- **Fallback automático** cuando no hay internet
+
 ## 🛠️ Tecnologías Utilizadas
 *   **Frontend**: React, Vite
 *   **Estilos**: Tailwind CSS

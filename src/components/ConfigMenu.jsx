@@ -4,7 +4,10 @@ import {
   XMarkIcon,
   AdjustmentsHorizontalIcon,
   LanguageIcon,
-  SpeakerWaveIcon
+  SpeakerWaveIcon,
+  EyeIcon,
+  ArrowPathIcon,
+  AcademicCapIcon
 } from "@heroicons/react/24/outline";
 
 const ConfigMenu = ({
@@ -22,7 +25,13 @@ const ConfigMenu = ({
   setReadingTechnique,
   voices,
   selectedVoice,
-  setSelectedVoice
+  setSelectedVoice,
+  previewMode,
+  setPreviewMode,
+  repeatedReadingMode,
+  setRepeatedReadingMode,
+  memoryExerciseMode,
+  setMemoryExerciseMode
 }) => {
   const menuRef = useRef(null);
 
@@ -114,13 +123,15 @@ const ConfigMenu = ({
               onChange={(e) => setReadingTechnique(e.target.value)}
               className="w-full p-2 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none text-sm transition-all text-gray-900"
             >
-              <option value="singleWord">🅰️ Una palabra (RSVP)</option>
+              <option value="singleWord">🎯 Una palabra (RSVP Optimizado)</option>
               <option value="bionic">🧠 Biónica (Bionic Reading)</option>
               <option value="chunking">📦 Chunking (Grupos)</option>
               <option value="lineFocus">📏 Línea por Puntos (Line Focus)</option>
-              <option value="paragraphFocus">¶ Párrafo con Foco (Paragraph Focus)</option>
-              <option value="spritz">⚡ Meta-guide (Spritz)</option>
+              <option value="paragraphFocus">🎯 Lectura por Frases (Paragraph Focus - Optimizada)</option>
+              <option value="spritz">🎯 Meta-guide (Spritz Optimizado)</option>
               <option value="saccade">👀 Entrenamiento Sacádico</option>
+              <option value="preview">👁️ Previewing (Palabras Clave)</option>
+              <option value="cloze">🎓 Ejercicio de Memoria (Cloze)</option>
             </select>
           </div>
 
@@ -208,6 +219,58 @@ const ConfigMenu = ({
               </select>
             </div>
           )}
+
+          {/* Preview Mode Toggle */}
+          <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+            <div className="flex items-center gap-2">
+              <EyeIcon className="w-5 h-5 text-gray-600" />
+              <span className="text-gray-700 font-medium">Modo Preview</span>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={previewMode}
+                onChange={(e) => setPreviewMode(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
+
+          {/* Repeated Reading Toggle */}
+          <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+            <div className="flex items-center gap-2">
+              <ArrowPathIcon className="w-5 h-5 text-gray-600" />
+              <span className="text-gray-700 font-medium">Lectura Repetida (3x)</span>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={repeatedReadingMode}
+                onChange={(e) => setRepeatedReadingMode(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
+
+          {/* Memory Exercise Toggle */}
+          <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+            <div className="flex items-center gap-2">
+              <AcademicCapIcon className="w-5 h-5 text-gray-600" />
+              <span className="text-gray-700 font-medium">Ejercicio de Memoria</span>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={memoryExerciseMode}
+                onChange={(e) => setMemoryExerciseMode(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
+
         </div>
       </div>
     </>

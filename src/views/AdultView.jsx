@@ -2,8 +2,8 @@
 import React from "react";
 import GenericReadingView from "./GenericReadingView";
 
-const AdultView = () => {
-  return <GenericReadingView modeId="adult" />;
+const AdultView = ({ moduleContext }) => {
+  return <GenericReadingView modeId="adult" moduleContext={moduleContext} />;
 };
 
 export default AdultView;

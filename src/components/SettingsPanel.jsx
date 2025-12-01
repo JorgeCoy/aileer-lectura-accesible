@@ -96,6 +96,22 @@ const SettingsPanel = ({
         </select>
       </div>
 
+      {/* Danger Zone */}
+      <div className="mb-6 pt-4 border-t border-gray-200">
+        <label className="block text-sm font-bold text-red-600 mb-2">⚠️ Zona de Peligro</label>
+        <button
+          onClick={() => {
+            if (window.confirm('¿Estás seguro? Esto borrará todo tu progreso y volverás al inicio.')) {
+              localStorage.clear();
+              window.location.reload();
+            }
+          }}
+          className="w-full bg-red-100 hover:bg-red-200 text-red-700 py-2 rounded transition font-medium text-sm"
+        >
+          🗑️ Borrar Progreso y Reiniciar
+        </button>
+      </div>
+
       {/* Botón Aplicar → Eliminado, se aplica en tiempo real */}
       {<button
         onClick={onClose}

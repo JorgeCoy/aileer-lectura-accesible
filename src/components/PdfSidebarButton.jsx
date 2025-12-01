@@ -12,6 +12,7 @@ import {
     XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { BookmarkIcon as BookmarkOutlineIcon } from "@heroicons/react/24/outline";
+import Tooltip from "./Tooltip";
 
 const PdfSidebarButton = ({
     handlePdfUpload,
@@ -46,7 +47,7 @@ const PdfSidebarButton = ({
 
         try {
             const pdfjsLib = await import("pdfjs-dist");
-            pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
 
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -87,52 +88,53 @@ const PdfSidebarButton = ({
     };
 
     // ✅ Clases dinámicas para botones
-    const buttonClass = `mb-3 rounded-xl transition-all duration-300 flex items-center shadow-md hover:shadow-lg hover:scale-105 relative ${isMobileOpen ? "w-full px-4 py-3 justify-start" : "p-3 justify-center"
+    const buttonClass = `mb-2 rounded-xl transition-all duration-300 flex items-center shadow-md hover:shadow-lg hover:scale-105 relative ${isMobileOpen ? "w-full px-4 py-2 justify-start" : "p-3 justify-center"
         } ${hasPdf ? "bg-purple-600 text-white hover:bg-purple-500" : "bg-gray-700 text-gray-300 hover:bg-gray-600"}`;
 
     return (
         <>
             {/* Botón principal en sidebar */}
-            <button
-                onClick={() => (hasPdf ? setIsExpanded(!isExpanded) : fileInputRef.current?.click())}
-                className={buttonClass}
-                aria-label={hasPdf ? "Gestionar PDF" : "Subir PDF"}
-                title={hasPdf ? `${pdfName} (${Math.round(readingProgress)}%)` : "Subir PDF"}
-            >
-                <DocumentTextIcon className="w-6 h-6 flex-shrink-0" />
-                {Label && <Label text={hasPdf ? "Gestionar PDF" : "Subir PDF"} />}
+            <Tooltip text={hasPdf ? `${pdfName} (${Math.round(readingProgress)}%)` : "Subir PDF"} placement={isMobileOpen ? "right" : "top"}>
+                <button
+                    onClick={() => (hasPdf ? setIsExpanded(!isExpanded) : fileInputRef.current?.click())}
+                    className={buttonClass}
+                    aria-label={hasPdf ? "Gestionar PDF" : "Subir PDF"}
+                >
+                    <DocumentTextIcon className="w-6 h-6 flex-shrink-0" />
+                    {Label && <Label text={hasPdf ? "Gestionar PDF" : "Subir PDF"} />}
 
-                {/* Badge con número de páginas */}
-                {hasPdf && !isMobileOpen && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                        {pdfPages.length}
-                    </span>
-                )}
+                    {/* Badge con número de páginas */}
+                    {hasPdf && !isMobileOpen && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                            {pdfPages.length}
+                        </span>
+                    )}
 
-                {/* Barra de progreso circular */}
-                {hasPdf && readingProgress > 0 && !isMobileOpen && (
-                    <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none">
-                        <circle
-                            cx="50%"
-                            cy="50%"
-                            r="45%"
-                            fill="none"
-                            stroke="rgba(255,255,255,0.2)"
-                            strokeWidth="2"
-                        />
-                        <circle
-                            cx="50%"
-                            cy="50%"
-                            r="45%"
-                            fill="none"
-                            stroke="white"
-                            strokeWidth="2"
-                            strokeDasharray={`${readingProgress * 2.8} 280`}
-                            className="transition-all duration-500"
-                        />
-                    </svg>
-                )}
-            </button>
+                    {/* Barra de progreso circular */}
+                    {hasPdf && readingProgress > 0 && !isMobileOpen && (
+                        <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none">
+                            <circle
+                                cx="50%"
+                                cy="50%"
+                                r="45%"
+                                fill="none"
+                                stroke="rgba(255,255,255,0.2)"
+                                strokeWidth="2"
+                            />
+                            <circle
+                                cx="50%"
+                                cy="50%"
+                                r="45%"
+                                fill="none"
+                                stroke="white"
+                                strokeWidth="2"
+                                strokeDasharray={`${readingProgress * 2.8} 280`}
+                                className="transition-all duration-500"
+                            />
+                        </svg>
+                    )}
+                </button>
+            </Tooltip>
 
             {/* Input oculto para cargar PDF */}
             <input

@@ -2,8 +2,8 @@
 import React from "react";
 import GenericReadingView from "./GenericReadingView";
 
-const KidView = () => {
-  return <GenericReadingView modeId="child" />;
+const KidView = ({ moduleContext }) => {
+  return <GenericReadingView modeId="child" moduleContext={moduleContext} />;
 };
 
 export default KidView;

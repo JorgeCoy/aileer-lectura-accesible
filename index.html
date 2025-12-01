@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
 
-  <!-- ===== ESTO ES LO QUE HACE QUE SE VEA BRUTAL EN CELULAR ===== -->
+  <!-- ===== VIEWPORT Y PWA ===== -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#ffffff" />
   <link rel="apple-touch-icon" href="/pwa-192x192.png" />
@@ -13,10 +13,25 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
+  <!-- ===== PERFORMANCE OPTIMIZATIONS ===== -->
+  <!-- Preload critical resources -->
+  <!-- Resource hints for Core Web Vitals -->
+  <link rel="modulepreload" href="/src/main.jsx" />
+
   <title>aLeer - Lectura Accesible</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description"
+    content="Herramienta avanzada de lectura accesible con técnicas de velocidad de lectura, soporte PDF y entrenamiento visual" />
+  <meta name="keywords" content="lectura, velocidad, accesibilidad, PDF, entrenamiento visual, dislexia" />
+  <meta name="author" content="aLeer Team" />
+  <meta property="og:title" content="aLeer - Lectura Accesible" />
+  <meta property="og:description"
+    content="Herramienta avanzada de lectura accesible con técnicas de velocidad de lectura" />
+  <meta property="og:type" content="website" />
 </head>
 
-<body class="bg-black">
+<body>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>

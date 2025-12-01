@@ -28,22 +28,22 @@ const PdfRenderer = forwardRef(({ file, pageNumber, zoom = 1 }, ref) => {
                 if (isMounted) setLoading(true);
                 setError(null);
 
-                console.log("PdfRenderer: Iniciando renderizado...", { pageNumber, zoom });
+                console.warn("PdfRenderer: Iniciando renderizado...", { pageNumber, zoom });
 
                 const pdfjsLib = await import("pdfjs-dist");
-                // Asegurar que usamos la versión correcta del worker
+                // Usar worker local para funcionamiento offline
                 if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-                    pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
                 }
 
-                console.log("PdfRenderer: Cargando documento...");
+                console.warn("PdfRenderer: Cargando documento...");
                 const arrayBuffer = await file.arrayBuffer();
                 const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
                 const pdf = await loadingTask.promise;
 
                 if (!isMounted) return;
 
-                console.log("PdfRenderer: Documento cargado. Obteniendo página...");
+                console.warn("PdfRenderer: Documento cargado. Obteniendo página...");
                 const page = await pdf.getPage(pageNumber);
 
                 // Calcular escala para ajustar al ancho del contenedor
@@ -79,10 +79,10 @@ const PdfRenderer = forwardRef(({ file, pageNumber, zoom = 1 }, ref) => {
                     viewport: scaledViewport
                 };
 
-                console.log("PdfRenderer: Renderizando en canvas...");
+                console.warn("PdfRenderer: Renderizando en canvas...");
                 renderTask = page.render(renderContext);
                 await renderTask.promise;
-                console.log("PdfRenderer: Renderizado completado");
+                console.warn("PdfRenderer: Renderizado completado");
 
                 if (isMounted) setLoading(false);
             } catch (err) {

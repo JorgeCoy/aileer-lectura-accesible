@@ -48,7 +48,7 @@ const useKeyboardShortcuts = ({ onSpace, onEsc, onArrowUp, onArrowDown }, deps =
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, deps);
+    }, [...deps, onSpace, onArrowDown, onArrowUp, onEsc]);
 };
 
 export default useKeyboardShortcuts;

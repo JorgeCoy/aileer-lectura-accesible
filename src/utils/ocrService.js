@@ -14,7 +14,7 @@ let currentProgressCallback = null;
  */
 const getWorker = async () => {
     if (!worker) {
-        console.log("OCR: Creando nuevo worker Tesseract...");
+        console.warn("OCR: Creando nuevo worker Tesseract...");
         try {
             worker = await createWorker('spa', 1, {
                 logger: m => {
@@ -23,7 +23,7 @@ const getWorker = async () => {
                     }
                 }
             });
-            console.log("OCR: Worker creado exitosamente");
+            console.warn("OCR: Worker creado exitosamente");
         } catch (e) {
             console.error("OCR: Error creando worker", e);
             throw e;
@@ -39,13 +39,13 @@ const getWorker = async () => {
  * @returns {Promise<string>} Texto extraído
  */
 export const recognizePage = async (imageSource, progressCallback = null) => {
-    console.log("OCR: Iniciando reconocimiento...");
+    console.warn("OCR: Iniciando reconocimiento...");
     try {
         currentProgressCallback = progressCallback;
         const w = await getWorker();
-        console.log("OCR: Worker obtenido, ejecutando recognize...");
+        console.warn("OCR: Worker obtenido, ejecutando recognize...");
         const { data: { text } } = await w.recognize(imageSource);
-        console.log("OCR: Reconocimiento completado. Longitud texto:", text.length);
+        console.warn("OCR: Reconocimiento completado. Longitud texto:", text.length);
         currentProgressCallback = null;
         return text;
     } catch (error) {
@@ -65,3 +65,8 @@ export const terminateWorker = async () => {
         worker = null;
     }
 };
+
+// Exportar funciones individuales para DI
+export const getWorkerInstance = () => getWorker();
+export const recognizePageInstance = (imageSource, progressCallback) => recognizePage(imageSource, progressCallback);
+export const terminateWorkerInstance = () => terminateWorker();

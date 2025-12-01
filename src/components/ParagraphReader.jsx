@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { adultThemes } from "../config/themes";
 
 const ParagraphReader = ({
@@ -7,9 +7,10 @@ const ParagraphReader = ({
     theme = "minimalist",
     fontSize = 32,
     fontFamily = "sans-serif",
-    windowSize = 60 // Cantidad de palabras a mostrar (contexto)
+    windowSize = 80, // Aumentado para mejor contexto
+    focusPhraseSize = 3, // Frase completa en foco (reducido para menos dependencia)
+    previewWords = 6 // Palabras de preview adelante (reducido para menos distracción)
 }) => {
-    const containerRef = useRef(null);
     const activeWordRef = useRef(null);
 
     // Obtener colores del tema actual
@@ -21,11 +22,18 @@ const ParagraphReader = ({
     if (fontFamily === "dyslexic") actualFont = "'OpenDyslexic', sans-serif";
     if (fontFamily === "comic") actualFont = "'Comic Neue', cursive";
 
-    // Calcular el rango de palabras a mostrar (Paginación Estática)
-    // En lugar de mover la ventana palabra por palabra (que causa reflow),
-    // mostramos un bloque estático y movemos solo el resaltado.
-    // Cuando el lector llega al final del bloque, cambiamos de página.
+    /**
+     * Técnica Paragraph Focus Mejorada:
+     * Evita el "seguimiento como gusano" con zonas sutiles de atención
+     *
+     * Estrategia:
+     * - NO usa colores brillantes que creen dependencia visual
+     * - Usa opacidades graduales para guiar naturalmente
+     * - Reduce el contraste agresivo
+     * - Entrena la visión periférica en lugar del seguimiento
+     */
 
+    // Paginación por párrafos completos
     const pageIndex = Math.floor(currentIndex / windowSize);
     const start = pageIndex * windowSize;
     const end = Math.min(words.length, start + windowSize);
@@ -37,38 +45,86 @@ const ParagraphReader = ({
         <div
             className="w-full max-w-4xl mx-auto p-8 rounded-3xl transition-colors duration-500"
             style={{
-                backgroundColor: theme === 'minimalist' ? 'transparent' : 'rgba(0,0,0,0.2)', // Fondo sutil para separar
-                backdropFilter: "blur(10px)"
+                backgroundColor: theme === 'minimalist' ? 'transparent' : 'rgba(0,0,0,0.05)',
+                backdropFilter: "blur(5px)"
             }}
         >
             <div
-                className="flex flex-wrap justify-center content-center gap-x-3 gap-y-4 leading-relaxed transition-all duration-300"
+                className="flex flex-wrap justify-center content-center gap-x-2 gap-y-3 leading-relaxed"
                 style={{
                     fontFamily: actualFont,
-                    fontSize: `${fontSize * 0.6}px`, // Un poco más pequeño que RSVP para que quepa el párrafo
-                    color: themeStyle.textColor
+                    fontSize: `${fontSize * 0.65}px`,
+                    color: themeStyle.textColor,
+                    lineHeight: '1.6'
                 }}
             >
                 {visibleWords.map((word, index) => {
-                    const isActive = index === activeIndexInWindow;
-                    const isPast = index < activeIndexInWindow;
+                    const dist = index - activeIndexInWindow;
+
+                    // Zonas de atención sutiles (no cursor brillante)
+                    const isCurrentFocus = dist >= 0 && dist < focusPhraseSize;  // Zona de procesamiento actual
+                    const isPreviewZone = dist >= focusPhraseSize && dist < (focusPhraseSize + previewWords); // Preparación visual
+                    const isPast = dist < 0; // Ya procesado
+
+                    // Es la primera palabra de la zona actual (referencia sutil)
+                    const isZoneStart = dist === 0;
 
                     return (
                         <span
                             key={start + index}
-                            ref={isActive ? activeWordRef : null}
-                            className={`transition-all duration-200 rounded px-1 ${isActive ? 'scale-110 font-bold' : ''}`}
+                            ref={isZoneStart ? activeWordRef : null}
+                            className="transition-all duration-500 ease-out"
                             style={{
-                                color: isActive ? themeStyle.highlight : (isPast ? themeStyle.textColor : themeStyle.textColor),
-                                opacity: isActive ? 1 : (isPast ? 0.6 : 0.4), // Pasado un poco visible, futuro más tenue
-                                backgroundColor: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
-                                textShadow: isActive ? `0 0 15px ${themeStyle.highlight}` : 'none'
+                                // Colores muy sutiles - casi imperceptibles
+                                color: isCurrentFocus
+                                    ? themeStyle.textColor // Texto normal para zona activa
+                                    : isPreviewZone
+                                    ? '#6B7280' // Gris sutil para preview
+                                    : isPast
+                                    ? '#4B5563' // Gris más oscuro para pasado
+                                    : '#9CA3AF', // Gris muy tenue para contexto lejano
+
+                                // Opacidades graduales - guía natural
+                                opacity: isCurrentFocus
+                                    ? 1.0 // Completamente visible
+                                    : isPreviewZone
+                                    ? 0.7 // Visible pero no distractivo
+                                    : isPast
+                                    ? 0.5 // Atenuado pero legible
+                                    : 0.3, // Muy atenuado para contexto
+
+                                // Sin escalas agresivas - cambios sutiles
+                                fontWeight: isCurrentFocus ? '400' : '300',
+                                letterSpacing: isCurrentFocus ? '0.01em' : 'normal',
+
+                                // Sin fondos ni sombras brillantes
+                                backgroundColor: 'transparent',
+                                textShadow: 'none',
+
+                                // Padding mínimo
+                                padding: '0 0.1em',
+
+                                // Transición suave para cambios naturales
+                                transition: 'all 0.5s ease-in-out'
                             }}
                         >
                             {word}
                         </span>
                     );
                 })}
+            </div>
+
+            {/* Indicador de progreso sutil (opcional) */}
+            <div className="mt-4 text-center">
+                <div className="inline-block w-32 h-1 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                        className="h-full bg-blue-300 transition-all duration-300 ease-out"
+                        style={{
+                            width: `${((activeIndexInWindow + 1) / visibleWords.length) * 100}%`,
+                            opacity: 0.4 // Muy sutil
+                        }}
+                    />
+                </div>
             </div>
         </div>
     );
