@@ -47,7 +47,8 @@ const PdfSidebarButton = ({
 
         try {
             const pdfjsLib = await import("pdfjs-dist");
-            pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
+            const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
+            pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;

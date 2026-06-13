@@ -130,6 +130,7 @@ const ConfigMenu = ({
               <option value="paragraphFocus">🎯 Lectura por Frases (Paragraph Focus - Optimizada)</option>
               <option value="spritz">🎯 Meta-guide (Spritz Optimizado)</option>
               <option value="saccade">👀 Entrenamiento Sacádico</option>
+              <option value="saccadicFocus">👀 Salto Sacádico Guiado (Saccadic Focus)</option>
               <option value="preview">👁️ Previewing (Palabras Clave)</option>
               <option value="cloze">🎓 Ejercicio de Memoria (Cloze)</option>
             </select>

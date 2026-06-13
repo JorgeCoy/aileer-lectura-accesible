@@ -74,7 +74,17 @@ const SideBar = ({
   previewMode,
   setPreviewMode,
   memoryExerciseMode,
-  setMemoryExerciseMode
+  setMemoryExerciseMode,
+  // Preview mode restrictions
+  hideAdvancedFeatures = false,
+  hideStudyPlans = false,
+  hideHistory = false,
+  hideStats = false,
+  hidePdfUpload = false,
+  // Override sidebar mode (for preview)
+  forcedSidebarMode,
+  // Positioning mode (for embedded usage like preview)
+  positionMode = 'fixed' // 'fixed' | 'embedded'
 }) => {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -115,14 +125,22 @@ const SideBar = ({
   const canResume = currentIndex > 0 && currentIndex < totalWords - 1;
 
   // ✅ Clases dinámicas para botones
-  const buttonClass = `mb-2 rounded-xl transition-all duration-300 flex items-center shadow-md hover:shadow-lg hover:scale-105 ${isMobileOpen ? "w-full px-4 py-2 justify-start" : "p-3 justify-center"}`;
+  const buttonClass = `mb-2 rounded-xl transition-all duration-300 flex items-center shadow-md hover:shadow-lg hover:scale-105 ${positionMode === 'embedded'
+    ? "w-full px-4 py-2 justify-start" // En embedded, siempre ancho completo con texto
+    : (isMobileOpen ? "w-full px-4 py-2 justify-start" : "p-3 justify-center")
+    }`;
   const inactiveClass = "bg-gray-700 text-gray-300 hover:bg-gray-600";
   const activeModeClass = "bg-indigo-600 text-white ring-2 ring-indigo-400";
 
-  // ✅ Helper para renderizar texto solo en móvil abierto
-  const Label = ({ text }) => (
-    isMobileOpen ? <span className="ml-3 font-medium text-sm md:hidden animate-fadeIn">{text}</span> : null
-  );
+  // ✅ Helper para renderizar texto según el modo
+  const Label = ({ text }) => {
+    if (positionMode === 'embedded') {
+      // En modo embedded, siempre mostrar etiquetas
+      return <span className="ml-3 font-medium text-sm animate-fadeIn">{text}</span>;
+    }
+    // En modo fixed, solo mostrar en móvil abierto
+    return isMobileOpen ? <span className="ml-3 font-medium text-sm md:hidden animate-fadeIn">{text}</span> : null;
+  };
 
   // Iconos principales siempre visibles
   const mainIcons = [
@@ -266,33 +284,54 @@ const SideBar = ({
 
   // Determinar qué iconos mostrar
   const getVisibleIcons = () => {
-    if (sidebarMode === 'practice') {
-      return practiceIcons;
-    } else if (sidebarMode === 'study') {
-      return studyIcons;
+    const currentMode = forcedSidebarMode || sidebarMode;
+    let icons;
+    if (currentMode === 'practice') {
+      icons = practiceIcons;
+    } else if (currentMode === 'study') {
+      icons = studyIcons;
+    } else {
+      return [];
     }
-    return [];
+
+    // Filtrar iconos ocultos en modo preview
+    icons = icons.filter(icon => {
+      if (hideStats && icon.id === 'stats') return false;
+      if (hideHistory && icon.id === 'history') return false;
+      if (hideStudyPlans && icon.id === 'plans') return false;
+      if (hidePdfUpload && icon.id === 'upload') return false;
+      if (hideAdvancedFeatures && (icon.id === 'voice' || icon.id === 'memory' || icon.id === 'preview')) return false;
+      return true;
+    });
+
+    return icons;
   };
 
   return (
     <>
-      {/* Mobile Bubble Toggle */}
-      <button
-        onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className={`md:hidden fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-2xl transition-all duration-300 ${isMobileOpen ? 'bg-red-500' : 'bg-blue-600 hover:scale-110'} ${isRunning ? 'opacity-30 hover:opacity-100' : ''}`}
-      >
-        {isMobileOpen ? (
-          <XMarkIcon className="w-8 h-8 text-white" />
-        ) : (
-          <Bars3Icon className="w-8 h-8 text-white" />
-        )}
-      </button>
+      {/* Mobile Bubble Toggle - Only in fixed mode */}
+      {positionMode === 'fixed' && (
+        <button
+          onClick={() => setIsMobileOpen(!isMobileOpen)}
+          className={`md:hidden fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-2xl transition-all duration-300 ${isMobileOpen ? 'bg-red-500' : 'bg-blue-600 hover:scale-110'} ${isRunning ? 'opacity-30 hover:opacity-100' : ''}`}
+        >
+          {isMobileOpen ? (
+            <XMarkIcon className="w-8 h-8 text-white" />
+          ) : (
+            <Bars3Icon className="w-8 h-8 text-white" />
+          )}
+        </button>
+      )}
 
       {/* Sidebar Container */}
-      <div className={`fixed left-0 top-0 h-full bg-gray-900/95 backdrop-blur-md text-white flex flex-col items-center z-40 shadow-2xl transition-all duration-300 ease-in-out overflow-y-auto scrollbar-hide
-        ${isRunning ? "w-20 justify-center" : (isMobileOpen ? `w-64 ${isLandscape ? "px-2 py-2" : "px-4 py-4"}` : "w-20")}
-        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-      `}>
+      <div className={`${positionMode === 'embedded'
+        ? 'relative h-full bg-gray-900/95 backdrop-blur-md border-r border-gray-700 text-white flex flex-col items-center shadow-xl overflow-y-auto scrollbar-hide w-full z-10'
+        : 'fixed left-0 top-0 h-full bg-gray-900/95 backdrop-blur-md text-white flex flex-col items-center z-40 shadow-2xl transition-all duration-300 ease-in-out overflow-y-auto scrollbar-hide'
+        } ${positionMode === 'embedded'
+          ? '' // Width handled in base class
+          : (isRunning ? "w-20 justify-center" : (isMobileOpen ? `w-64 ${isLandscape ? "px-2 py-2" : "px-4 py-4"}` : "w-20"))
+        } ${positionMode === 'embedded' ? '' : (isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0')
+        }`}>
 
         {/* Iconos principales siempre visibles */}
         <div className={`flex flex-col items-center w-full ${isLandscape && isMobileOpen ? "space-y-1" : "space-y-2"}`}>
@@ -309,7 +348,7 @@ const SideBar = ({
           ))}
 
           {/* Mostrar racha solo en modo estudio */}
-          {sidebarMode === 'study' && (
+          {(forcedSidebarMode || sidebarMode) === 'study' && (
             <Tooltip text={`Racha: ${streak} días`} placement={isMobileOpen ? "right" : "top"}>
               <div className={`mb-4 ${isMobileOpen ? "w-full flex items-center bg-gray-800 p-2 rounded-xl" : ""}`}>
                 <div className="p-2 rounded-full bg-orange-500/20 border border-orange-500/30 flex-shrink-0">
@@ -325,18 +364,18 @@ const SideBar = ({
           )}
 
           {/* Separador */}
-          {sidebarMode && (
+          {(forcedSidebarMode || sidebarMode) && (
             <div className={`h-px bg-gray-700 my-3 ${isMobileOpen ? "w-full" : "w-10"}`}></div>
           )}
         </div>
 
         {/* Iconos específicos del modo seleccionado */}
-        {sidebarMode && (
+        {(forcedSidebarMode || sidebarMode) && (
           <div className={`flex flex-col items-center w-full ${isLandscape && isMobileOpen ? "space-y-1" : "space-y-2"}`}>
 
             {/* MODO PRÁCTICA PERSONAL */}
 
-            {sidebarMode === 'practice' && (
+            {(forcedSidebarMode || sidebarMode) === 'practice' && (
               <>
                 {/* Renderizar iconos de práctica */}
                 {practiceIcons.map((iconItem) => {
@@ -359,7 +398,7 @@ const SideBar = ({
               </>
             )}
 
-            {sidebarMode === 'study' && studyIcons.length > 0 && (
+            {(forcedSidebarMode || sidebarMode) === 'study' && studyIcons.length > 0 && (
               <>
                 {/* Renderizar iconos de estudio */}
                 {studyIcons.map((iconItem) => (
@@ -379,13 +418,17 @@ const SideBar = ({
         )}
 
         {/* --- CONTROLES DE REPRODUCCIÓN (COMÚN) --- */}
-        <div className={`${isRunning ? "justify-center flex-1" : `mt-auto w-full ${isLandscape && isMobileOpen ? "mb-4" : "mb-8"}`} ${isLandscape && isMobileOpen ? "flex flex-row items-center justify-center space-x-3 px-2" : "flex flex-col items-center space-y-4"}`}>
+        <div className={`${isRunning ? "justify-center flex-1" : `mt-auto w-full ${isLandscape && isMobileOpen ? "mb-4" : "mb-8"}`} ${positionMode === 'embedded'
+          ? "flex flex-col items-center space-y-4" // En embedded, siempre vertical
+          : (isLandscape && isMobileOpen ? "flex flex-row items-center justify-center space-x-3 px-2" : "flex flex-col items-center space-y-4")
+          }`}>
           {!isRunning && (
             <Tooltip text={canResume ? "Reanudar" : "Leer"} placement={isMobileOpen ? "right" : "top"}>
               <button
                 onClick={handlePlayClick}
                 disabled={!hasText || isCountingDown}
-                className={`${buttonClass} ${!hasText || isCountingDown ? "bg-gray-800 opacity-50" : "bg-blue-600 hover:bg-blue-500"} ${isLandscape && isMobileOpen ? "px-3 py-2 min-w-0 flex-shrink-0" : ""}`}
+                className={`${buttonClass} ${!hasText || isCountingDown ? "bg-gray-800 opacity-50" : "bg-blue-600 hover:bg-blue-500"} ${positionMode === 'embedded' ? "" : (isLandscape && isMobileOpen ? "px-3 py-2 min-w-0 flex-shrink-0" : "")
+                  }`}
               >
                 {canResume ? <ArrowPathIcon className={`${isLandscape && isMobileOpen ? "w-6 h-6" : "w-6 h-6"} flex-shrink-0`} /> : <PlayIcon className={`${isLandscape && isMobileOpen ? "w-6 h-6" : "w-6 h-6 ml-1"} flex-shrink-0`} />}
                 <Label text={canResume ? "Reanudar" : "Leer"} />
@@ -395,7 +438,8 @@ const SideBar = ({
 
           {isRunning && (
             <Tooltip text="Pausar" placement={isMobileOpen ? "right" : "top"}>
-              <button onClick={pauseReading} className={`${buttonClass} bg-yellow-500 hover:bg-yellow-400 ${isLandscape && isMobileOpen ? "px-3 py-2 min-w-0 flex-shrink-0" : ""}`}>
+              <button onClick={pauseReading} className={`${buttonClass} bg-yellow-500 hover:bg-yellow-400 ${positionMode === 'embedded' ? "" : (isLandscape && isMobileOpen ? "px-3 py-2 min-w-0 flex-shrink-0" : "")
+                }`}>
                 <PauseIcon className={`${isLandscape && isMobileOpen ? "w-6 h-6" : "w-6 h-6"} flex-shrink-0`} />
               </button>
             </Tooltip>
@@ -403,7 +447,8 @@ const SideBar = ({
 
           {(isRunning || hasText) && (
             <Tooltip text="Detener" placement={isMobileOpen ? "right" : "top"}>
-              <button onClick={stopReading} className={`${buttonClass} bg-red-600 hover:bg-red-500 ${isLandscape && isMobileOpen ? "px-3 py-2 min-w-0 flex-shrink-0" : ""}`}>
+              <button onClick={stopReading} className={`${buttonClass} bg-red-600 hover:bg-red-500 ${positionMode === 'embedded' ? "" : (isLandscape && isMobileOpen ? "px-3 py-2 min-w-0 flex-shrink-0" : "")
+                }`}>
                 <StopIcon className={`${isLandscape && isMobileOpen ? "w-5 h-5" : "w-6 h-6"} flex-shrink-0`} />
                 <Label text="Detener" />
               </button>
@@ -411,14 +456,15 @@ const SideBar = ({
           )}
 
           {/* Botón Completar Sesión (Solo en modo Estudio y si hay sesión activa) */}
-          {sidebarMode === 'study' && studyPlan?.gameState?.activeSession && (
+          {(forcedSidebarMode || sidebarMode) === 'study' && studyPlan?.gameState?.activeSession && (
             <Tooltip text="Completar Sesión" placement={isMobileOpen ? "right" : "top"}>
               <button
                 onClick={() => {
                   studyPlan.completeSession();
                   goToView('dashboard');
                 }}
-                className={`${buttonClass} bg-green-600 hover:bg-green-500 ${isLandscape && isMobileOpen ? "px-3 py-2 min-w-0 flex-shrink-0" : ""}`}
+                className={`${buttonClass} bg-green-600 hover:bg-green-500 ${positionMode === 'embedded' ? "" : (isLandscape && isMobileOpen ? "px-3 py-2 min-w-0 flex-shrink-0" : "")
+                  }`}
               >
                 <CheckCircleIcon className={`${isLandscape && isMobileOpen ? "w-5 h-5" : "w-6 h-6"} flex-shrink-0`} />
                 <Label text="Completar" />

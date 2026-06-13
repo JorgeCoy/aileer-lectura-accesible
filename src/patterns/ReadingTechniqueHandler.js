@@ -6,6 +6,7 @@ import LineReader from '../components/LineReader';
 import ParagraphReader from '../components/ParagraphReader';
 import SpritzReader from '../components/SpritzReader';
 import SaccadeReader from '../components/SaccadeReader';
+import SaccadicFocusReader from '../components/SaccadicFocusReader';
 import PreviewReader from '../components/PreviewReader';
 import ClozeReader from '../components/ClozeReader';
 
@@ -153,15 +154,20 @@ export class SaccadeHandler extends ReadingTechniqueHandler {
   }
 }
 
+import KeywordHighlighter from '../components/KeywordHighlighter';
+
 export class PreviewHandler extends ReadingTechniqueHandler {
   canHandle(_technique) {
     return _technique === 'preview';
   }
 
   renderComponent(_props) {
-    const { text, theme, fontSize, fontFamily } = _props;
-    return this.createComponentConfig(PreviewReader, {
-      text,
+    const { text, words, theme, fontSize, fontFamily } = _props;
+    // Prefer full text if available, otherwise join words
+    const fullText = text || (words ? words.join(' ') : "");
+
+    return this.createComponentConfig(KeywordHighlighter, {
+      text: fullText,
       theme,
       fontSize,
       fontFamily
@@ -213,7 +219,7 @@ export class HighlightHandler extends ReadingTechniqueHandler {
       fontSize,
       fontFamily,
       theme,
-      technique: "singleWord" // HighlightedWord uses 'singleWord' for the standard highlight effect
+      technique: "highlight"
     });
   }
 }
@@ -247,6 +253,7 @@ export class ReadingTechniqueChain {
     const paragraphFocus = new ParagraphFocusHandler();
     const spritz = new SpritzHandler();
     const saccade = new SaccadeHandler();
+    const saccadicFocus = new SaccadicFocusHandler();
     const preview = new PreviewHandler();
     const cloze = new ClozeHandler();
     const rsvp = new RsvpHandler();
@@ -260,6 +267,7 @@ export class ReadingTechniqueChain {
       .setNext(paragraphFocus)
       .setNext(spritz)
       .setNext(saccade)
+      .setNext(saccadicFocus)
       .setNext(preview)
       .setNext(cloze)
       .setNext(rsvp)
@@ -267,5 +275,24 @@ export class ReadingTechniqueChain {
       .setNext(semanticChunking);
 
     return singleWord; // Retornar el primer handler
+  }
+}
+
+
+export class SaccadicFocusHandler extends ReadingTechniqueHandler {
+  canHandle(_technique) {
+    return _technique === 'saccadicFocus';
+  }
+
+  renderComponent(_props) {
+    const { words, currentIndex, speed, theme, fontSize, fontFamily } = _props;
+    return this.createComponentConfig(SaccadicFocusReader, {
+      words,
+      currentIndex,
+      speed,
+      theme,
+      fontSize,
+      fontFamily
+    });
   }
 }

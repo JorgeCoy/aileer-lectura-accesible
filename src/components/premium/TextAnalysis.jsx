@@ -241,3 +241,10 @@ const TextAnalysis = ({ currentText, userProfile }) => {
 
 export default TextAnalysis;
 
+
+
+
+
+
+
+

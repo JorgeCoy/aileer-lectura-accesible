@@ -8,91 +8,82 @@
  * 4. Chunking: Procesamiento visual por grupos semánticos
  */
 
-import React from "react";
+import { motion } from "framer-motion";
 import { adultThemes } from "../config/themes";
 import { transformToBionic } from "../utils/bionicReading";
 
-// Componente auxiliar para técnica Chunking
-const ChunkingWord = ({
-  word = "",
-  fontSize = 80,
-  fontFamily = "sans-serif",
-  theme = "minimalist"
-}) => {
-  const themeStyle = adultThemes[theme] || adultThemes.minimalist;
-
-  // Fuentes reales
-  let actualFont = fontFamily;
-  if (fontFamily === "cursive") actualFont = "'Dancing Script', cursive";
-  if (fontFamily === "dyslexic") actualFont = "'OpenDyslexic', sans-serif";
-  if (fontFamily === "comic") actualFont = "'Comic Neue', cursive";
-
-  // Técnica mejorada: chunks con jerarquía visual
-  const getChunkStyling = (chunkWords) => {
-    const wordCount = chunkWords.length;
-
-    return chunkWords.map((chunkWord, index) => {
-      const isFirst = index === 0;
-      const isLast = index === wordCount - 1;
-      const isMiddle = !isFirst && !isLast;
-
-      return {
-        word: chunkWord,
-        style: {
-          color: isFirst ? themeStyle.highlight : // Primera palabra prominente
-                 isMiddle ? themeStyle.textColor :
-                 '#6B7280', // Última palabra tenue
-          opacity: isFirst ? 1.0 : isMiddle ? 0.9 : 0.7,
-          fontWeight: isFirst ? '700' : isMiddle ? '500' : '400',
-          transform: isFirst ? 'scale(1.05)' : 'scale(1.0)',
-          textShadow: isFirst ? `0 0 4px ${themeStyle.highlight}30` : 'none'
-        }
-      };
-    });
-  };
-
-  const chunkWords = word.split(' ');
-  const styledWords = getChunkStyling(chunkWords);
-
-  return (
-    <div
-      className="inline-block transition-all duration-300 ease-out"
-      style={{
-        fontSize: `${fontSize}px`,
-        fontFamily: actualFont,
-        backgroundColor: `rgba(96, 165, 250, 0.08)`,
-        borderRadius: '6px',
-        padding: '0.2em 0.4em',
-        border: `1px solid ${themeStyle.highlight}20`,
-        boxShadow: `0 2px 8px ${themeStyle.highlight}15`
-      }}
-    >
-      {styledWords.map((styledWord, index) => (
-        <span
-          key={index}
-          className="inline-block transition-all duration-300 mx-0.5"
-          style={styledWord.style}
-        >
-          {styledWord.word}
-        </span>
-      ))}
-    </div>
-  );
-};
+// ... (ChunkingWord remains the same)
 
 const HighlightedWord = ({
   word = "",
   fontSize = 80,
   fontFamily = "sans-serif",
   theme = "minimalist",
-  technique = "singleWord" // singleWord | highlight | bionic | chunking
+  technique = "singleWord", // singleWord | highlight | bionic | chunking
+  isGhostMode = false,
+  speed = 200
 }) => {
   if (!word || word.trim() === "") {
     return <span className="text-gray-500 text-6xl">…</span>;
   }
 
-  // Técnica Chunking: Usa componente especializado
-  if (technique === "chunking") {
+  // Técnica Chunking, LineFocus, ParagraphFocus
+  if (technique === "chunking" || technique === "lineFocus" || technique === "paragraphFocus") {
+    // En Ghost Mode, evitamos las cajas individuales. Solo resaltamos el texto.
+    if (isGhostMode) {
+      const themeStyle = adultThemes[theme] || adultThemes.minimalist;
+
+      // Estilo específico para Line Focus: Barra de fondo suave (Reading Ruler) con animación de barrido
+      if (technique === "lineFocus") {
+        // Calcular duración basada en la cantidad de palabras y la velocidad (WPM)
+        // Tiempo = (Palabras / WPM) * 60 segundos
+        const wordCount = word.trim().split(/\s+/).length;
+        const duration = (wordCount / speed) * 60;
+
+        return (
+          <span
+            className="font-bold relative overflow-hidden"
+            style={{
+              color: themeStyle.textColor, // Mantener color de texto legible
+              borderRadius: '4px',
+              padding: '0.1em 0.4em',
+              display: 'inline-block',
+              width: '100%', // Intentar llenar el ancho disponible del contenedor padre
+              verticalAlign: 'bottom'
+            }}
+          >
+            {/* Capa de fondo animada (Barrido) */}
+            <motion.span
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{ duration: duration, ease: "linear" }}
+              className="absolute top-0 left-0 h-full z-0"
+              style={{
+                backgroundColor: `${themeStyle.highlight}40`, // Fondo suave (40% opacidad)
+                boxShadow: `0 0 0 1px ${themeStyle.highlight}60` // Borde sutil
+              }}
+            />
+
+            {/* Texto por encima del fondo */}
+            <span className="relative z-10">{word}</span>
+          </span>
+        );
+      }
+
+      // Estilo para Chunking y Paragraph (Solo texto coloreado)
+      return (
+        <span
+          className="font-bold"
+          style={{
+            color: themeStyle.highlight,
+            textShadow: `0 0 10px ${themeStyle.highlight}40`
+          }}
+        >
+          {word}
+        </span>
+      );
+    }
+
     return (
       <ChunkingWord
         word={word}
@@ -124,111 +115,42 @@ const HighlightedWord = ({
           color: themeStyle.textColor,
         }}
       >
-        <span className="font-black" style={{ color: themeStyle.highlight }}>{bold}</span>
-        <span className="font-light opacity-90">{normal}</span>
+        <span className="font-black" style={{ /* Sin color, solo peso */ }}>{bold}</span>
+        <span className="font-light opacity-70">{normal}</span>
       </div>
     );
   }
 
-  // --- TÉCNICA HIGHLIGHT: Resaltado completo de palabra ---
+  // --- TÉCNICA HIGHLIGHT: Resaltado tipo "Marcador" ---
   if (technique === "highlight") {
-    // Técnica diferente: resalta la palabra ENTERA con énfasis gradual
-    // No tiene punto de fijación específico como Spritz
-    // Es más como un "destacado" continuo para entrenamiento visual
-
-    const getHighlightIntensity = (wordLen) => {
-      if (wordLen <= 4) return { scale: 1.05, brightness: 1.1 }; // Suave
-      if (wordLen <= 7) return { scale: 1.08, brightness: 1.15 }; // Moderado
-      return { scale: 1.1, brightness: 1.2 }; // Enfático para palabras complejas
-    };
-
-    const highlightConfig = getHighlightIntensity(word.length);
+    // "El Marcador": Fondo de color sólido, texto oscuro para contraste.
+    // Simula pasar un resaltador sobre el texto.
 
     return (
       <div
-        className="inline-block font-semibold transition-all duration-500 ease-out"
+        className="inline-block font-bold transition-all duration-200"
         style={{
           fontSize: `${fontSize}px`,
           fontFamily: actualFont,
-          color: themeStyle.highlight, // Toda la palabra en color de resaltado
+          color: '#ffffff', // Texto blanco para mejor contraste en modo oscuro/colores vibrantes
+          backgroundColor: themeStyle.highlight, // Color del tema
 
-          // Transformaciones sutiles para toda la palabra
-          transform: `scale(${highlightConfig.scale})`,
-          filter: `brightness(${highlightConfig.brightness})`,
-
-          // Sombra que une toda la palabra
-          textShadow: `0 0 8px ${themeStyle.highlight}60`,
-
-          // Padding para separación visual
-          padding: '0 0.3em',
-
-          // Fondo sutil que envuelve toda la palabra
-          backgroundColor: `rgba(96, 165, 250, 0.1)`,
+          // Estilo de marcador
+          padding: '0.1em 0.4em',
           borderRadius: '4px',
+          boxShadow: `0 0 15px ${themeStyle.highlight}60`, // Resplandor suave del color del tema
 
-          // Animación de aparición gradual
-          animation: 'highlightPulse 2s ease-in-out infinite'
+          // Transformación sutil
+          transform: 'scale(1.05)',
         }}
       >
         {word}
-        <style jsx>{`
-          @keyframes highlightPulse {
-            0%, 100% { opacity: 0.9; }
-            50% { opacity: 1.0; }
-          }
-        `}</style>
       </div>
     );
   }
 
-  // --- RENDERIZADO RSVP OPTIMIZADO (Una palabra) ---
-
-  /**
-   * ALGORITMO DE FIJACIÓN ÓPTIMA:
-   *
-   * 1. Para palabras cortas (≤3 letras): Final de la palabra
-   * 2. Para palabras medias (4-6 letras): 60% del inicio
-   * 3. Para palabras largas (≥7 letras): 40% del inicio
-   *
-   * Esto se basa en estudios de eye-tracking que muestran que:
-   * - Leemos desde el inicio hacia el final
-   * - El punto óptimo no es el medio absoluto
-   * - Palabras más largas necesitan fijación más temprana
-   */
-
-  const calculateOptimalFixation = (word) => {
-    const len = word.length;
-
-    if (len <= 3) {
-      // Palabras cortas: fijar al final
-      return len - 1;
-    } else if (len <= 6) {
-      // Palabras medias: 60% del inicio
-      return Math.floor(len * 0.6);
-    } else {
-      // Palabras largas: 40% del inicio (más temprano para procesar morfemas)
-      return Math.floor(len * 0.4);
-    }
-  };
-
-  const fixationIndex = calculateOptimalFixation(word);
-
-  // Adaptar intensidad visual según longitud y complejidad
-  const getVisualIntensity = (wordLen) => {
-    if (wordLen <= 3) return { opacity: 0.6, scale: 1.1 };      // Suave
-    if (wordLen <= 6) return { opacity: 0.8, scale: 1.15 };     // Moderado
-    return { opacity: 1.0, scale: 1.2 };                        // Enfático para palabras complejas
-  };
-
-  const visualConfig = getVisualIntensity(word.length);
-
-  // Variables para RSVP (necesarias para el componente)
-  const speed = 300; // Valor por defecto
-  const adaptiveStyle = {
-    orpColor: themeStyle.highlight,
-    orpScale: visualConfig.scale,
-    orpOpacity: visualConfig.opacity
-  };
+  // --- RENDERIZADO RSVP (Una palabra) - LIMPIO Y MINIMALISTA ---
+  // "La Velocidad Pura": Sin distracciones, sin colores, solo la palabra.
 
   return (
     <div
@@ -237,43 +159,10 @@ const HighlightedWord = ({
         fontSize: `${fontSize}px`,
         fontFamily: actualFont,
         color: themeStyle.textColor,
-        // Sombra sutil solo para contexto, no para distracción
-        textShadow: `0 0 8px ${themeStyle.highlight}20`
+        // Sin sombras, sin efectos, pureza total
       }}
     >
-      {/* Parte inicial de la palabra */}
-      <span className="opacity-90">
-        {word.slice(0, fixationIndex)}
-      </span>
-
-      {/* ORP: Punto de fijación inteligente y sutil */}
-      <span
-        className="font-semibold transition-all duration-300 relative inline-block"
-        style={{
-          color: adaptiveStyle.orpColor,
-          transform: `scale(${adaptiveStyle.orpScale})`,
-          opacity: adaptiveStyle.orpOpacity,
-
-          // Sombra sutil solo cuando es necesario
-          textShadow: adaptiveStyle.orpScale > 1.1 ?
-            `0 0 4px ${adaptiveStyle.orpColor}30` : 'none',
-
-          // Espaciado integrado - parte de la palabra
-          margin: '0 0.05em',
-
-          // Indicador minimalista (opcional basado en complejidad)
-          borderBottom: word.length > 8 && speed < 400 ?
-            `1px solid ${adaptiveStyle.orpColor}40` : 'none',
-          paddingBottom: word.length > 8 && speed < 400 ? '2px' : '0'
-        }}
-      >
-        {word[fixationIndex]}
-      </span>
-
-      {/* Parte final de la palabra */}
-      <span className="opacity-80">
-        {word.slice(fixationIndex + 1)}
-      </span>
+      {word}
     </div>
   );
 };

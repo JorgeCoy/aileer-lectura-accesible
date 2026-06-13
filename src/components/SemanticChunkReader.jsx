@@ -13,15 +13,53 @@ const SemanticChunkReader = ({
 }) => {
     const themeStyle = adultThemes[theme] || adultThemes.minimalist;
 
-    // Memoize chunks to avoid re-calculating on every render
-    // If 'text' is not provided, we reconstruct it from 'words'
+    // State for dynamic chunks (rule-based fallback -> neural chunks)
+    const [chunks, setChunks] = React.useState([]);
+    const [isNeuralLoading, setIsNeuralLoading] = React.useState(false);
     const fullText = text || words.join(' ');
-    const chunks = useMemo(() => chunkText(fullText), [fullText]);
+    React.useEffect(() => {
+        let active = true;
+
+        // 1. Inmediatamente aplicar el fallback basado en reglas (síncrono)
+        const ruleChunks = chunkText(fullText);
+        if (active) {
+            setChunks(ruleChunks);
+        }
+
+        // 2. Intentar aplicar segmentación semántica neuronal asíncrona en background
+        async function fetchNeuralChunks() {
+            try {
+                const { getGlobalServiceContainer } = await import('../patterns/ServiceContainer');
+                const container = getGlobalServiceContainer();
+                if (container.has('aiService')) {
+                    setIsNeuralLoading(true);
+                    const aiService = container.resolve('aiService');
+                    const neuralChunks = await aiService.fetchSemanticChunks(fullText);
+                    if (active && neuralChunks && neuralChunks.length > 0) {
+                        setChunks(neuralChunks);
+                    }
+                }
+            } catch (error) {
+                console.warn('[SemanticChunkReader] Fallback a reglas activado debido a:', error);
+            } finally {
+                if (active) {
+                    setIsNeuralLoading(false);
+                }
+            }
+        }
+
+        fetchNeuralChunks();
+
+        return () => {
+            active = false;
+        };
+    }, [fullText]);
 
     // Map the word-based currentIndex to the chunk-based index
     // This is an approximation since the main engine drives by 'words'
     // We need to find which chunk contains the word at currentIndex
     const currentChunkIndex = useMemo(() => {
+        if (chunks.length === 0) return 0;
         let wordCount = 0;
         for (let i = 0; i < chunks.length; i++) {
             const chunkWordCount = chunks[i].split(/\s+/).length;

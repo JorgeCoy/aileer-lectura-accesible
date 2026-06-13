@@ -7,7 +7,7 @@ const useReadingEngine = ({ words, options }) => {
     const [isRunning, setIsRunning] = useState(false);
     const [isCountingDown, setIsCountingDown] = useState(false);
     const [countdownValue, setCountdownValue] = useState(3);
-    const [speed, setSpeed] = useState(300);
+    const [speed, setSpeed] = useState(options.speed || 300);
 
     const startReading = useCallback(() => {
         console.warn("🚀 startReading llamado");

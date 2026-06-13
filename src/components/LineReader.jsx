@@ -35,11 +35,15 @@ const LineReader = ({
                 {/* Texto de la línea */}
                 <div className="relative">
                     <div
-                        className="text-center leading-relaxed tracking-wide mb-6 relative z-10"
+                        className="text-center tracking-wide mb-6 relative z-10 mx-auto"
                         style={{
                             fontSize: `${fontSize}px`,
                             fontFamily: actualFont,
                             color: themeStyle.textColor,
+                            maxWidth: '95%',
+                            lineHeight: '1.6',
+                            wordBreak: 'break-word',
+                            whiteSpace: 'pre-wrap'
                         }}
                     >
                         {line}

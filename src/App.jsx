@@ -1,83 +1,89 @@
-// src/App.jsx
-import React from 'react';
-import logger from './utils/logger.js';
-import AppContext from './context/AppContext';
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import OfflineIndicator from './components/OfflineIndicator';
 import ThemeProvider from './context/ThemeProvider';
-import StartScreen from './views/StartScreen';
-import AdultView from './views/AdultView';
-import TeacherView from './views/TeacherView';
-import KidView from './views/KidView';
-import BabyView from './views/BabyView';
-import KidTdahView from './views/KidTdahView';
-import WarmUpView from './views/WarmUpView';
-import StudyDashboard from './views/StudyDashboard';
-import ConnectionIndicator from './components/ConnectionIndicator';
-import { useProgressiveEnhancement } from './hooks/useProgressiveEnhancement';
+import LoginView from './views/auth/LoginView';
+import RegisterView from './views/auth/RegisterView';
 
-const AppContent = () => {
-  const { currentView, viewContext } = React.useContext(AppContext);
+// Lazy loading para optimizar el bundle inicial
+const TeacherLayout = lazy(() => import('./layouts/TeacherLayout'));
+const TeacherDashboard = lazy(() => import('./views/teacher/TeacherDashboard'));
+const TeacherClasses = lazy(() => import('./views/teacher/TeacherClasses'));
+const TeacherLibrary = lazy(() => import('./views/teacher/TeacherLibrary'));
+const TeacherReports = lazy(() => import('./views/teacher/TeacherReports'));
+const TeacherConfig = lazy(() => import('./views/teacher/TeacherConfig'));
 
-  // Progressive Enhancement - carga mejoras automáticamente cuando hay internet
-  const {
-    enhancedFeatures,
-    loadingStates,
-    hasEnhancements,
-    enhancementCount
-  } = useProgressiveEnhancement();
+const StudentLayout = lazy(() => import('./layouts/StudentLayout'));
+const StudentDashboard = lazy(() => import('./views/student/StudentDashboard'));
+const StudentLibrary = lazy(() => import('./views/student/StudentLibrary'));
+const StudentReadingWrapper = lazy(() => import('./views/student/StudentReadingWrapper'));
 
-  // Log de estado para debugging (solo en desarrollo)
-  React.useEffect(() => {
-    if (import.meta.env.DEV) {
-      logger.log('🚀 Progressive Enhancement Status:', {
-        features: enhancedFeatures,
-        loading: loadingStates,
-        totalEnhancements: enhancementCount
-      });
-    }
-  }, [enhancedFeatures, loadingStates, enhancementCount]);
+// Componente para proteger rutas
+const ProtectedRoute = ({ children, allowedRole }) => {
+  const { user, role, loading } = useAuth();
 
-  const renderView = () => {
-    switch (currentView) {
-      case 'adult':
-        return <ThemeProvider viewName="adult"><AdultView /></ThemeProvider>;
-      case 'teacher':
-        return <ThemeProvider viewName="teacher"><TeacherView /></ThemeProvider>;
-      case 'kid':
-        return <ThemeProvider viewName="kid"><KidView /></ThemeProvider>;
-      case 'baby':
-        return <ThemeProvider viewName="baby"><BabyView /></ThemeProvider>;
-      case 'ninos_tdah':
-        return <ThemeProvider viewName="ninos_tdah"><KidTdahView /></ThemeProvider>;
-      case 'warmup':
-        return <WarmUpView />;
-      case 'dashboard':
-        return <StudyDashboard />;
-      case 'start':
-      default:
-        return <StartScreen />;
-    }
-  };
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
+  }
 
-  return (
-    <div className="min-h-screen">
-      {renderView()}
-      <ConnectionIndicator />
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
-      {/* Indicador de funcionalidades mejoradas (solo en desarrollo) */}
-      {import.meta.env.DEV && hasEnhancements && (
-        <div className="fixed top-16 right-4 bg-green-100 border border-green-300 text-green-800 px-3 py-2 rounded-lg shadow-lg z-40 text-sm">
-          <div className="flex items-center gap-1">
-            <span>✨</span>
-            <span>{enhancementCount} mejoras activas</span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  if (allowedRole && role !== allowedRole) {
+    // Si intenta entrar a una zona no permitida, redirigir a su zona correcta
+    return <Navigate to={role === 'teacher' ? '/docente' : '/estudiante'} replace />;
+  }
+
+  return children;
 };
 
 const App = () => {
-  return <AppContent />;
+  return (
+    <ThemeProvider>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Cargando...</div>}>
+          <Routes>
+            {/* Rutas Públicas */}
+          <Route path="/login" element={<LoginView />} />
+          <Route path="/register" element={<RegisterView />} />
+
+          {/* Redirección raíz */}
+          <Route path="/" element={<ProtectedRoute><Navigate to="/estudiante" replace /></ProtectedRoute>} />
+
+          {/* Teacher Portal (Protegido) */}
+          <Route path="/docente" element={
+            <ProtectedRoute allowedRole="teacher">
+              <TeacherLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<TeacherDashboard />} />
+            <Route path="clases" element={<TeacherClasses />} />
+            <Route path="biblioteca" element={<TeacherLibrary />} />
+            <Route path="reportes" element={<TeacherReports />} />
+            <Route path="configuracion" element={<TeacherConfig />} />
+          </Route>
+
+          {/* Student Portal (Protegido) */}
+          <Route path="/estudiante" element={
+            <ProtectedRoute allowedRole="student">
+              <StudentLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<StudentDashboard />} />
+            <Route path="biblioteca" element={<StudentLibrary />} />
+            <Route path="lectura/:id" element={<StudentReadingWrapper />} />
+          </Route>
+
+          {/* Fallback */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </Suspense>
+        <OfflineIndicator />
+      </BrowserRouter>
+    </ThemeProvider>
+  );
 };
 
 export default App;

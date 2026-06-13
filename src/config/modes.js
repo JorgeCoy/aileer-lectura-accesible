@@ -36,6 +36,13 @@ export const modes = {
     defaultTheme: "focus",
     icon: "🧠",
   },
+  preview: {
+    id: "preview",
+    label: "Vista Previa",
+    subtitle: "Configuración de lectura",
+    defaultTheme: "minimalist",
+    icon: "👁️",
+  },
 };
 
 // ✅ Esta línea debe estar presente

@@ -42,14 +42,21 @@ const useStudyPlan = () => {
     }, []);
 
     // Save to LocalStorage
+    const prevSavedState = useRef(null);
     useEffect(() => {
         if (!isInitialized.current) return; // Don't save before initialization
 
         // Don't save activeSession to local storage to avoid stuck states
         const { activeSession, ...stateToSave } = gameState;
-        console.log('💾 [useStudyPlan] Saving state to localStorage:', stateToSave);
-        localStorage.setItem('aleer_gamification', JSON.stringify(stateToSave));
-    }, [gameState]);
+
+        // Only save if state actually changed
+        const stateString = JSON.stringify(stateToSave);
+        if (prevSavedState.current !== stateString) {
+            console.log('💾 [useStudyPlan] Saving state to localStorage:', stateToSave);
+            localStorage.setItem('aleer_gamification', stateString);
+            prevSavedState.current = stateString;
+        }
+    }, [gameState.level, gameState.currentXp, gameState.streak, gameState.lastLogin, gameState.currentPlanId, JSON.stringify(gameState.moduleProgress), JSON.stringify(gameState.completedSessions)]); // More specific dependencies
 
     const checkStreak = () => {
         setGameState(prev => {

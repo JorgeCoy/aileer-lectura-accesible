@@ -33,67 +33,26 @@ const SpritzReader = ({
     const calculateSmartORP = (w) => {
         if (!w || w.length === 0) return 0;
 
-        const len = w.length;
+        const match = w.match(/^([^a-zA-ZáéíóúÁÉÍÓÚñÑ]*)(.*?)([^a-zA-ZáéíóúÁÉÍÓÚñÑ]*)$/);
+        const prefix = match ? match[1] : "";
+        const coreWord = match ? match[2] : w;
 
-        // Palabras muy cortas: centro natural
-        if (len <= 2) return Math.floor(len / 2);
+        if (!coreWord) return Math.floor(w.length / 2);
 
-        // Palabras cortas: segunda letra (después de vocal/consonante inicial)
-        if (len === 3) return 1;
-        if (len === 4) return 2;
+        const len = coreWord.length;
+        let coreIndex = 0;
 
-        // Palabras medias: buscar vocal después de sílaba inicial
-        if (len >= 5 && len <= 7) {
-            // Buscar patrón VCV (Vocal-Consonante-Vocal) o CVC
-            for (let i = 1; i < Math.min(len - 1, 4); i++) {
-                const current = w[i].toLowerCase();
-                const next = w[i + 1]?.toLowerCase();
+        // Standard Spritz ORP logic based on word length
+        if (len === 1) coreIndex = 0;
+        else if (len <= 2) coreIndex = 0; // 1st letter (0-index)
+        else if (len <= 4) coreIndex = 1; // 2nd letter
+        else if (len <= 5) coreIndex = 2; // 3rd letter
+        else if (len <= 9) coreIndex = 2; // 3rd letter
+        else if (len <= 13) coreIndex = 3; // 4th letter
+        else coreIndex = 4; // 5th letter
 
-                // Preferir vocal después de consonante
-                if ('aeiouáéíóú'.includes(current) && 'bcdfghjklmnpqrstvwxyz'.includes(next || '')) {
-                    return i;
-                }
-            }
-            return 2; // Fallback
-        }
-
-        // Palabras largas: algoritmo morfológico avanzado
-        if (len >= 8) {
-            // Buscar raíces y morfemas comunes en español
-            const lowerWord = w.toLowerCase();
-
-            // Prefijos comunes (des-, in-, re-, etc.)
-            if (lowerWord.startsWith('des') && len >= 6) return 3;
-            if (lowerWord.startsWith('in') && len >= 5) return 2;
-            if (lowerWord.startsWith('re') && len >= 4) return 2;
-
-            // Sufijos comunes (ción, mente, etc.)
-            if (lowerWord.endsWith('ción') && len >= 6) return len - 4;
-            if (lowerWord.endsWith('mente') && len >= 7) return len - 5;
-            if (lowerWord.endsWith('mente') && len >= 7) return len - 5;
-
-            // Algoritmo general: ~35-40% de la palabra
-            const optimalPos = Math.floor(len * 0.35);
-
-            // Ajustar para evitar cortes problemáticos
-            if ('aeiouáéíóú'.includes(w[optimalPos]?.toLowerCase())) {
-                return optimalPos; // Vocal es buena
-            }
-
-            // Buscar vocal más cercana
-            for (let offset = 1; offset <= 2; offset++) {
-                if (optimalPos - offset >= 0 && 'aeiouáéíóú'.includes(w[optimalPos - offset]?.toLowerCase())) {
-                    return optimalPos - offset;
-                }
-                if (optimalPos + offset < len && 'aeiouáéíóú'.includes(w[optimalPos + offset]?.toLowerCase())) {
-                    return optimalPos + offset;
-                }
-            }
-
-            return Math.max(2, Math.min(len - 2, optimalPos));
-        }
-
-        return Math.floor(len / 2); // Fallback
+        // Adjust index by adding the length of the prefix (punctuation)
+        return prefix.length + coreIndex;
     };
 
     /**
@@ -147,11 +106,19 @@ const SpritzReader = ({
 
     return (
         <div className="flex flex-col items-center justify-center w-full h-64 relative">
-            {/* SIN RETÍCULA VISUAL - Se elimina completamente para no distraer */}
+            {/* RETÍCULA VISUAL (Guides) */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                {/* Horizontal Lines */}
+                <div className="w-64 h-12 border-t border-b border-current" style={{ color: themeStyle.textColor }}></div>
+                {/* Vertical Marker (Top) */}
+                <div className="absolute top-1/2 -mt-8 w-px h-2 bg-current" style={{ color: themeStyle.textColor }}></div>
+                {/* Vertical Marker (Bottom) */}
+                <div className="absolute bottom-1/2 -mb-8 w-px h-2 bg-current" style={{ color: themeStyle.textColor }}></div>
+            </div>
 
             {/* Contenedor de palabra con cohesión visual */}
             <div
-                className="inline-flex items-baseline relative"
+                className="inline-flex items-baseline relative z-10"
                 style={{
                     fontFamily: fontFamily,
                     fontSize: `${fontSize}px`,
@@ -208,12 +175,7 @@ const SpritzReader = ({
                 </span>
             </div>
 
-            {/* Información de debugging sutil (solo desarrollo) */}
-            {import.meta.env.DEV && (
-                <div className="absolute bottom-2 right-2 text-xs text-gray-500 opacity-50">
-                    ORP: {orpIndex} | Speed: {speed}WPM | Len: {word.length}
-                </div>
-            )}
+
         </div>
     );
 };

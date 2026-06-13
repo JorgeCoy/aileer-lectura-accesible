@@ -51,11 +51,13 @@ export class OCRService {
   }
 
   async recognize(imageSource, progressCallback) {
-    return await this.recognizePage(imageSource, progressCallback);
+    const recognizePageFn = await this.recognizePage;
+    return await recognizePageFn(imageSource, progressCallback);
   }
 
   async terminate() {
-    return await this.terminateWorker();
+    const terminateWorkerFn = await this.terminateWorker;
+    return await terminateWorkerFn();
   }
 }
 
@@ -68,19 +70,23 @@ export class SpeechService {
   }
 
   async speakText(text, options = {}) {
-    return await this.speak(text, options);
+    const speakFn = await this.speak;
+    return await speakFn(text, options);
   }
 
-  stopSpeaking() {
-    this.stop();
+  async stopSpeaking() {
+    const stopFn = await this.stop;
+    stopFn();
   }
 
-  getAvailableVoices() {
-    return this.getVoices();
+  async getAvailableVoices() {
+    const getVoicesFn = await this.getVoices;
+    return getVoicesFn();
   }
 
-  setSelectedVoice(voice) {
-    this.setVoice(voice);
+  async setSelectedVoice(voice) {
+    const setVoiceFn = await this.setVoice;
+    setVoiceFn(voice);
   }
 }
 
@@ -93,19 +99,23 @@ export class PDFService {
   }
 
   async loadDocument(file) {
-    return await this.loadPDF(file);
+    const loadPDFFn = await this.loadPDF;
+    return await loadPDFFn(file);
   }
 
   async extractText(pageNumber) {
-    return await this.getPageText(pageNumber);
+    const getPageTextFn = await this.getPageText;
+    return await getPageTextFn(pageNumber);
   }
 
   async renderToCanvas(pageNumber, canvas, scale = 1.5) {
-    return await this.renderPage(pageNumber, canvas, scale);
+    const renderPageFn = await this.renderPage;
+    return await renderPageFn(pageNumber, canvas, scale);
   }
 
-  getTotalPages() {
-    return this.getPageCount();
+  async getTotalPages() {
+    const getPageCountFn = await this.getPageCount;
+    return getPageCountFn();
   }
 }
 
@@ -117,20 +127,24 @@ export class StorageService {
     this.clear = container.resolve('storageClear');
   }
 
-  getItem(key) {
-    return this.get(key);
+  async getItem(key) {
+    const getFn = await this.get;
+    return getFn(key);
   }
 
-  setItem(key, value) {
-    this.set(key, value);
+  async setItem(key, value) {
+    const setFn = await this.set;
+    setFn(key, value);
   }
 
-  removeItem(key) {
-    this.remove(key);
+  async removeItem(key) {
+    const removeFn = await this.remove;
+    removeFn(key);
   }
 
-  clearAll() {
-    this.clear();
+  async clearAll() {
+    const clearFn = await this.clear;
+    clearFn();
   }
 }
 
@@ -142,20 +156,59 @@ export class PerformanceMonitorService {
     this.logEvent = container.resolve('performanceLogEvent');
   }
 
-  startSession(sessionId) {
-    this.startTracking(sessionId);
+  async startSession(sessionId) {
+    const startTrackingFn = await this.startTracking;
+    startTrackingFn(sessionId);
   }
 
-  endSession() {
-    return this.stopTracking();
+  async endSession() {
+    const stopTrackingFn = await this.stopTracking;
+    return stopTrackingFn();
   }
 
-  getPerformanceMetrics() {
-    return this.getMetrics();
+  async getPerformanceMetrics() {
+    const getMetricsFn = await this.getMetrics;
+    return getMetricsFn();
   }
 
-  logUserEvent(eventType, data) {
-    this.logEvent(eventType, data);
+  async logUserEvent(eventType, data) {
+    const logEventFn = await this.logEvent;
+    logEventFn(eventType, data);
+  }
+}
+
+export class AIService {
+  constructor(container) {
+    this.summarizeText = container.resolve('aiSummarizeText');
+    this.generateQuestions = container.resolve('aiGenerateQuestions');
+    this.generateTextByTopic = container.resolve('aiGenerateTextByTopic');
+    this.getSemanticChunks = container.resolve('aiGetSemanticChunks');
+    this.preload = container.resolve('aiPreload');
+  }
+
+  async summarize(text, options = {}) {
+    const summarizeTextFn = await this.summarizeText;
+    return await summarizeTextFn(text, options);
+  }
+
+  async generateReadingQuestions(text, multipleChoiceCount = 3, openEndedCount = 1, options = {}) {
+    const generateQuestionsFn = await this.generateQuestions;
+    return await generateQuestionsFn(text, multipleChoiceCount, openEndedCount, options);
+  }
+
+  async generateReadingByTopic(topic, level, wordsCount = 150, options = {}) {
+    const generateTextByTopicFn = await this.generateTextByTopic;
+    return await generateTextByTopicFn(topic, level, wordsCount, options);
+  }
+
+  async fetchSemanticChunks(text) {
+    const getSemanticChunksFn = await this.getSemanticChunks;
+    return await getSemanticChunksFn(text);
+  }
+
+  async preloadModel(model, task) {
+    const preloadFn = await this.preload;
+    return await preloadFn(model, task);
   }
 }
 
@@ -201,6 +254,15 @@ export function createDefaultServiceContainer() {
     .register('performanceGetMetrics', () => import('../utils/performanceMonitor.js').then(m => m.getPerformanceMetrics))
     .register('performanceLogEvent', () => import('../utils/performanceMonitor.js').then(m => m.logEvent))
     .register('performanceService', (c) => new PerformanceMonitorService(c), true);
+
+  // AI Services
+  container
+    .register('aiSummarizeText', () => import('../services/aiService.js').then(m => m.summarizeText))
+    .register('aiGenerateQuestions', () => import('../services/aiService.js').then(m => m.generateQuestions))
+    .register('aiGenerateTextByTopic', () => import('../services/aiService.js').then(m => m.generateTextByTopic))
+    .register('aiGetSemanticChunks', () => import('../services/aiService.js').then(m => m.getSemanticChunks))
+    .register('aiPreload', () => import('../services/aiService.js').then(m => m.preload))
+    .register('aiService', (c) => new AIService(c), true);
 
   return container;
 }

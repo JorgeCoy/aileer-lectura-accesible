@@ -7,6 +7,7 @@ import LineReader from '../components/LineReader';
 import ParagraphReader from '../components/ParagraphReader';
 import SpritzReader from '../components/SpritzReader';
 import SaccadeReader from '../components/SaccadeReader';
+import SaccadicFocusReader from '../components/SaccadicFocusReader';
 import PreviewReader from '../components/PreviewReader';
 import ClozeReader from '../components/ClozeReader';
 
@@ -17,6 +18,7 @@ export const createAdultReadingComponents = () => ({
   createParagraphReader: (props) => ({ component: ParagraphReader, props }),
   createSpritzReader: (props) => ({ component: SpritzReader, props }),
   createSaccadeReader: (props) => ({ component: SaccadeReader, props }),
+  createSaccadicFocusReader: (props) => ({ component: SaccadicFocusReader, props }),
   createPreviewReader: (props) => ({ component: PreviewReader, props }),
   createClozeReader: (props) => ({ component: ClozeReader, props })
 });
@@ -39,6 +41,7 @@ export const createChildReadingComponents = () => ({
   createParagraphReader: (props) => ({ component: ParagraphReader, props }),
   createSpritzReader: (props) => ({ component: SpritzReader, props }),
   createSaccadeReader: (props) => ({ component: SaccadeReader, props }),
+  createSaccadicFocusReader: (props) => ({ component: SaccadicFocusReader, props }),
   createPreviewReader: (props) => ({ component: PreviewReader, props }),
   createClozeReader: (props) => ({ component: ClozeReader, props })
 });
@@ -61,6 +64,7 @@ export const createTDAHReadingComponents = () => ({
   createParagraphReader: (props) => ({ component: ParagraphReader, props }),
   createSpritzReader: (props) => ({ component: SpritzReader, props }),
   createSaccadeReader: (props) => ({ component: SaccadeReader, props }),
+  createSaccadicFocusReader: (props) => ({ component: SaccadicFocusReader, props }),
   createPreviewReader: (props) => ({ component: PreviewReader, props }),
   createClozeReader: (props) => ({ component: ClozeReader, props })
 });
@@ -107,6 +111,9 @@ export const renderReadingComponent = (technique, factory, props) => {
         break;
       case 'saccade':
         componentConfig = factory.createSaccadeReader(props);
+        break;
+      case 'saccadicFocus':
+        componentConfig = factory.createSaccadicFocusReader(props);
         break;
       case 'preview':
         componentConfig = factory.createPreviewReader(props);
@@ -183,6 +190,7 @@ export const createConfigurableReadingComponents = (config = {}) => {
     createParagraphReader: (props) => ({ component: ParagraphReader, props }),
     createSpritzReader: (props) => ({ component: SpritzReader, props }),
     createSaccadeReader: (props) => ({ component: SaccadeReader, props }),
+    createSaccadicFocusReader: (props) => ({ component: SaccadicFocusReader, props }),
     createPreviewReader: (props) => ({ component: PreviewReader, props }),
     createClozeReader: (props) => ({ component: ClozeReader, props })
   };

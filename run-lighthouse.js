@@ -74,3 +74,10 @@ async function runLighthouse() {
 runLighthouse();
 
 
+
+
+
+
+
+
+
