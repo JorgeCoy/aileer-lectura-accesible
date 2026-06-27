@@ -47,12 +47,12 @@ const StudyDashboard = ({ selectedModule: initialSelectedModule }) => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="min-h-screen bg-background text-text-main flex flex-col">
             {/* Header / Stats Bar */}
-            <div className="bg-white shadow-sm sticky top-0 z-10">
+            <div className="bg-surface border-b border-border-color sticky top-0 z-10">
                 <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <button onClick={() => goToView('start')} className="p-2 hover:bg-gray-100 rounded-full">
-                        <ArrowLeftIcon className="w-6 h-6 text-gray-600" />
+                    <button onClick={() => goToView('start')} className="p-2 hover:bg-surface-elevated rounded-full">
+                        <ArrowLeftIcon className="w-6 h-6 text-text-muted" />
                     </button>
 
                     <div className="flex items-center gap-6">
@@ -65,20 +65,20 @@ const StudyDashboard = ({ selectedModule: initialSelectedModule }) => {
                         {/* Level & XP */}
                         <div className="flex items-center gap-3">
                             <div className="flex flex-col items-end">
-                                <span className="text-xs font-bold text-indigo-600">
+                                <span className="text-xs font-bold text-primary">
                                     {userProfile.name} • Nivel {userProfile.currentLevel}
                                 </span>
-                                <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div className="w-32 h-2 bg-surface-elevated rounded-full overflow-hidden">
                                     <motion.div
-                                        className="h-full bg-indigo-500"
+                                        className="h-full bg-primary"
                                         initial={{ width: 0 }}
                                         animate={{ width: `${progressPercentage}%` }}
                                     />
                                 </div>
-                                <span className="text-[10px] text-gray-400">{userProfile.xp} / {nextLevelXp} XP</span>
+                                <span className="text-[10px] text-text-muted">{userProfile.xp} / {nextLevelXp} XP</span>
                             </div>
-                            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center border-2 border-indigo-500">
-                                <StarIcon className="w-6 h-6 text-indigo-600" />
+                            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary">
+                                <StarIcon className="w-6 h-6 text-primary" />
                             </div>
                         </div>
                     </div>
@@ -88,10 +88,10 @@ const StudyDashboard = ({ selectedModule: initialSelectedModule }) => {
             {/* Main Content */}
             <div className="flex-1 max-w-5xl mx-auto w-full p-6 overflow-y-auto">
                 <div className="mb-8 text-center">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    <h1 className="text-3xl font-bold text-text-main mb-2">
                         {selectedModule ? 'Sesiones del Módulo' : 'Tu Mapa de Aventura'}
                     </h1>
-                    <p className="text-gray-600">
+                    <p className="text-text-muted">
                         {selectedModule
                             ? 'Selecciona una sesión para practicar'
                             : 'Sigue el camino para desbloquear nuevos poderes de lectura.'
@@ -100,7 +100,7 @@ const StudyDashboard = ({ selectedModule: initialSelectedModule }) => {
                     {selectedModule && (
                         <button
                             onClick={() => setSelectedModule(null)}
-                            className="mt-4 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors inline-flex items-center gap-2"
+                            className="mt-4 px-4 py-2 bg-surface-elevated text-text-main hover:bg-primary hover:text-white rounded-lg transition-colors inline-flex items-center gap-2"
                         >
                             ← Volver al Mapa
                         </button>
@@ -132,15 +132,15 @@ const StudyDashboard = ({ selectedModule: initialSelectedModule }) => {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-white rounded-xl shadow-lg p-6"
+                            className="bg-surface border border-border-color rounded-xl shadow-lg p-6"
                         >
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-xl font-bold text-gray-800">
+                                <h3 className="text-xl font-bold text-text-main">
                                     Funcionalidad Premium Activada
                                 </h3>
                                 <button
                                     onClick={() => setActivePremiumFeature(null)}
-                                    className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-full text-sm transition-colors"
+                                    className="px-3 py-1 bg-surface-elevated text-text-main hover:bg-primary hover:text-white rounded-full text-sm transition-colors"
                                 >
                                     Cerrar
                                 </button>

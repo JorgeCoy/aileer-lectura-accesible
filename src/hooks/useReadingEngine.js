@@ -68,12 +68,10 @@ const useReadingEngine = ({ words, options }) => {
 
         let multiplier = options.speedMultiplier || 1;
 
-        // Lógica de velocidad dinámica para Line Focus
-        if (options.readingTechnique === 'lineFocus' && words.length > 0 && words[currentIndex]) {
-            // Calculamos la longitud de la "palabra" actual (que es una línea)
-            const wordCount = words[currentIndex].split(' ').length;
-            // Ajustamos el multiplicador: 1 palabra = 1x, 10 palabras = 10x
-            // Podemos añadir un factor de corrección si se siente muy lento/rápido
+        // Lógica de velocidad dinámica para técnicas que agrupan palabras
+        const groupTechniques = ['lineFocus', 'chunking', 'saccadicFocus', 'paragraphFocus'];
+        if (groupTechniques.includes(options.readingTechnique) && words.length > 0 && words[currentIndex]) {
+            const wordCount = words[currentIndex].trim().split(/\s+/).length;
             multiplier = wordCount;
         }
 

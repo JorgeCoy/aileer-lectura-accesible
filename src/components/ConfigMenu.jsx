@@ -103,7 +103,7 @@ const ConfigMenu = ({
               className="w-full p-2 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all text-gray-900"
             >
               <option value="minimalist">🧼 Minimalista</option>
-              <option value="cinematic">🎬 Cinemático</option>
+              <option value="cinematic">🎬 Antigravity IDE</option>
               <option value="zen">🌿 Zen</option>
               <option value="professional">💻 Profesional</option>
               <option value="vintage">📜 Vintage</option>

@@ -32,15 +32,15 @@ const RegisterView = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-background flex items-center justify-center p-4 text-text-main">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md"
+                className="bg-surface border border-border-color rounded-2xl shadow-xl p-8 w-full max-w-md"
             >
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Crear Cuenta</h1>
-                    <p className="text-gray-500">Únete a aLeer hoy mismo</p>
+                    <h1 className="text-3xl font-bold text-text-main mb-2">Crear Cuenta</h1>
+                    <p className="text-text-muted">Únete a aLeer hoy mismo</p>
                 </div>
 
                 {error && (
@@ -56,8 +56,8 @@ const RegisterView = () => {
                             type="button"
                             onClick={() => setRole('student')}
                             className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${role === 'student'
-                                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                : 'border-gray-200 hover:border-blue-200 text-gray-500'
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-border-color hover:border-primary/50 text-text-muted'
                                 }`}
                         >
                             <UserIcon className="w-8 h-8" />
@@ -67,8 +67,8 @@ const RegisterView = () => {
                             type="button"
                             onClick={() => setRole('teacher')}
                             className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${role === 'teacher'
-                                ? 'border-purple-500 bg-purple-50 text-purple-700'
-                                : 'border-gray-200 hover:border-purple-200 text-gray-500'
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-border-color hover:border-primary/50 text-text-muted'
                                 }`}
                         >
                             <AcademicCapIcon className="w-8 h-8" />
@@ -77,11 +77,11 @@ const RegisterView = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                        <label className="block text-sm font-medium text-text-main mb-1">Nombre Completo</label>
                         <input
                             type="text"
                             required
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900"
+                            className="w-full px-4 py-2 rounded-lg border border-border-color bg-surface-elevated focus:ring-2 focus:ring-primary focus:border-primary text-text-main"
                             placeholder="Juan Pérez"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
@@ -89,11 +89,11 @@ const RegisterView = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                        <label className="block text-sm font-medium text-text-main mb-1">Correo Electrónico</label>
                         <input
                             type="email"
                             required
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900"
+                            className="w-full px-4 py-2 rounded-lg border border-border-color bg-surface-elevated focus:ring-2 focus:ring-primary focus:border-primary text-text-main"
                             placeholder="juan@ejemplo.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -101,11 +101,11 @@ const RegisterView = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                        <label className="block text-sm font-medium text-text-main mb-1">Contraseña</label>
                         <input
                             type="password"
                             required
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900"
+                            className="w-full px-4 py-2 rounded-lg border border-border-color bg-surface-elevated focus:ring-2 focus:ring-primary focus:border-primary text-text-main"
                             placeholder="••••••••"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -115,15 +115,15 @@ const RegisterView = () => {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg shadow-purple-500/30 disabled:opacity-50"
+                        className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg shadow-primary/30 disabled:opacity-50"
                     >
                         {isLoading ? 'Creando cuenta...' : 'Registrarse'}
                     </button>
                 </form>
 
-                <div className="mt-6 text-center text-sm text-gray-500">
+                <div className="mt-6 text-center text-sm text-text-muted">
                     ¿Ya tienes cuenta?{' '}
-                    <Link to="/login" className="text-purple-600 hover:text-purple-700 font-medium hover:underline">
+                    <Link to="/login" className="text-primary hover:text-primary/80 font-medium hover:underline">
                         Inicia sesión
                     </Link>
                 </div>

@@ -221,7 +221,7 @@ const TeacherClasses = () => {
             {/* Panel Izquierdo: Lista de Clases (Master) */}
             <div className="w-full md:w-80 flex flex-col gap-4">
                 <div className="flex justify-between items-center mb-2 px-2">
-                    <h1 className="text-2xl font-bold text-slate-800">Mis Clases</h1>
+                    <h1 className="text-2xl font-bold text-text-main">Mis Clases</h1>
                     <button
                         onClick={() => setShowCreateModal(true)}
                         className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-2 px-4 rounded-xl font-bold shadow-md shadow-orange-200 hover:shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-2 text-sm"
@@ -244,10 +244,10 @@ const TeacherClasses = () => {
                                     setSelectedClass(cls);
                                     if (!selectedAction) setSelectedAction('students');
                                 }}
-                                className={`w-full text-left p-4 rounded-2xl transition-all border backdrop-blur-sm ${
+                                className={`w-full text-left p-4 rounded-2xl transition-all border ${
                                     selectedClass?.id === cls.id
-                                        ? 'bg-indigo-600/90 text-white border-indigo-500 shadow-lg shadow-indigo-200'
-                                        : 'bg-white/60 text-slate-700 border-white/40 hover:bg-white hover:shadow-md'
+                                        ? 'bg-primary text-background border-primary shadow-lg'
+                                        : 'bg-surface text-text-muted border-border-color hover:bg-surface-elevated hover:shadow-md'
                                 }`}
                             >
                                 <div className="font-bold text-lg">{cls.name}</div>
@@ -262,7 +262,7 @@ const TeacherClasses = () => {
             </div>
 
             {/* Panel Derecho: Detalle de Clase (Detail) */}
-            <div className="flex-1 bg-white/60 backdrop-blur-xl border border-white/40 rounded-3xl shadow-xl flex flex-col overflow-hidden">
+            <div className="flex-1 bg-surface border border-border-color rounded-3xl shadow-xl flex flex-col overflow-hidden">
                 {!selectedClass ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-center p-12">
                         <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
@@ -274,13 +274,16 @@ const TeacherClasses = () => {
                 ) : (
                     <>
                         {/* Cabecera del Detalle */}
-                        <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-8 text-white relative overflow-hidden flex-shrink-0">
+                        <div 
+                            className="p-8 text-white relative overflow-hidden flex-shrink-0"
+                            style={{ background: 'linear-gradient(to bottom right, var(--color-primary), var(--color-accent))' }}
+                        >
                             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                             
                             <div className="relative z-10 flex justify-between items-start">
                                 <div>
                                     <h2 className="text-3xl font-black mb-2">{selectedClass.name}</h2>
-                                    <div className="flex items-center gap-4 text-indigo-100">
+                                    <div className="flex items-center gap-4 text-white/80">
                                         <div className="bg-white/20 px-3 py-1 rounded-lg font-mono text-sm backdrop-blur-sm border border-white/20 flex items-center gap-2">
                                             <span>Código:</span>
                                             <span className="font-bold text-white tracking-widest">{selectedClass.code}</span>
@@ -300,29 +303,29 @@ const TeacherClasses = () => {
                             <div className="grid grid-cols-3 gap-4 mt-8 relative z-10">
                                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
                                     <div className="text-3xl font-bold">{getAssignmentsForClass(selectedClass.id).length}</div>
-                                    <div className="text-indigo-200 text-sm">Lecturas activas</div>
+                                    <div className="text-white/80 text-sm">Lecturas activas</div>
                                 </div>
                                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
                                     <div className="text-3xl font-bold">{classStats.completedCount}</div>
-                                    <div className="text-indigo-200 text-sm">Completadas</div>
+                                    <div className="text-white/80 text-sm">Completadas</div>
                                 </div>
                                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
                                     <div className="text-3xl font-bold">{classStats.avgWpm}</div>
-                                    <div className="text-indigo-200 text-sm">WPM Promedio</div>
+                                    <div className="text-white/80 text-sm">WPM Promedio</div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Pestañas de Navegación Interna */}
-                        <div className="flex border-b border-gray-100 bg-white/50 backdrop-blur-sm">
+                        <div className="flex border-b border-border-color bg-surface-elevated/50 backdrop-blur-sm">
                             {actions.map(action => (
                                 <button
                                     key={action.id}
                                     onClick={() => setSelectedAction(action.id)}
                                     className={`flex-1 py-4 font-bold text-sm transition-all border-b-2 ${
                                         selectedAction === action.id 
-                                        ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' 
-                                        : 'border-transparent text-slate-500 hover:bg-slate-50'
+                                        ? 'border-primary text-primary bg-primary/10' 
+                                        : 'border-transparent text-text-muted hover:bg-surface'
                                     }`}
                                 >
                                     {action.label}
@@ -337,13 +340,13 @@ const TeacherClasses = () => {
                                     {selectedClass.students && selectedClass.students.length > 0 ? (
                                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                                             {selectedClass.students.map((student, idx) => (
-                                                <div key={idx} className="bg-white p-4 rounded-2xl border border-indigo-50 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4">
-                                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 border-2 border-white shadow-sm flex items-center justify-center text-indigo-600 font-bold text-lg">
+                                                <div key={idx} className="bg-surface p-4 rounded-2xl border border-border-color shadow-sm hover:shadow-md transition-shadow flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-full bg-surface-elevated border-2 border-border-color shadow-sm flex items-center justify-center text-primary font-bold text-lg">
                                                         {student.name?.charAt(0) || '?'}
                                                     </div>
                                                     <div>
-                                                        <div className="font-bold text-slate-800">{student.name}</div>
-                                                        <div className="text-xs text-indigo-500 font-medium">Activo</div>
+                                                        <div className="font-bold text-text-main">{student.name}</div>
+                                                        <div className="text-xs text-primary font-medium">Activo</div>
                                                     </div>
                                                 </div>
                                             ))}
@@ -362,7 +365,7 @@ const TeacherClasses = () => {
                                     <div className="flex justify-end mb-4">
                                         <button
                                             onClick={() => navigate('/docente/biblioteca')}
-                                            className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+                                            className="bg-primary/20 text-primary hover:bg-primary/30 px-4 py-2 rounded-xl text-sm font-bold transition-colors"
                                         >
                                             + Asignar desde Biblioteca
                                         </button>
@@ -371,15 +374,15 @@ const TeacherClasses = () => {
                                     <div className="space-y-3">
                                         {getAssignmentsForClass(selectedClass.id).length > 0 ? (
                                             getAssignmentsForClass(selectedClass.id).map(assignment => (
-                                                <div key={assignment.id} className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm hover:shadow-md transition-all group flex items-center justify-between">
+                                                <div key={assignment.id} className="bg-surface border border-border-color p-4 rounded-2xl shadow-sm hover:shadow-md transition-all group flex items-center justify-between">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600 text-xl">
+                                                        <div className="w-12 h-12 bg-surface-elevated rounded-xl flex items-center justify-center text-primary text-xl">
                                                             📖
                                                         </div>
                                                         <div>
-                                                            <h4 className="font-bold text-slate-800">{assignment.textTitle}</h4>
+                                                            <h4 className="font-bold text-text-main">{assignment.textTitle}</h4>
                                                             <div className="flex gap-2 mt-1">
-                                                                <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded-md font-medium">
+                                                                <span className="bg-surface-elevated text-text-muted text-xs px-2 py-1 rounded-md font-medium border border-border-color">
                                                                     {assignment.config?.speed || 200} WPM
                                                                 </span>
                                                                 {assignment.evaluation?.enabled ? (
@@ -395,9 +398,9 @@ const TeacherClasses = () => {
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button onClick={() => handleViewDetails(assignment)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg font-bold text-sm">Probar</button>
-                                                        <button onClick={() => openEditModal(assignment)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg font-bold text-sm">Editar</button>
-                                                        <button onClick={() => handleUnassign(assignment)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg font-bold text-sm">Quitar</button>
+                                                        <button onClick={() => handleViewDetails(assignment)} className="p-2 text-primary hover:bg-surface-elevated rounded-lg font-bold text-sm">Probar</button>
+                                                        <button onClick={() => openEditModal(assignment)} className="p-2 text-text-muted hover:bg-surface-elevated rounded-lg font-bold text-sm">Editar</button>
+                                                        <button onClick={() => handleUnassign(assignment)} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg font-bold text-sm">Quitar</button>
                                                     </div>
                                                 </div>
                                             ))
@@ -416,18 +419,18 @@ const TeacherClasses = () => {
 
             {/* Create Class Modal */}
             {showCreateModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl animate-in fade-in zoom-in-95 duration-200">
-                        <h2 className="text-xl font-bold text-gray-800 mb-4">Nueva Clase</h2>
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-surface border border-border-color rounded-2xl p-6 max-w-md w-full shadow-xl animate-in fade-in zoom-in-95 duration-200">
+                        <h2 className="text-xl font-bold text-text-main mb-4">Nueva Clase</h2>
                         <form onSubmit={handleCreateClass} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Curso</label>
+                                <label className="block text-sm font-medium text-text-muted mb-1">Nombre del Curso</label>
                                 <input
                                     name="className"
                                     type="text"
                                     placeholder="Ej: Tercero C - Mañana"
                                     required
-                                    className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-gray-900 bg-white transition-all"
+                                    className="w-full border border-border-color rounded-xl p-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-text-main bg-surface-elevated transition-all"
                                 />
                             </div>
 
@@ -435,7 +438,7 @@ const TeacherClasses = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowCreateModal(false)}
-                                    className="flex-1 py-3 text-gray-600 hover:bg-gray-100 rounded-xl transition font-bold"
+                                    className="flex-1 py-3 text-text-muted hover:bg-surface-elevated rounded-xl transition font-bold"
                                 >
                                     Cancelar
                                 </button>
@@ -453,16 +456,16 @@ const TeacherClasses = () => {
 
             {/* Assignment Details Modal */}
             {viewAssignment && !showPreviewModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-xl animate-in fade-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-surface border border-border-color rounded-2xl p-6 max-w-lg w-full shadow-xl animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-start mb-6">
                             <div>
-                                <h2 className="text-xl font-bold text-gray-800">Detalles de Asignación</h2>
-                                <p className="text-gray-600 text-sm">{viewAssignment.textTitle}</p>
+                                <h2 className="text-xl font-bold text-text-main">Detalles de Asignación</h2>
+                                <p className="text-text-muted text-sm">{viewAssignment.textTitle}</p>
                             </div>
                             <button
                                 onClick={() => setViewAssignment(null)}
-                                className="text-gray-400 hover:text-gray-600"
+                                className="text-text-muted hover:text-text-main"
                             >
                                 ✕
                             </button>
@@ -470,29 +473,29 @@ const TeacherClasses = () => {
 
                         <div className="space-y-6 mb-8">
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Velocidad</div>
-                                    <div className="font-semibold text-gray-800">{viewAssignment.config?.speed || 200} WPM</div>
+                                <div className="bg-surface-elevated p-3 rounded-lg border border-border-color">
+                                    <div className="text-xs text-text-muted uppercase tracking-wider mb-1">Velocidad</div>
+                                    <div className="font-semibold text-text-main">{viewAssignment.config?.speed || 200} WPM</div>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Técnica</div>
-                                    <div className="font-semibold text-gray-800 capitalize">{viewAssignment.config?.technique || 'Resaltado'}</div>
+                                <div className="bg-surface-elevated p-3 rounded-lg border border-border-color">
+                                    <div className="text-xs text-text-muted uppercase tracking-wider mb-1">Técnica</div>
+                                    <div className="font-semibold text-text-main capitalize">{viewAssignment.config?.technique || 'Resaltado'}</div>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Tema Visual</div>
-                                    <div className="font-semibold text-gray-800 capitalize">{viewAssignment.config?.theme || 'Minimalista'}</div>
+                                <div className="bg-surface-elevated p-3 rounded-lg border border-border-color">
+                                    <div className="text-xs text-text-muted uppercase tracking-wider mb-1">Tema Visual</div>
+                                    <div className="font-semibold text-text-main capitalize">{viewAssignment.config?.theme || 'Minimalista'}</div>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Tamaño Texto</div>
-                                    <div className="font-semibold text-gray-800">{viewAssignment.config?.fontSize || 18}px</div>
+                                <div className="bg-surface-elevated p-3 rounded-lg border border-border-color">
+                                    <div className="text-xs text-text-muted uppercase tracking-wider mb-1">Tamaño Texto</div>
+                                    <div className="font-semibold text-text-main">{viewAssignment.config?.fontSize || 18}px</div>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Fuente</div>
-                                    <div className="font-semibold text-gray-800 capitalize">{viewAssignment.config?.fontFamily || 'Sans Serif'}</div>
+                                <div className="bg-surface-elevated p-3 rounded-lg border border-border-color">
+                                    <div className="text-xs text-text-muted uppercase tracking-wider mb-1">Fuente</div>
+                                    <div className="font-semibold text-text-main capitalize">{viewAssignment.config?.fontFamily || 'Sans Serif'}</div>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Voz</div>
-                                    <div className="font-semibold text-gray-800 truncate">{viewAssignment.config?.voice || 'Google Español'}</div>
+                                <div className="bg-surface-elevated p-3 rounded-lg border border-border-color">
+                                    <div className="text-xs text-text-muted uppercase tracking-wider mb-1">Voz</div>
+                                    <div className="font-semibold text-text-main truncate">{viewAssignment.config?.voice || 'Google Español'}</div>
                                 </div>
                             </div>
                         </div>
@@ -501,7 +504,7 @@ const TeacherClasses = () => {
                             <div className="flex gap-3">
                                 <button
                                     onClick={handleExportPDF}
-                                    className="w-1/3 bg-white border border-gray-300 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition flex items-center justify-center gap-2"
+                                    className="w-1/3 bg-surface border border-border-color text-text-main py-3 rounded-xl font-bold hover:bg-surface-elevated transition flex items-center justify-center gap-2"
                                     title="Exportar a PDF"
                                 >
                                     <span>🖨️</span> PDF
@@ -517,7 +520,7 @@ const TeacherClasses = () => {
                         <div className="mt-4">
                             <button
                                 onClick={() => setViewAssignment(null)}
-                                className="w-full py-3 text-gray-600 hover:bg-gray-100 rounded-xl transition font-medium"
+                                className="w-full py-3 text-text-muted hover:bg-surface-elevated rounded-xl transition font-medium"
                             >
                                 Cerrar
                             </button>
@@ -528,7 +531,7 @@ const TeacherClasses = () => {
 
             {/* Edit Assignment Full Modal */}
             {editAssignment && (
-                <div className="fixed inset-0 z-[60] bg-white flex flex-col">
+                <div className="fixed inset-0 z-[60] bg-background flex flex-col">
                     {/* Configuración superior unificada */}
                     <AssignmentConfigurator
                         selectedClassId={editAssignment.classId} // No dejamos cambiar la clase, solo la mostramos
@@ -590,7 +593,7 @@ const TeacherClasses = () => {
 
             {/* Live Preview Modal */}
             {showPreviewModal && previewData && (
-                <div className="fixed inset-0 z-[60] bg-white">
+                <div className="fixed inset-0 z-[60] bg-background">
                     <div className="absolute top-4 right-4 z-[70]">
                         <button
                             onClick={() => {

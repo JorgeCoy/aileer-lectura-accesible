@@ -51,10 +51,10 @@ const StudentDashboard = () => {
             {/* Header with Greeting */}
             <div className="flex justify-between items-end mb-2">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-800">
+                    <h1 className="text-3xl font-bold text-text-main">
                         Hola, {user?.displayName?.split(' ')[0] || 'Estudiante'} 👋
                     </h1>
-                    <p className="text-gray-500">¿Listo para romper tu récord hoy?</p>
+                    <p className="text-text-muted">¿Listo para romper tu récord hoy?</p>
                 </div>
             </div>
 
@@ -65,8 +65,8 @@ const StudentDashboard = () => {
                         <div
                             key={f.id}
                             className={`p-4 rounded-xl flex items-start gap-4 shadow-sm border animate-in slide-in-from-top-2 ${f.type === 'kudos'
-                                    ? 'bg-green-50 border-green-100 text-green-800'
-                                    : 'bg-red-50 border-red-100 text-red-800'
+                                    ? 'bg-green-500/10 border-green-500/30 text-green-500'
+                                    : 'bg-red-500/10 border-red-500/30 text-red-500'
                                 }`}
                         >
                             <div className="text-2xl">
@@ -81,8 +81,8 @@ const StudentDashboard = () => {
                             <button
                                 onClick={() => handleDismissFeedback(f.id)}
                                 className={`text-xs font-bold px-3 py-1 rounded-lg transition-colors ${f.type === 'kudos'
-                                        ? 'bg-green-200 hover:bg-green-300 text-green-800'
-                                        : 'bg-red-200 hover:bg-red-300 text-red-800'
+                                        ? 'bg-green-500/20 hover:bg-green-500/40 text-green-500'
+                                        : 'bg-red-500/20 hover:bg-red-500/40 text-red-500'
                                     }`}
                             >
                                 Entendido
@@ -100,12 +100,12 @@ const StudentDashboard = () => {
                 <div className="lg:col-span-2 space-y-6">
 
                     {/* Assignments Card */}
-                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                    <div className="bg-surface rounded-3xl p-6 shadow-sm border border-border-color">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-xl text-blue-600">
+                            <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-xl text-primary">
                                 📝
                             </div>
-                            <h3 className="text-xl font-bold text-gray-800">Mis Tareas</h3>
+                            <h3 className="text-xl font-bold text-text-main">Mis Tareas</h3>
                         </div>
 
                         {assignments.length > 0 ? (
@@ -115,22 +115,22 @@ const StudentDashboard = () => {
                                         key={task.id}
                                         onClick={() => navigate(`/estudiante/lectura/${task.textId}`)}
                                         className={`p-4 rounded-2xl cursor-pointer transition-all border-2 group ${task.progress?.status === 'completed'
-                                            ? 'bg-green-50 border-green-100 hover:border-green-300'
-                                            : 'bg-white border-gray-100 hover:border-blue-300 hover:shadow-md'
+                                            ? 'bg-green-500/10 border-green-500/30 hover:border-green-500'
+                                            : 'bg-surface-elevated border-border-color hover:border-primary hover:bg-surface'
                                             }`}
                                     >
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center gap-4">
-                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${task.progress?.status === 'completed' ? 'bg-green-200' : 'bg-blue-50 group-hover:bg-blue-100'
+                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${task.progress?.status === 'completed' ? 'bg-green-500/20' : 'bg-primary/10 group-hover:bg-primary/20'
                                                     }`}>
                                                     {task.progress?.status === 'completed' ? '✅' : '📖'}
                                                 </div>
                                                 <div>
-                                                    <p className={`font-bold text-lg ${task.progress?.status === 'completed' ? 'text-green-900' : 'text-gray-800'
+                                                    <p className={`font-bold text-lg ${task.progress?.status === 'completed' ? 'text-green-500' : 'text-text-main'
                                                         }`}>
                                                         {task.textTitle}
                                                     </p>
-                                                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                                                    <p className="text-xs text-text-muted font-medium uppercase tracking-wide">
                                                         {task.className}
                                                     </p>
                                                 </div>
@@ -138,7 +138,7 @@ const StudentDashboard = () => {
 
                                             {task.progress?.status === 'completed' && (
                                                 <div className="text-right">
-                                                    <p className="text-xl font-black text-green-600">{task.progress.wpm} <span className="text-xs font-bold text-green-400">WPM</span></p>
+                                                    <p className="text-xl font-black text-green-500">{task.progress.wpm} <span className="text-xs font-bold text-green-400">WPM</span></p>
                                                 </div>
                                             )}
                                         </div>
@@ -146,8 +146,8 @@ const StudentDashboard = () => {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                                <p className="text-gray-400 font-medium">No tienes lecturas asignadas aún.</p>
+                            <div className="text-center py-10 bg-surface-elevated rounded-2xl border-2 border-dashed border-border-color">
+                                <p className="text-text-muted font-medium">No tienes lecturas asignadas aún.</p>
                             </div>
                         )}
                     </div>

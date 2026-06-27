@@ -247,12 +247,12 @@ const WarmUpView = () => {
   const currentAnim = ballAnimation[mode] || {};
 
   return (
-    <div className="relative w-full h-screen bg-gradient-to-br from-gray-900 via-purple-900/40 to-gray-900 overflow-hidden flex flex-col items-center justify-center p-2 md:p-4">
+    <div className="relative w-full h-screen bg-background overflow-hidden flex flex-col items-center justify-center p-2 md:p-4">
 
       {/* Botón Volver - Regresa a la vista anterior */}
       <button
         onClick={() => goBack()} // ✅ Usar goBack
-        className="absolute top-4 left-4 z-50 p-3 bg-white/20 backdrop-blur-lg rounded-full text-white hover:bg-white/30 transition-all shadow-xl"
+        className="absolute top-4 left-4 z-50 p-3 bg-surface border border-border-color rounded-full text-text-main hover:bg-primary/10 transition-all shadow-xl"
         aria-label="Volver"
       >
         <ArrowLeftIcon className="w-7 h-7" />
@@ -267,14 +267,14 @@ const WarmUpView = () => {
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
-              className="bg-black/40 backdrop-blur-md border border-white/10 p-3 rounded-xl text-white shadow-lg pointer-events-auto"
+              className="bg-surface-elevated backdrop-blur-md border border-border-color p-3 rounded-xl text-text-main shadow-lg pointer-events-auto"
             >
-              <div className="text-xs text-blue-300 font-bold uppercase tracking-wider mb-1">
+              <div className="text-xs text-primary font-bold uppercase tracking-wider mb-1">
                 {new Date(log.id).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </div>
               <div className="font-medium text-sm">{log.mode}</div>
-              <div className="text-xs text-gray-400 mt-1">
-                Duración: <span className="text-white">{log.duration < 60 ? `${Math.round(log.duration)}s` : `${Math.floor(log.duration / 60)}m ${Math.round(log.duration % 60)}s`}</span>
+              <div className="text-xs text-text-muted mt-1">
+                Duración: <span className="text-text-main">{log.duration < 60 ? `${Math.round(log.duration)}s` : `${Math.floor(log.duration / 60)}m ${Math.round(log.duration % 60)}s`}</span>
               </div>
             </motion.div>
           ))}
@@ -283,8 +283,8 @@ const WarmUpView = () => {
 
       {/* Libro */}
       <div ref={containerRef} className="relative w-full max-w-7xl aspect-[3/2] flex shadow-2xl">
-        <div className="flex-1 bg-[#fdfbf7] rounded-l-lg border-r-4 border-gray-400 shadow-inner" />
-        <div className="flex-1 bg-[#fdfbf7] rounded-r-lg border-l-4 border-gray-400 shadow-inner" />
+        <div className="flex-1 bg-surface rounded-l-lg border-r-4 border-border-color shadow-inner" />
+        <div className="flex-1 bg-surface rounded-r-lg border-l-4 border-border-color shadow-inner" />
 
         <div className="absolute inset-0 z-10">
 
@@ -305,8 +305,8 @@ const WarmUpView = () => {
                       }
                     }
                   }}
-                  className={`flex items-center justify-center text-2xl md:text-5xl font-bold rounded-2xl cursor-pointer transition-all aspect-square shadow-xl
-                    ${n === currentTarget ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white scale-110 ring-4 ring-blue-400' : 'bg-white/95 text-gray-800 hover:bg-gray-100'}`}
+                  className={`flex items-center justify-center text-2xl md:text-5xl font-bold rounded-2xl cursor-pointer transition-all aspect-square shadow-xl border
+                    ${n === currentTarget ? 'bg-primary text-white scale-110 ring-4 ring-primary border-primary' : 'bg-surface border-border-color text-text-main hover:bg-primary/10'}`}
                 >
                   {n}
                 </motion.div>
@@ -318,7 +318,7 @@ const WarmUpView = () => {
           {mode === 'tachisto' && (
             <div className="flex flex-col items-center justify-center h-full gap-12">
               {showTachisto ? (
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-7xl md:text-9xl font-black text-blue-500 tracking-wider">
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-7xl md:text-9xl font-black text-primary tracking-wider">
                   {tachistoNumber}
                 </motion.div>
               ) : tachistoNumber && (
@@ -333,7 +333,7 @@ const WarmUpView = () => {
                       if (val.length === tachistoNumber.length && val !== tachistoNumber) setTachistoCorrect(false);
                     }}
                     placeholder="Escribe aquí"
-                    className="text-5xl md:text-7xl text-center bg-white/20 backdrop-blur-xl rounded-3xl px-10 py-6 text-white placeholder-gray-400 w-11/12 md:w-auto"
+                    className="text-5xl md:text-7xl text-center bg-surface border border-border-color backdrop-blur-xl rounded-3xl px-10 py-6 text-text-main placeholder-text-muted w-11/12 md:w-auto"
                     autoFocus
                   />
                   {tachistoCorrect === true && <p className="text-5xl text-green-400 font-bold animate-pulse">¡CORRECTO!</p>}
@@ -356,10 +356,10 @@ const WarmUpView = () => {
           {isPlaying && !['schulte', 'tachisto', 'peripheral'].includes(mode) && (
             <motion.div
               key={resetKey + mode}
-              className="absolute w-6 h-6 md:w-10 md:h-10 rounded-full bg-blue-500 z-50 pointer-events-none"
+              className="absolute w-6 h-6 md:w-10 md:h-10 rounded-full bg-primary z-50 pointer-events-none"
               style={{
-                boxShadow: "0 0 20px 5px rgba(59,130,246,0.6)",
-                background: "radial-gradient(circle at 30% 30%, #60a5fa, #3b82f6)"
+                boxShadow: "0 0 20px 5px var(--primary)",
+                background: "var(--primary)"
               }}
               animate={currentAnim.animate}
               transition={currentAnim.transition}
@@ -375,9 +375,9 @@ const WarmUpView = () => {
               transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
               onAnimationComplete={() => setIsFlipping(false)}
               style={{ transformOrigin: "left center" }}
-              className="absolute top-0 right-0 w-1/2 h-full bg-[#fdfbf7] rounded-r-lg shadow-2xl border-l-4 border-gray-400 z-50"
+              className="absolute top-0 right-0 w-1/2 h-full bg-surface rounded-r-lg shadow-2xl border-l-4 border-border-color z-50"
             >
-              <motion.div initial={{ opacity: 0.4 }} animate={{ opacity: 0 }} className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
+              <motion.div initial={{ opacity: 0.4 }} animate={{ opacity: 0 }} className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent" />
             </motion.div>
           )}
         </div>
@@ -386,11 +386,11 @@ const WarmUpView = () => {
       {/* Controles */}
       <motion.div
         animate={{ opacity: isPlaying ? 0.15 : 1 }}
-        className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-2xl p-4 md:p-8 rounded-3xl border border-white/30 shadow-2xl z-50 w-[92%] md:w-auto"
+        className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 bg-surface backdrop-blur-2xl p-4 md:p-8 rounded-3xl border border-border-color shadow-2xl z-50 w-[92%] md:w-auto"
       >
         <div className="flex flex-col gap-4 md:gap-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl md:text-3xl font-black text-white">Calentamiento Visual</h2>
+            <h2 className="text-xl md:text-3xl font-black text-text-main">Calentamiento Visual</h2>
           </div>
 
           <div className="flex items-center gap-4">
@@ -401,13 +401,13 @@ const WarmUpView = () => {
                 if (next && mode === 'tachisto') startTachisto();
                 if (next && mode === 'schulte') generateSchulte();
               }}
-              className="p-3 md:p-4 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-2xl transition hover:scale-110"
+              className="p-3 md:p-4 rounded-full bg-primary text-white shadow-2xl transition hover:scale-110"
               aria-label={isPlaying ? "Pausar" : "Iniciar"}
             >
               {isPlaying ? <PauseIcon className="w-6 h-6 md:w-8 md:h-8" /> : <PlayIcon className="w-6 h-6 md:w-8 md:h-8" />}
             </button>
 
-            <select value={mode} onChange={(e) => { setIsPlaying(false); setMode(e.target.value); setResetKey(k => k + 1); }} className="bg-black/40 backdrop-blur-md border border-white/10 text-white px-4 py-3 md:px-6 md:py-3 rounded-xl text-sm md:text-base flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+            <select value={mode} onChange={(e) => { setIsPlaying(false); setMode(e.target.value); setResetKey(k => k + 1); }} className="bg-surface border border-border-color text-text-main px-4 py-3 md:px-6 md:py-3 rounded-xl text-sm md:text-base flex-1 focus:outline-none focus:ring-2 focus:ring-primary/50">
               <option value="reading-path">Libro Abierto</option>
               <option value="saccade-horizontal">Saltos Horizontales</option>
               <option value="four-corners">Cuatro Esquinas</option>
@@ -421,11 +421,11 @@ const WarmUpView = () => {
           </div>
 
           <div className="space-y-3">
-            <div className="flex justify-between text-white/90 text-sm md:text-base font-medium">
+            <div className="flex justify-between text-text-main text-sm md:text-base font-medium">
               <span>Velocidad</span>
-              <span className="text-cyan-400">{speed.toFixed(1)}x</span>
+              <span className="text-primary">{speed.toFixed(1)}x</span>
             </div>
-            <input type="range" min="1" max="10" step="0.1" value={speed} onChange={(e) => setSpeed(parseFloat(e.target.value))} className="w-full h-3 bg-gray-700 rounded-full accent-cyan-500 shadow-inner" aria-label="Control de velocidad" />
+            <input type="range" min="1" max="10" step="0.1" value={speed} onChange={(e) => setSpeed(parseFloat(e.target.value))} className="w-full h-3 bg-surface-elevated rounded-full accent-primary shadow-inner border border-border-color" aria-label="Control de velocidad" />
           </div>
         </div>
       </motion.div>

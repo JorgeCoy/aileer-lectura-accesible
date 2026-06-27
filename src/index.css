@@ -16,6 +16,15 @@
 /* 🎨 PALETA DE COLORES UNIFICADA - Variables CSS Centralizadas */
 /* Diseño system para consistencia visual y mejor accesibilidad */
 :root {
+  /* Tema por defecto (Light / Estudiante default) */
+  --bg-color: #ffffff;
+  --bg-surface: #f8fafc;
+  --bg-surface-elevated: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --color-primary: #4f46e5;
+  --color-accent: #8b5cf6;
+  --border-color: #e2e8f0;
   /* === PALETA PRIMARIA === */
   /* Colores base para toda la aplicación */
   --color-primary-50: #fefce8;
@@ -44,7 +53,6 @@
   --color-estudiante-hover: #047857;    /* Emerald-700 */
 
   /* === PALETA NEUTRAL MEJORADA === */
-  /* Mejor contraste y accesibilidad */
   --color-neutral-50: #fafafa;
   --color-neutral-100: #f5f5f5;
   --color-neutral-200: #e5e5e5;
@@ -55,6 +63,72 @@
   --color-neutral-700: #404040;
   --color-neutral-800: #262626;
   --color-neutral-900: #171717;
+}
+
+[data-theme='cinematic'] {
+  /* Dark/Antigravity Theme (Solarized Dark Replica) */
+  --bg-color: #002b36; /* Color de fondo base (Base03) */
+  --bg-surface: #0a4655; /* Mismo tono que le gustó al usuario para el sidebar */
+  --bg-surface-elevated: #11586a; /* Aún más claro para tarjetas e inputs */
+  --bg-sidebar: #0a4655; /* Sidebar explícitamente separado */
+  --text-main: #839496;
+  --text-muted: #586e75;
+  --color-primary: #2aa198;
+  --color-accent: #268bd2;
+  --border-color: rgba(131, 148, 150, 0.15);
+}
+
+[data-theme='zen'] {
+  /* Emerald/Nature Theme (Estudiante) */
+  --bg-color: #f0fdf4; /* green-50 */
+  --bg-surface: #ffffff; /* white */
+  --bg-surface-elevated: #dcfce7; /* green-100 */
+  --bg-sidebar: #dcfce7; /* green-100 */
+  --text-main: #064e3b; 
+  --text-muted: #059669; 
+  --color-primary: #10b981; 
+  --color-accent: #34d399; 
+  --border-color: #bbf7d0; /* green-200 */
+}
+
+[data-theme='professional'] {
+  /* Teacher Default */
+  --bg-color: #fff7ed; /* orange-50 */
+  --bg-surface: #ffffff; /* white */
+  --bg-surface-elevated: #ffedd5; /* orange-100 */
+  --bg-sidebar: #ffedd5; /* orange-100 */
+  --text-main: #431407; 
+  --text-muted: #9a3412; 
+  --color-primary: #ea580c; 
+  --color-accent: #f97316; 
+  --border-color: #fed7aa; /* orange-200 */
+}
+
+[data-theme='minimalist'] {
+  /* Adult Default */
+  --bg-color: #f8fafc; /* slate-50 */
+  --bg-surface: #ffffff; /* white */
+  --bg-surface-elevated: #f1f5f9; /* slate-100 */
+  --bg-sidebar: #f1f5f9; /* slate-100 */
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --color-primary: #334155;
+  --color-accent: #0f172a;
+  --border-color: #e2e8f0; /* slate-200 */
+}
+
+[data-theme='focus'] {
+  /* ADHD Default */
+  --bg-color: #f3f4f6; /* gray-100 para separar de las tarjetas blancas */
+  --bg-surface: #ffffff; /* white */
+  --bg-surface-elevated: #e5e7eb; /* gray-200 */
+  --bg-sidebar: #e5e7eb; /* gray-200 */
+  --text-main: #000000;
+  --text-muted: #374151; /* gray-700 */
+  --color-primary: #000000;
+  --color-accent: #000000;
+  --border-color: #d1d5db; /* gray-300 */
+
 
   /* === PALETA SEMÁNTICA === */
   /* Estados y feedback visual */
@@ -105,8 +179,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #0b0b0d;
-  color: white;
+  background-color: var(--bg-color);
+  color: var(--text-main);
   /* Prevent flash of unstyled content */
   font-display: swap;
   /* Optimize text rendering */
@@ -153,4 +227,24 @@ body {
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Safari and Chrome */
+}
+
+/* ✅ Scrollbar elegante y personalizado */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5); /* gris sutil */
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.8);
 }

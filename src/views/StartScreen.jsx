@@ -48,34 +48,34 @@ const StartScreen = () => {
   // Render: Registro (Primera Vez)
   if (userProfile.isFirstTime && !showTour && !showTest) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-text-main">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md text-center"
+          className="bg-surface border border-border-color p-8 rounded-3xl shadow-xl w-full max-w-md text-center"
         >
-          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <SparklesIcon className="w-10 h-10 text-indigo-600" />
+          <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <SparklesIcon className="w-10 h-10 text-primary" />
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">¡Hola!</h1>
-          <p className="text-gray-600 mb-8">Antes de empezar, cuéntanos un poco sobre ti.</p>
+          <h1 className="text-3xl font-bold text-text-main mb-2">¡Hola!</h1>
+          <p className="text-text-muted mb-8">Antes de empezar, cuéntanos un poco sobre ti.</p>
 
           <form onSubmit={handleRegistration} className="space-y-4">
             <div>
-              <label className="block text-left text-sm font-medium text-gray-700 mb-1">¿Cómo te llamas?</label>
+              <label className="block text-left text-sm font-medium text-text-main mb-1">¿Cómo te llamas?</label>
               <input
                 type="text"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900"
+                className="w-full px-4 py-3 rounded-xl border border-border-color bg-surface-elevated text-text-main focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 placeholder="Tu nombre"
               />
             </div>
 
             <div>
-              <label className="block text-left text-sm font-medium text-gray-700 mb-1">¿Cuántos años tienes?</label>
+              <label className="block text-left text-sm font-medium text-text-main mb-1">¿Cuántos años tienes?</label>
               <input
                 type="number"
                 required
@@ -83,14 +83,14 @@ const StartScreen = () => {
                 max="100"
                 value={formData.age}
                 onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900"
+                className="w-full px-4 py-3 rounded-xl border border-border-color bg-surface-elevated text-text-main focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 placeholder="Tu edad"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 mt-6 shadow-lg hover:shadow-xl hover:scale-[1.02]"
+              className="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 mt-6 shadow-lg hover:shadow-xl hover:scale-[1.02]"
             >
               Comenzar Aventura <ArrowRightIcon className="w-5 h-5" />
             </button>
@@ -118,27 +118,27 @@ const StartScreen = () => {
 
   // Render: Bienvenida (Usuario Recurrente)
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-text-main">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         className="text-center"
       >
-        <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-          <UserIcon className="w-12 h-12 text-indigo-600" />
+        <div className="w-24 h-24 bg-surface border border-border-color rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <UserIcon className="w-12 h-12 text-primary" />
         </div>
 
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">
-          ¡Hola de nuevo, <span className="text-indigo-600">{userProfile.name}</span>!
+        <h1 className="text-4xl font-bold text-text-main mb-4">
+          ¡Hola de nuevo, <span className="text-primary">{userProfile.name}</span>!
         </h1>
 
-        <p className="text-xl text-gray-600 mb-12">
+        <p className="text-xl text-text-muted mb-12">
           ¿Listo para continuar tu aprendizaje?
         </p>
 
         <button
           onClick={handleContinue}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-2xl font-bold text-xl transition-all flex items-center gap-3 mx-auto shadow-xl hover:shadow-2xl hover:scale-105"
+          className="bg-primary hover:bg-primary/90 text-white px-10 py-4 rounded-2xl font-bold text-xl transition-all flex items-center gap-3 mx-auto shadow-xl hover:shadow-2xl hover:scale-105"
         >
           Continuar <ArrowRightIcon className="w-6 h-6" />
         </button>
@@ -146,13 +146,13 @@ const StartScreen = () => {
         <div className="mt-6 space-y-2">
           <button
             onClick={() => setShowTour(true)}
-            className="block w-full text-gray-500 hover:text-indigo-600 text-sm font-medium transition-colors"
+            className="block w-full text-text-muted hover:text-primary text-sm font-medium transition-colors"
           >
             Ver tour de bienvenida nuevamente
           </button>
           <button
             onClick={() => setShowTest(true)}
-            className="block w-full text-gray-500 hover:text-indigo-600 text-sm font-medium transition-colors"
+            className="block w-full text-text-muted hover:text-primary text-sm font-medium transition-colors"
           >
             Realizar test de nivelación
           </button>

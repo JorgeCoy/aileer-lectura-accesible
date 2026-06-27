@@ -182,14 +182,14 @@ const TeacherDashboard = () => {
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="flex flex-col gap-2">
                     <div>
-                        <h1 className="text-3xl font-black bg-gradient-to-r from-indigo-900 to-slate-800 bg-clip-text text-transparent">Panel de Control</h1>
-                        <p className="text-slate-500 font-medium">Bienvenido, Profe.</p>
+                        <h1 className="text-3xl font-black text-text-main">Panel de Control</h1>
+                        <p className="text-text-muted font-medium">Bienvenido, Profe.</p>
                     </div>
                     {/* Class Selector Dropdown */}
                     <div className="flex items-center gap-2 mt-2">
-                        <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Vista:</span>
+                        <span className="text-sm font-bold text-text-muted uppercase tracking-wider">Vista:</span>
                         <select 
-                            className="bg-white/80 backdrop-blur-md border border-indigo-100 text-indigo-900 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block p-2 shadow-sm font-bold cursor-pointer hover:bg-white transition-colors"
+                            className="bg-surface-elevated border border-border-color text-text-main text-sm rounded-xl focus:ring-primary focus:border-primary block p-2 shadow-sm font-bold cursor-pointer hover:opacity-80 transition-opacity"
                             value={selectedClassId}
                             onChange={(e) => setSelectedClassId(e.target.value)}
                         >
@@ -204,7 +204,7 @@ const TeacherDashboard = () => {
                     <div className="relative">
                         <button 
                             onClick={() => setShowInsights(!showInsights)}
-                            className="relative bg-white/80 backdrop-blur-md border border-white/60 text-slate-700 w-12 h-12 rounded-full hover:bg-white hover:scale-105 transition-all flex items-center justify-center shadow-sm font-bold"
+                            className="relative bg-surface-elevated border border-border-color text-text-main w-12 h-12 rounded-full hover:opacity-80 hover:scale-105 transition-all flex items-center justify-center shadow-sm font-bold"
                         >
                             <span className="text-xl">🔔</span>
                             {insights.length > 0 && (
@@ -212,7 +212,7 @@ const TeacherDashboard = () => {
                             )}
                         </button>
                         {showInsights && (
-                            <div className="absolute right-0 top-14 w-80 z-50 shadow-2xl rounded-2xl overflow-hidden border border-gray-100">
+                            <div className="absolute right-0 top-14 w-80 z-50 shadow-2xl rounded-2xl overflow-hidden border border-border-color">
                                 <InsightsPanel 
                                     insights={insights} 
                                     onDismiss={(id) => setInsights(insights.filter(i => i.id !== id))}
@@ -223,7 +223,7 @@ const TeacherDashboard = () => {
                     </div>
                     <button
                         onClick={() => setIsPresentationMode(true)}
-                        className="bg-gradient-to-r from-slate-800 to-black text-white px-6 py-3 rounded-2xl hover:scale-105 transition-all flex items-center gap-2 shadow-xl shadow-slate-900/20 font-bold"
+                        className="bg-primary text-white px-6 py-3 rounded-2xl hover:scale-105 transition-all flex items-center gap-2 shadow-xl shadow-primary/20 font-bold"
                         title="Modo Proyección para Aula"
                     >
                         <span className="text-xl">🍿</span> Modo Cine
@@ -233,44 +233,47 @@ const TeacherDashboard = () => {
 
             {/* KPI Cards (Premium Glassmorphism) */}
             <div className="grid md:grid-cols-3 gap-6">
-                <div className="bg-white/60 backdrop-blur-xl border border-white/60 shadow-xl shadow-indigo-100/50 rounded-3xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-indigo-200 to-purple-200 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity"></div>
+                <div className="bg-surface backdrop-blur-xl border border-border-color shadow-md rounded-3xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                    <div 
+                        className="absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"
+                        style={{ background: 'linear-gradient(to bottom right, var(--color-primary), var(--color-accent))' }}
+                    ></div>
                     <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <h3 className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">
+                            <h3 className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">
                                 {selectedClassId === 'global' ? 'Estudiantes Totales' : 'Estudiantes Activos'}
                             </h3>
-                            <p className="text-4xl font-black text-slate-800">{stats.students}</p>
+                            <p className="text-4xl font-black text-text-main">{stats.students}</p>
                         </div>
-                        <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-indigo-200/50 rotate-3 group-hover:rotate-6 transition-transform">
+                        <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-indigo-200/20 rotate-3 group-hover:rotate-6 transition-transform">
                             🎓
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white/60 backdrop-blur-xl border border-white/60 shadow-xl shadow-indigo-100/50 rounded-3xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-rose-200 to-orange-200 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity"></div>
+                <div className="bg-surface backdrop-blur-xl border border-border-color shadow-md rounded-3xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-rose-400 to-orange-400 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
                     <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <h3 className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Estudiantes en Riesgo</h3>
-                            <p className="text-4xl font-black text-slate-800">{stats.studentsInRisk}</p>
+                            <h3 className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">Estudiantes en Riesgo</h3>
+                            <p className="text-4xl font-black text-text-main">{stats.studentsInRisk}</p>
                         </div>
-                        <div className="w-14 h-14 bg-gradient-to-br from-rose-500 to-orange-500 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-rose-200/50 -rotate-3 group-hover:-rotate-6 transition-transform">
+                        <div className="w-14 h-14 bg-gradient-to-br from-rose-500 to-orange-500 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-rose-200/20 -rotate-3 group-hover:-rotate-6 transition-transform">
                             ⚠️
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white/60 backdrop-blur-xl border border-white/60 shadow-xl shadow-indigo-100/50 rounded-3xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-emerald-200 to-teal-200 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity"></div>
+                <div className="bg-surface backdrop-blur-xl border border-border-color shadow-md rounded-3xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
                     <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <h3 className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">
+                            <h3 className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">
                                 {selectedClassId === 'global' ? 'Comprensión Global' : 'Precisión Promedio'}
                             </h3>
-                            <p className="text-4xl font-black text-slate-800">{stats.avgComprehension}<span className="text-lg text-slate-400 font-medium">%</span></p>
+                            <p className="text-4xl font-black text-text-main">{stats.avgComprehension}<span className="text-lg text-text-muted font-medium">%</span></p>
                         </div>
-                        <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-emerald-200/50 rotate-3 group-hover:rotate-6 transition-transform">
+                        <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-emerald-200/20 rotate-3 group-hover:rotate-6 transition-transform">
                             🧠
                         </div>
                     </div>

@@ -1,23 +1,27 @@
 import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ThemeSelector from '../components/ThemeSelector';
 
 const StudentLayout = () => {
     const { logout } = useAuth();
     return (
-        <div className="min-h-screen bg-emerald-50 font-sans">
+        <div className="min-h-screen bg-background text-text-main font-sans transition-colors duration-300">
             {/* Top Bar */}
-            <header className="bg-white border-b border-emerald-100 px-4 py-3 flex justify-between items-center shadow-sm">
+            <header className="bg-surface border-b border-border-color px-4 py-3 flex justify-between items-center shadow-sm transition-colors duration-300">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 font-bold">
+                    <div className="w-8 h-8 bg-border-color rounded-full flex items-center justify-center text-primary font-bold">
                         A
                     </div>
-                    <span className="font-bold text-emerald-900">Mi Espacio</span>
+                    <span className="font-bold text-text-main">Mi Espacio</span>
                 </div>
 
-                <button onClick={logout} className="text-sm text-emerald-600 hover:text-emerald-800 font-medium">
-                    Salir
-                </button>
+                <div className="flex items-center gap-4">
+                    <ThemeSelector />
+                    <button onClick={logout} className="text-sm text-primary hover:text-text-main font-medium transition-colors">
+                        Salir
+                    </button>
+                </div>
             </header>
 
             {/* Main Content */}

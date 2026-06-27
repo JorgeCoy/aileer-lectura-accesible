@@ -27,9 +27,10 @@ const ThemeProvider = ({ children, viewName = "adult" }) => {
     return validThemes.includes(savedTheme) ? savedTheme : (defaultThemes[viewName] || "minimalist");
   });
 
-  // 🔹 Guarda el tema en localStorage cada vez que cambia
+  // 🔹 Guarda el tema en localStorage cada vez que cambia e inyecta el data-theme
   useEffect(() => {
     localStorage.setItem(`theme-${viewName}`, theme);
+    document.documentElement.setAttribute('data-theme', theme);
   }, [theme, viewName]);
 
   const contextValue = { theme, setTheme };

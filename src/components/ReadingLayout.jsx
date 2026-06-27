@@ -19,7 +19,7 @@ const ReadingLayout = ({ title, subtitle, theme, leftPanel, rightPanel, isPlayin
       </header>
 
       {/* Main Content */}
-      <div className={`w-full max-w-[95%] grid gap-6 items-start transition-all duration-700 ${isPlaying ? 'grid-cols-1 h-full' : 'grid-cols-1 lg:grid-cols-2 h-[calc(100%-100px)]'}`}>
+      <div className={`w-full max-w-[95%] grid gap-6 items-stretch transition-all duration-700 ${isPlaying ? 'grid-cols-1 h-full' : 'grid-cols-1 lg:grid-cols-2 h-[calc(100%-100px)]'}`}>
 
         {/* Panel Izquierdo - Se oculta completamente al leer */}
         {leftPanel && (
@@ -49,7 +49,7 @@ const ReadingLayout = ({ title, subtitle, theme, leftPanel, rightPanel, isPlayin
               height: '100%'
             }}
             transition={{ duration: 0.7, ease: "easeOut" }}
-            className={`w-full h-full ${isPlaying ? 'flex justify-center' : ''}`}
+            className={`w-full h-full overflow-hidden ${isPlaying ? 'flex justify-center' : ''}`}
           >
             {rightPanel}
           </motion.div>

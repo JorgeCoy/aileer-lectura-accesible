@@ -123,18 +123,18 @@ const StudentReadingWrapper = () => {
     }, [isQuizOnly, textData]);
 
     return (
-        <div className="fixed inset-0 z-50 bg-white">
+        <div className="fixed inset-0 z-50 bg-background text-text-main">
             {/* Mostrar configuración del docente si existe */}
             {textData.config && textData.assignment && textData.showConfig !== false && (
-                <div className={`absolute top-4 left-4 right-4 z-50 border rounded-xl p-3 shadow-lg animate-in fade-in slide-in-from-top-2 ${textData.isPreview ? 'bg-orange-50 border-orange-200' : 'bg-blue-50 border-blue-200'
+                <div className={`absolute top-4 left-4 right-4 z-50 border rounded-xl p-3 shadow-lg animate-in fade-in slide-in-from-top-2 ${textData.isPreview ? 'bg-orange-500/10 border-orange-500/30' : 'bg-primary/10 border-primary/30'
                     }`}>
                     <div className="flex items-center gap-2">
                         <span className="text-2xl">{textData.isPreview ? '👁️' : '👨‍🏫'}</span>
                         <div className="flex-1">
-                            <p className={`text-sm font-semibold ${textData.isPreview ? 'text-orange-900' : 'text-blue-900'}`}>
+                            <p className={`text-sm font-semibold ${textData.isPreview ? 'text-orange-500' : 'text-primary'}`}>
                                 {textData.isPreview ? 'Vista Preliminar Docente' : 'Tema personalizado por tu docente'}
                             </p>
-                            <p className={`text-xs ${textData.isPreview ? 'text-orange-700' : 'text-blue-700'}`}>
+                            <p className={`text-xs ${textData.isPreview ? 'text-orange-400' : 'text-primary/80'}`}>
                                 Tema: {textData.config.theme || 'Por defecto'} •
                                 Técnica: {textData.config.technique || 'Resaltado'} •
                                 Velocidad: {textData.config.speed || 200} WPM
@@ -142,7 +142,7 @@ const StudentReadingWrapper = () => {
                         </div>
                         <button
                             onClick={() => setTextData({ ...textData, showConfig: false })}
-                            className="text-blue-500 hover:text-blue-700 text-xl"
+                            className="text-text-muted hover:text-primary text-xl"
                         >
                             ×
                         </button>

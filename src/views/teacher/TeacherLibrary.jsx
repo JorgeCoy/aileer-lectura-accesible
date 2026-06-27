@@ -9,6 +9,7 @@ import GenericReadingView from '../GenericReadingView';
 import { getGlobalServiceContainer } from '../../patterns/ServiceContainer';
 import { onModelProgress } from '../../services/aiService';
 import { exportToPDF } from '../../utils/pdfExport';
+import { analyzeReadability } from '../../utils/readability';
 
 // Lista de temas disponibles para asignación
 const availableThemes = [
@@ -82,6 +83,11 @@ const TeacherLibrary = () => {
     // Preguntas autogeneradas por la IA para asignaciones
     const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
     const [aiQuestions, setAiQuestions] = useState([]);
+
+    const readabilityStats = React.useMemo(() => {
+        if (!previewBook?.content) return null;
+        return analyzeReadability(previewBook.content);
+    }, [previewBook?.content]);
 
     // New evaluation states
     const [assignmentType, setAssignmentType] = useState('practice');
@@ -351,16 +357,16 @@ const TeacherLibrary = () => {
 
     return (
         <div className="space-y-6">
-            <div className="bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="bg-surface p-6 rounded-3xl border border-border-color shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Biblioteca General</h1>
-                    <p className="text-slate-500 font-medium">Explora y asigna lecturas a tus estudiantes</p>
+                    <h1 className="text-3xl font-bold text-text-main">Biblioteca General</h1>
+                    <p className="text-text-muted font-medium">Explora y asigna lecturas a tus estudiantes</p>
                 </div>
             </div>
 
             {/* Assignment Mode - Preview with Configuration */}
             {isAssignmentMode && selectedBook ? (
-                <div className="fixed inset-0 z-50 bg-white flex flex-col">
+                <div className="fixed inset-0 z-50 bg-background flex flex-col">
                     {/* Configuración superior unificada */}
                     <AssignmentConfigurator
                         selectedClassId={selectedClassId}
@@ -534,25 +540,13 @@ const TeacherLibrary = () => {
                                         // Actualizar la biblioteca local
                                         setLibrary(prev => [...prev, newBook]);
 
-                                        // Clasificar dificultad pedagógica en background con IA local
+                                        // Clasificar dificultad pedagógica matemáticamente
                                         try {
-                                            const container = getGlobalServiceContainer();
-                                            if (container.has('aiService')) {
-                                                const aiService = container.resolve('aiService');
-                                                // Un WARM UP rápido que deduce el nivel según la complejidad del texto
-                                                const wordsList = content.split(/\s+/).filter(w => w.length > 0);
-                                                const numWords = wordsList.length;
-                                                const avgWordLen = wordsList.reduce((acc, w) => acc + w.length, 0) / (numWords || 1);
-                                                
-                                                let diff = "Intermedio";
-                                                if (avgWordLen < 4.9 && numWords < 400) {
-                                                    diff = "Básico";
-                                                } else if (avgWordLen > 5.9 || numWords > 1200) {
-                                                    diff = "Avanzado";
-                                                }
+                                            const stats = analyzeReadability(content);
+                                            const diff = stats ? stats.difficulty : "Intermedio";
 
-                                                // Actualizar en background
-                                                newBook.difficulty = diff;
+                                            // Actualizar en background
+                                            newBook.difficulty = diff;
                                                 const customItems = JSON.parse(localStorage.getItem('aleer_db_library') || '[]');
                                                 const idx = customItems.findIndex(item => item.id === newBook.id);
                                                 if (idx >= 0) {
@@ -560,9 +554,8 @@ const TeacherLibrary = () => {
                                                     localStorage.setItem('aleer_db_library', JSON.stringify(customItems));
                                                 }
                                                 setLibrary(prev => prev.map(b => b.id === newBook.id ? { ...b, difficulty: diff } : b));
-                                            }
                                         } catch (e) {
-                                            console.warn("No se pudo iniciar el análisis de dificultad IA:", e);
+                                            console.warn("No se pudo iniciar el análisis de dificultad:", e);
                                         }
 
                                         // Feedback al usuario
@@ -583,14 +576,14 @@ const TeacherLibrary = () => {
                     <div className="grid lg:grid-cols-2 gap-8 h-[calc(100vh-200px)]">
                         {/* Columna Izquierda: Lista de Libros */}
                         <div className="space-y-4">
-                            <h2 className="text-lg font-semibold text-gray-800 mb-4">Materiales Disponibles</h2>
+                            <h2 className="text-lg font-semibold text-text-main mb-4">Materiales Disponibles</h2>
                             <div className="space-y-3 max-h-[600px] overflow-y-auto">
                                 {library.map((book) => (
                                     <div
                                         key={book.id}
-                                        className={`rounded-2xl p-4 transition-all cursor-pointer relative group border backdrop-blur-sm ${previewBook?.id === book.id
-                                            ? 'bg-indigo-600/90 text-white border-indigo-500 shadow-lg shadow-indigo-200'
-                                            : 'bg-white/60 text-slate-700 border-white/40 hover:bg-white hover:shadow-md'
+                                        className={`rounded-2xl p-4 transition-all cursor-pointer relative group border ${previewBook?.id === book.id
+                                            ? 'bg-primary text-background border-primary shadow-lg shadow-primary/20'
+                                            : 'bg-surface text-text-main border-border-color hover:bg-surface-elevated hover:shadow-md'
                                             }`}
                                         onClick={() => handlePreview(book)}
                                     >
@@ -601,7 +594,7 @@ const TeacherLibrary = () => {
                                                     e.stopPropagation(); // Prevenir que active la selección
                                                     handleDelete(book);
                                                 }}
-                                                className={`absolute top-2 right-2 p-1.5 rounded-lg transition-colors opacity-0 group-hover:opacity-100 ${previewBook?.id === book.id ? 'bg-indigo-500 hover:bg-indigo-400 text-white' : 'bg-red-50 hover:bg-red-100 text-red-600'}`}
+                                                className={`absolute top-2 right-2 p-1.5 rounded-lg transition-colors opacity-0 group-hover:opacity-100 ${previewBook?.id === book.id ? 'bg-background/20 hover:bg-background/30 text-background' : 'bg-red-500/10 hover:bg-red-500/20 text-red-500'}`}
                                                 title={`Eliminar "${book.title}"`}
                                             >
                                                 <TrashIcon className="w-4 h-4" />
@@ -609,16 +602,16 @@ const TeacherLibrary = () => {
                                         )}
 
                                         <div className="flex justify-between items-start mb-2 pr-10">
-                                            <span className={`text-xs font-bold px-2 py-1 rounded-md ${previewBook?.id === book.id ? 'bg-indigo-500/50 text-indigo-100' : 'bg-indigo-100 text-indigo-700'}`}>
+                                            <span className={`text-xs font-bold px-2 py-1 rounded-md ${previewBook?.id === book.id ? 'bg-background/20 text-background' : 'bg-surface-elevated text-text-muted border border-border-color'}`}>
                                                 {book.category}
                                             </span>
                                             {previewBook?.id === book.id && (
-                                                <span className="text-xs text-indigo-200 font-medium">Seleccionado</span>
+                                                <span className="text-xs text-background/80 font-medium">Seleccionado</span>
                                             )}
                                         </div>
-                                        <h3 className={`text-base font-bold mb-1 ${previewBook?.id === book.id ? 'text-white' : 'text-slate-800'}`}>{book.title}</h3>
-                                        <p className={`text-sm mb-2 ${previewBook?.id === book.id ? 'text-indigo-200' : 'text-slate-500'}`}>{book.author}</p>
-                                        <p className={`text-xs line-clamp-2 italic ${previewBook?.id === book.id ? 'text-indigo-100' : 'text-slate-400'}`}>
+                                        <h3 className={`text-base font-bold mb-1 ${previewBook?.id === book.id ? 'text-background' : 'text-text-main'}`}>{book.title}</h3>
+                                        <p className={`text-sm mb-2 ${previewBook?.id === book.id ? 'text-background/80' : 'text-text-muted'}`}>{book.author}</p>
+                                        <p className={`text-xs line-clamp-2 italic ${previewBook?.id === book.id ? 'text-background/70' : 'text-text-muted'}`}>
                                             "{book.content.substring(0, 80)}..."
                                         </p>
                                     </div>
@@ -629,7 +622,7 @@ const TeacherLibrary = () => {
                         {/* Columna Derecha: Vista Previa */}
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
-                                <h2 className="text-lg font-semibold text-gray-800">Vista Previa</h2>
+                                <h2 className="text-lg font-semibold text-text-main">Vista Previa</h2>
                                 <div className="flex gap-2">
                                     {previewBook && (
                                         <>
@@ -638,7 +631,7 @@ const TeacherLibrary = () => {
                                                     // Cuando tengamos preguntas desde la biblioteca, las pasaremos aquí
                                                     exportToPDF(previewBook.title, previewBook.author, previewBook.content, []);
                                                 }}
-                                                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2 font-bold shadow-sm"
+                                                className="px-4 py-2 bg-surface-elevated border border-border-color text-text-main rounded-xl hover:bg-surface transition-colors flex items-center gap-2 font-bold shadow-sm"
                                             >
                                                 <span>🖨️</span> PDF
                                             </button>
@@ -657,54 +650,90 @@ const TeacherLibrary = () => {
                             </div>
 
                             {previewBook ? (
-                                <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden h-[calc(100%-80px)] flex flex-col">
+                                <div className="bg-surface rounded-3xl shadow-sm border border-border-color overflow-hidden h-[calc(100%-80px)] flex flex-col">
                                     {/* Header del libro */}
-                                    <div className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 border-b border-indigo-100/50">
+                                    <div className="p-6 bg-surface-elevated border-b border-border-color">
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="flex-1">
-                                                <span className="text-xs font-bold text-indigo-700 bg-indigo-100/80 px-3 py-1 rounded-md mb-3 inline-block">
+                                                <span className="text-xs font-bold text-text-muted bg-surface border border-border-color px-3 py-1 rounded-md mb-3 inline-block">
                                                     {previewBook.category}
                                                 </span>
-                                                <h3 className="text-2xl font-bold text-slate-800 mb-1">{previewBook.title}</h3>
-                                                <p className="text-sm text-slate-600 font-medium mb-4">{previewBook.author}</p>
+                                                <h3 className="text-2xl font-bold text-text-main mb-1">{previewBook.title}</h3>
+                                                <p className="text-sm text-text-muted font-medium mb-4">{previewBook.author}</p>
 
                                                 {/* Metadata adicional para PDFs */}
                                                 {previewBook.metadata && (
-                                                    <div className="flex flex-wrap gap-4 text-xs text-slate-500 bg-white/60 p-3 rounded-xl border border-white/60">
+                                                    <div className="flex flex-wrap gap-4 text-xs text-text-muted bg-surface p-3 rounded-xl border border-border-color">
                                                         {previewBook.metadata.totalPages && (
                                                             <div className="flex items-center gap-1">
-                                                                <span className="font-bold text-slate-700">Páginas:</span> {previewBook.metadata.totalPages}
+                                                                <span className="font-bold text-text-main">Páginas:</span> {previewBook.metadata.totalPages}
                                                             </div>
                                                         )}
                                                         {previewBook.fileSize && (
                                                             <div className="flex items-center gap-1">
-                                                                <span className="font-bold text-slate-700">Tamaño:</span> {(previewBook.fileSize / 1024).toFixed(1)} KB
+                                                                <span className="font-bold text-text-main">Tamaño:</span> {(previewBook.fileSize / 1024).toFixed(1)} KB
                                                             </div>
                                                         )}
                                                         {previewBook.uploadDate && (
                                                             <div className="flex items-center gap-1">
-                                                                <span className="font-bold text-slate-700">Subido:</span> {new Date(previewBook.uploadDate).toLocaleDateString()}
+                                                                <span className="font-bold text-text-main">Subido:</span> {new Date(previewBook.uploadDate).toLocaleDateString()}
                                                             </div>
                                                         )}
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="text-right text-xs text-slate-500 ml-4 flex flex-col gap-1 bg-white/60 p-3 rounded-xl border border-white/60">
-                                                <p className="font-bold text-slate-700">{previewBook.content.split(/\s+/).filter(word => word.length > 0).length} <span className="font-normal text-slate-500">palabras</span></p>
-                                                <p className="font-bold text-slate-700">{previewBook.content.length} <span className="font-normal text-slate-500">caracteres</span></p>
+                                            <div className="text-right text-xs text-text-muted ml-4 flex flex-col gap-1 bg-surface p-3 rounded-xl border border-border-color">
+                                                <p className="font-bold text-text-main">{previewBook.content.split(/\s+/).filter(word => word.length > 0).length} <span className="font-normal text-text-muted">palabras</span></p>
+                                                <p className="font-bold text-text-main">{previewBook.content.length} <span className="font-normal text-text-muted">caracteres</span></p>
                                                 {previewBook.pages && (
-                                                    <p className="font-bold text-indigo-600 mt-1 pt-1 border-t border-indigo-100/50">{previewBook.pages.length} página(s)</p>
+                                                    <p className="font-bold text-primary mt-1 pt-1 border-t border-border-color">{previewBook.pages.length} página(s)</p>
                                                 )}
                                             </div>
                                         </div>
 
+                                        {/* Panel de Análisis de Complejidad */}
+                                        {readabilityStats && (
+                                            <div className="mb-4 bg-surface rounded-xl border border-border-color p-4 shadow-sm">
+                                                <h4 className="text-sm font-bold text-text-main mb-3 flex items-center gap-2">
+                                                    <span>🧠</span> Análisis de Legibilidad (Fernández Huerta)
+                                                </h4>
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                                    <div className="bg-surface-elevated p-3 rounded-lg border border-border-color">
+                                                        <p className="text-xs text-text-muted mb-1">Nivel Recomendado</p>
+                                                        <p className={`font-bold ${readabilityStats.color}`}>{readabilityStats.ageGroup}</p>
+                                                    </div>
+                                                    <div className="bg-surface-elevated p-3 rounded-lg border border-border-color">
+                                                        <p className="text-xs text-text-muted mb-1">Dificultad</p>
+                                                        <p className="font-bold text-text-main">{readabilityStats.difficulty}</p>
+                                                    </div>
+                                                    <div className="bg-surface-elevated p-3 rounded-lg border border-border-color">
+                                                        <p className="text-xs text-text-muted mb-1">Score (0-100)</p>
+                                                        <p className="font-bold text-text-main">{readabilityStats.score} <span className="text-xs font-normal text-text-muted">/ 100</span></p>
+                                                    </div>
+                                                </div>
+                                                
+                                                {readabilityStats.complexWords.length > 0 && (
+                                                    <div>
+                                                        <p className="text-xs text-text-muted mb-2 font-medium">Palabras complejas sugeridas para técnica de Previewing:</p>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {readabilityStats.complexWords.map((word, idx) => (
+                                                                <span key={idx} className="text-xs bg-primary/10 text-primary border border-primary/20 px-2 py-1 rounded-md">
+                                                                    {word}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
                                         {/* Navegación de páginas para PDFs con múltiples páginas */}
                                         {previewBook.pages && previewBook.pages.length > 1 && (
-                                            <div className="flex items-center justify-center gap-4 mt-4 p-3 bg-orange-50 rounded-lg">
+                                            <div className="flex items-center justify-center gap-4 mt-4 p-3 bg-surface border border-border-color rounded-lg">
                                                 <button
                                                     onClick={goToPreviousPage}
                                                     disabled={selectedPage <= 1}
-                                                    className="p-2 bg-white rounded-lg hover:bg-orange-100 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                                                    className="p-2 bg-surface-elevated rounded-lg hover:bg-surface disabled:opacity-50 disabled:cursor-not-allowed shadow-sm text-text-main"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -712,11 +741,11 @@ const TeacherLibrary = () => {
                                                 </button>
 
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-sm text-gray-600">Página</span>
+                                                    <span className="text-sm text-text-muted">Página</span>
                                                     <select
                                                         value={selectedPage}
                                                         onChange={(e) => setSelectedPage(Number(e.target.value))}
-                                                        className="px-2 py-1 border border-gray-300 rounded text-sm bg-white"
+                                                        className="px-2 py-1 border border-border-color rounded text-sm bg-surface-elevated text-text-main"
                                                     >
                                                         {previewBook.pages.map((_, index) => (
                                                             <option key={index + 1} value={index + 1}>
@@ -724,13 +753,13 @@ const TeacherLibrary = () => {
                                                             </option>
                                                         ))}
                                                     </select>
-                                                    <span className="text-sm text-gray-600">de {previewBook.pages.length}</span>
+                                                    <span className="text-sm text-text-muted">de {previewBook.pages.length}</span>
                                                 </div>
 
                                                 <button
                                                     onClick={goToNextPage}
                                                     disabled={selectedPage >= previewBook.pages.length}
-                                                    className="p-2 bg-white rounded-lg hover:bg-orange-100 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                                                    className="p-2 bg-surface-elevated rounded-lg hover:bg-surface disabled:opacity-50 disabled:cursor-not-allowed shadow-sm text-text-main"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
@@ -746,14 +775,14 @@ const TeacherLibrary = () => {
                                             {previewBook.pages && previewBook.pages.length > 1 ? (
                                                 // Mostrar página específica para PDFs multi-página
                                                 <div className="space-y-4">
-                                                    <div className="border-l-4 border-orange-400 pl-4 py-2 bg-orange-50 rounded">
-                                                        <h4 className="text-sm font-semibold text-orange-800 mb-2">Página {selectedPage}</h4>
-                                                        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                                                    <div className="border-l-4 border-primary pl-4 py-2 bg-surface-elevated rounded text-text-main">
+                                                        <h4 className="text-sm font-semibold text-primary mb-2">Página {selectedPage}</h4>
+                                                        <p className="text-text-main leading-relaxed whitespace-pre-wrap">
                                                             {previewBook.pages[selectedPage - 1] || "Página sin contenido"}
                                                         </p>
                                                     </div>
                                                     {selectedPage < previewBook.pages.length && (
-                                                        <div className="text-xs text-gray-500 italic border-t pt-2">
+                                                        <div className="text-xs text-text-muted italic border-t border-border-color pt-2">
                                                             💡 Página siguiente: "{previewBook.pages[selectedPage].substring(0, 100)}..."
                                                         </div>
                                                     )}
@@ -764,14 +793,14 @@ const TeacherLibrary = () => {
                                                     {isEditingContent ? (
                                                         <div className="flex flex-col gap-3">
                                                             <textarea
-                                                                className="w-full h-96 p-4 border-2 border-purple-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 outline-none text-gray-700 leading-relaxed resize-none shadow-sm"
+                                                                className="w-full h-96 p-4 border-2 border-border-color rounded-xl focus:ring-primary focus:border-primary bg-surface-elevated text-text-main outline-none leading-relaxed resize-none shadow-sm"
                                                                 value={editContentValue}
                                                                 onChange={(e) => setEditContentValue(e.target.value)}
                                                             />
                                                             <div className="flex justify-end gap-2">
                                                                 <button
                                                                     onClick={() => setIsEditingContent(false)}
-                                                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
+                                                                    className="px-4 py-2 text-text-muted hover:bg-surface-elevated rounded-lg transition"
                                                                 >
                                                                     Cancelar
                                                                 </button>
@@ -784,7 +813,7 @@ const TeacherLibrary = () => {
                                                                         }
                                                                         setIsEditingContent(false);
                                                                     }}
-                                                                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                                                                    className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition"
                                                                 >
                                                                     Guardar Cambios
                                                                 </button>
@@ -792,7 +821,7 @@ const TeacherLibrary = () => {
                                                         </div>
                                                     ) : (
                                                         <>
-                                                            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                                                            <p className="text-text-main leading-relaxed whitespace-pre-wrap">
                                                                 {previewBook.content}
                                                             </p>
                                                             {previewBook.isCustom && (
@@ -801,7 +830,7 @@ const TeacherLibrary = () => {
                                                                         setEditContentValue(previewBook.content);
                                                                         setIsEditingContent(true);
                                                                     }}
-                                                                    className="absolute top-0 right-0 p-2 bg-white border border-gray-200 text-gray-500 hover:text-purple-600 hover:border-purple-300 shadow-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all flex items-center gap-2"
+                                                                    className="absolute top-0 right-0 p-2 bg-surface border border-border-color text-text-muted hover:text-primary hover:border-primary shadow-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all flex items-center gap-2"
                                                                     title="Editar este texto"
                                                                 >
                                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
@@ -816,8 +845,8 @@ const TeacherLibrary = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 h-[calc(100%-80px)] flex items-center justify-center">
-                                    <div className="text-center text-gray-400">
+                                <div className="bg-surface-elevated rounded-xl border-2 border-dashed border-border-color h-[calc(100%-80px)] flex items-center justify-center">
+                                    <div className="text-center text-text-muted">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 mx-auto mb-4 opacity-50">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                         </svg>
@@ -830,46 +859,46 @@ const TeacherLibrary = () => {
 
                     {/* Modal de Generación de Lectura por IA */}
                     {showGeneratorModal && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                            <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-                                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-purple-600">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                            <div className="bg-surface border border-border-color rounded-xl shadow-xl w-full max-w-md p-6">
+                                <h3 className="text-xl font-bold text-text-main mb-4 flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-primary">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
                                     </svg>
                                     Generar Lectura con IA
                                 </h3>
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Tema o Asunto</label>
+                                        <label className="block text-sm font-medium text-text-muted mb-1">Tema o Asunto</label>
                                         <input
                                             type="text"
                                             value={topicText}
                                             onChange={(e) => setTopicText(e.target.value)}
                                             placeholder="Ej. El ciclo del agua, Los dinosaurios..."
-                                            className="w-full px-4 py-2 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                            className="w-full px-4 py-2 text-text-main bg-surface-elevated border border-border-color rounded-lg focus:ring-2 focus:ring-primary outline-none"
                                             disabled={isGeneratingText}
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Idioma</label>
-                                            <select
-                                                value={language}
-                                                onChange={(e) => setLanguage(e.target.value)}
-                                                className="w-full px-4 py-2 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
-                                                disabled={isGeneratingText}
-                                            >
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-muted mb-1">Idioma</label>
+                                        <select
+                                            value={language}
+                                            onChange={(e) => setLanguage(e.target.value)}
+                                            className="w-full px-4 py-2 text-text-main bg-surface-elevated border border-border-color rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                                            disabled={isGeneratingText}
+                                        >
                                                 <option value="Español">Español</option>
                                                 <option value="Inglés">Inglés</option>
                                                 <option value="Francés">Francés</option>
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Texto</label>
+                                            <label className="block text-sm font-medium text-text-muted mb-1">Tipo de Texto</label>
                                             <select
                                                 value={genre}
                                                 onChange={(e) => setGenre(e.target.value)}
-                                                className="w-full px-4 py-2 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                                                className="w-full px-4 py-2 text-text-main bg-surface-elevated border border-border-color rounded-lg focus:ring-2 focus:ring-primary outline-none"
                                                 disabled={isGeneratingText}
                                             >
                                                 <option value="Texto Informativo">Informativo</option>
@@ -881,11 +910,11 @@ const TeacherLibrary = () => {
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Nivel Pedagógico</label>
+                                            <label className="block text-sm font-medium text-text-muted mb-1">Nivel Pedagógico</label>
                                             <select
                                                 value={levelText}
                                                 onChange={(e) => setLevelText(e.target.value)}
-                                                className="w-full px-4 py-2 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                                                className="w-full px-4 py-2 text-text-main bg-surface-elevated border border-border-color rounded-lg focus:ring-2 focus:ring-primary outline-none"
                                                 disabled={isGeneratingText}
                                             >
                                                 {language === 'Inglés' ? (
@@ -910,11 +939,11 @@ const TeacherLibrary = () => {
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Palabras (Aprox)</label>
+                                            <label className="block text-sm font-medium text-text-muted mb-1">Palabras (Aprox)</label>
                                             <select
                                                 value={wordsCount}
                                                 onChange={(e) => setWordsCount(Number(e.target.value))}
-                                                className="w-full px-4 py-2 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                                                className="w-full px-4 py-2 text-text-main bg-surface-elevated border border-border-color rounded-lg focus:ring-2 focus:ring-primary outline-none"
                                                 disabled={isGeneratingText}
                                             >
                                                 <option value={100}>Corto (100)</option>
@@ -926,17 +955,17 @@ const TeacherLibrary = () => {
                                 </div>
                                 
                                 {isGeneratingText && (
-                                    <div className="mt-4 p-3 bg-purple-50 rounded-lg">
-                                        <div className="flex items-center gap-3 text-purple-700 font-medium">
-                                            <div className="w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                                    <div className="mt-4 p-3 bg-primary/10 rounded-lg">
+                                        <div className="flex items-center gap-3 text-primary font-medium">
+                                            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                                             <span>Generando lectura con IA...</span>
                                         </div>
                                         {aiProgress !== null && (
-                                            <div className="mt-2 w-full bg-purple-200 rounded-full h-2">
-                                                <div className="bg-purple-600 h-2 rounded-full transition-all duration-300" style={{ width: `${aiProgress}%` }}></div>
+                                            <div className="mt-2 w-full bg-surface-elevated rounded-full h-2">
+                                                <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{ width: `${aiProgress}%` }}></div>
                                             </div>
                                         )}
-                                        <p className="text-xs text-purple-600 mt-1 opacity-70">
+                                        <p className="text-xs text-primary mt-1 opacity-70">
                                             Esto puede tomar unos segundos.
                                         </p>
                                     </div>
@@ -945,7 +974,7 @@ const TeacherLibrary = () => {
                                 <div className="mt-6 flex justify-end gap-3">
                                     <button
                                         onClick={() => setShowGeneratorModal(false)}
-                                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
+                                        className="px-4 py-2 text-text-muted hover:bg-surface-elevated rounded-lg transition"
                                         disabled={isGeneratingText}
                                     >
                                         Cancelar
@@ -953,7 +982,7 @@ const TeacherLibrary = () => {
                                     <button
                                         onClick={handleGenerateTopicText}
                                         disabled={isGeneratingText || !topicText.trim()}
-                                        className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         Generar y Guardar
                                     </button>

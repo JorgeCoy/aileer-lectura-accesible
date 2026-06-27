@@ -107,9 +107,9 @@ const GenericReadingView = ({
   }, [inputMode, readingTechnique, speed, theme, fontSize, fontFamily, text, currentIndex, words]);
 
   const leftPanel = (
-    <div className="text-white p-4 h-full flex flex-col">
-      <h2 className="mb-2 font-bold text-lg">{bookTitle || "Title"}</h2>
-      <textarea readOnly value={text} className="w-full flex-1 bg-transparent text-white border border-gray-700 rounded-lg p-2 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500" />
+    <div className="text-white p-4 h-full flex flex-col min-h-0">
+      <h2 className="mb-2 font-bold text-lg flex-shrink-0">{bookTitle || "Title"}</h2>
+      <textarea readOnly value={text} className="w-full flex-1 min-h-0 bg-transparent text-white border border-gray-700 rounded-lg p-2 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 custom-scrollbar" />
     </div>
   );
 
@@ -155,10 +155,10 @@ const GenericReadingView = ({
 
   if (showSidebar) {
     return (
-      <div className="h-full bg-gray-900 relative flex overflow-hidden">
+      <div className="h-full bg-background relative flex overflow-hidden">
         {/* Sidebar Simple */}
         {!isRunning && !isCountingDown && (
-          <div className="w-72 h-full border-r border-gray-700 flex-shrink-0 overflow-hidden">
+          <div className="w-72 h-full border-r border-border-color flex-shrink-0 overflow-hidden">
             <PreviewConfigPanel
               isRunning={isRunning}
               hasText={text && typeof text === 'string' && text.trim().length > 0}
@@ -205,7 +205,7 @@ const GenericReadingView = ({
   }
 
   return (
-    <div className="h-full w-full bg-gray-900 relative flex flex-col overflow-hidden">
+    <div className="h-full w-full bg-background relative flex flex-col overflow-hidden">
       <ReadingLayout
         title={headerInfo?.title || bookTitle || "Lectura"}
         subtitle={headerInfo?.subtitle || "Modo Estudiante"}

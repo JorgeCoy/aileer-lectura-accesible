@@ -4,15 +4,15 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 const TrendChart = ({ data, title = "Evolución de Velocidad (WPM)" }) => {
     if (!data || data.length === 0) {
         return (
-            <div className="h-full flex items-center justify-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                <p className="text-gray-400 font-medium">No hay datos suficientes para mostrar tendencias.</p>
+            <div className="h-full flex items-center justify-center bg-surface-elevated rounded-2xl border-2 border-dashed border-border-color">
+                <p className="text-text-muted font-medium">No hay datos suficientes para mostrar tendencias.</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 h-full flex flex-col">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">{title}</h3>
+        <div className="bg-surface p-6 rounded-3xl shadow-sm border border-border-color h-full flex flex-col">
+            <h3 className="text-xl font-bold text-text-main mb-4">{title}</h3>
             <div className="flex-1 w-full min-h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart

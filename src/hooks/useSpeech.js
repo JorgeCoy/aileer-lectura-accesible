@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { speakWord, stopSpeech, estimateWordDuration, getVoices } from "../utils/speech";
 
 const useSpeech = ({
@@ -13,6 +13,8 @@ const useSpeech = ({
 }) => {
   const [voices, setVoices] = useState([]);
   const [selectedVoice, setSelectedVoice] = useState(null);
+  const wordStartTime = useRef(0);
+  const timeoutRef = useRef(null);
 
   // ✅ Cargar voces disponibles
   useEffect(() => {
@@ -43,14 +45,14 @@ const useSpeech = ({
   }, [selectedVoice]);
 
   // ✅ Calcular tasa de velocidad (rate) basada en ms/palabra
-  // Base: 300ms/palabra ~= rate 1.0
-  // Si speed = 600ms (más lento), rate = 0.5
-  // Si speed = 150ms (más rápido), rate = 2.0
-  const speechRate = Math.min(Math.max(300 / speed, 0.1), 10);
+  // La voz ahora se mantiene en un rango más natural (entre 0.8 y 2.0)
+  // para que a velocidades muy lentas no suene como un robot distorsionado.
+  const speechRate = Math.min(Math.max(300 / speed, 0.8), 2.0);
 
   // ✅ Desactivar voz si la velocidad es muy alta (configuración general)
   useEffect(() => {
-    if (speed < maxSpeed) {
+    // Si la velocidad en WPM supera el máximo permitido (ej. 800 WPM)
+    if ((60000 / speed) > maxSpeed) {
       setVoiceEnabled(false);
     }
   }, [speed, maxSpeed, setVoiceEnabled]);
@@ -69,10 +71,31 @@ const useSpeech = ({
     if (isCountingDown) return;
 
     if (isPlaying && voiceEnabled && currentWord) {
-      // console.log("🚀 Reproduce voz para palabra:", currentWord);
-      speakWord(currentWord, 'es-ES', onWordEnd, speechRate, selectedVoice); // ✅ Pasar rate y voz
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      wordStartTime.current = Date.now();
+
+      const handleWordEnd = () => {
+        const elapsed = Date.now() - wordStartTime.current;
+        const wordCount = currentWord.trim().split(/\s+/).length || 1;
+        const targetTime = speed * wordCount;
+        const remaining = targetTime - elapsed;
+
+        if (remaining > 0) {
+          timeoutRef.current = setTimeout(() => {
+            if (onWordEnd) onWordEnd();
+          }, remaining);
+        } else {
+          if (onWordEnd) onWordEnd();
+        }
+      };
+
+      speakWord(currentWord, 'es-ES', handleWordEnd, speechRate, selectedVoice);
     }
-  }, [currentWord, isPlaying, voiceEnabled, isCountingDown, onWordEnd, speechRate, selectedVoice]);
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [currentWord, isPlaying, voiceEnabled, isCountingDown, speechRate, selectedVoice, speed, onWordEnd]);
 
   // ✅ Efecto que detiene la voz inmediatamente si se inhabilita
   useEffect(() => {

@@ -27,15 +27,15 @@ const LoginView = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-background flex items-center justify-center p-4 text-text-main">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md"
+                className="bg-surface border border-border-color rounded-2xl shadow-xl p-8 w-full max-w-md"
             >
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Bienvenido aLeer</h1>
-                    <p className="text-gray-500">Ingresa para continuar aprendiendo</p>
+                    <h1 className="text-3xl font-bold text-text-main mb-2">Bienvenido aLeer</h1>
+                    <p className="text-text-muted">Ingresa para continuar aprendiendo</p>
                 </div>
 
                 {error && (
@@ -46,11 +46,11 @@ const LoginView = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Correo Electrónico</label>
+                        <label className="block text-sm font-medium text-text-main mb-2">Correo Electrónico</label>
                         <input
                             type="email"
                             required
-                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                            className="w-full px-4 py-3 rounded-lg border border-border-color bg-surface-elevated text-text-main focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                             placeholder="ejemplo@escuela.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -58,11 +58,11 @@ const LoginView = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+                        <label className="block text-sm font-medium text-text-main mb-2">Contraseña</label>
                         <input
                             type="password"
                             required
-                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                            className="w-full px-4 py-3 rounded-lg border border-border-color bg-surface-elevated text-text-main focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                             placeholder="••••••••"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -72,15 +72,15 @@ const LoginView = () => {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isLoading ? 'Iniciando...' : 'Iniciar Sesión'}
                     </button>
                 </form>
 
-                <div className="mt-8 text-center text-sm text-gray-500">
+                <div className="mt-8 text-center text-sm text-text-muted">
                     ¿No tienes cuenta?{' '}
-                    <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium hover:underline">
+                    <Link to="/register" className="text-primary hover:text-primary/80 font-medium hover:underline">
                         Regístrate aquí
                     </Link>
                 </div>
