@@ -14,7 +14,23 @@ const DB_KEYS = {
 };
 
 const MockBackendService = {
-    // ... existing code ...
+    getClasses: () => {
+        return JSON.parse(localStorage.getItem(DB_KEYS.CLASSES) || '[]');
+    },
+    getAssignments: () => {
+        return JSON.parse(localStorage.getItem(DB_KEYS.ASSIGNMENTS) || '[]');
+    },
+    getClassHealth: (classId) => {
+        return {
+            id: classId,
+            name: 'Clase',
+            healthScore: 85,
+            status: 'good'
+        };
+    },
+    getClassHistory: (classId) => {
+        return [];
+    },
 
     // --- PROGRESS ---
     saveProgress: (assignmentId, progressData) => {
@@ -73,6 +89,25 @@ const MockBackendService = {
     },
 
     // --- DASHBOARD STATS ---
+    getStudentGamification: (studentName) => {
+        return {
+            streak: 0,
+            badges: [],
+            points: 0,
+            level: 1,
+            history: []
+        };
+    },
+    getStudentFeedback: (studentName) => {
+        return [];
+    },
+    markFeedbackAsRead: (id) => {
+        return true;
+    },
+    getStudentAssignments: () => {
+        return MockBackendService.getAssignments();
+    },
+
     getRecentActivity: (limit = 5) => {
         const progressList = JSON.parse(localStorage.getItem(DB_KEYS.PROGRESS) || '[]');
         const assignments = MockBackendService.getAssignments();

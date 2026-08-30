@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Installer and temp files
+codebase-memory-mcp.exe
+install.ps1
+temp_lib.txt
+THIRD_PARTY_NOTICES.md

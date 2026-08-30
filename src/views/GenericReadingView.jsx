@@ -87,7 +87,7 @@ const GenericReadingView = ({
     try {
       const chain = ReadingTechniqueChain.create();
       const componentConfig = chain.handle(readingTechnique, {
-        words, currentIndex, speed, theme, fontSize, fontFamily, text, readingTechnique
+        words, currentIndex, speed, theme, fontSize, fontFamily, text, readingTechnique, isRunning
       });
 
       if (componentConfig && componentConfig.component) {

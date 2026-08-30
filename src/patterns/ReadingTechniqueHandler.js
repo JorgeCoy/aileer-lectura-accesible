@@ -162,7 +162,7 @@ export class PreviewHandler extends ReadingTechniqueHandler {
   }
 
   renderComponent(_props) {
-    const { text, words, theme, fontSize, fontFamily } = _props;
+    const { text, words, theme, fontSize, fontFamily, speed, isRunning } = _props;
     // Prefer full text if available, otherwise join words
     const fullText = text || (words ? words.join(' ') : "");
 
@@ -170,7 +170,9 @@ export class PreviewHandler extends ReadingTechniqueHandler {
       text: fullText,
       theme,
       fontSize,
-      fontFamily
+      fontFamily,
+      speed,
+      isRunning
     });
   }
 }

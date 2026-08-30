@@ -6,7 +6,6 @@ import ThemeProvider from './context/ThemeProvider';
 import LoginView from './views/auth/LoginView';
 import RegisterView from './views/auth/RegisterView';
 
-// Lazy loading para optimizar el bundle inicial
 const TeacherLayout = lazy(() => import('./layouts/TeacherLayout'));
 const TeacherDashboard = lazy(() => import('./views/teacher/TeacherDashboard'));
 const TeacherClasses = lazy(() => import('./views/teacher/TeacherClasses'));
@@ -31,7 +30,7 @@ const ProtectedRoute = ({ children, allowedRole }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRole && role !== allowedRole) {
+  if (allowedRole && role && role !== allowedRole) {
     // Si intenta entrar a una zona no permitida, redirigir a su zona correcta
     return <Navigate to={role === 'teacher' ? '/docente' : '/estudiante'} replace />;
   }

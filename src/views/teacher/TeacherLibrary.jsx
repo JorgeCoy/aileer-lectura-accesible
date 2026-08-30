@@ -70,6 +70,53 @@ const TeacherLibrary = () => {
 
     const [library, setLibrary] = useState([]);
 
+    // Filtros de Biblioteca
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filters, setFilters] = useState({
+        category: "Todas",
+        difficulty: "Todas",
+        source: "Todos"
+    });
+    const [showFilterMenu, setShowFilterMenu] = useState(false);
+    const [viewMode, setViewMode] = useState('detailed');
+    const filterMenuRef = React.useRef(null);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (filterMenuRef.current && !filterMenuRef.current.contains(event.target)) {
+                setShowFilterMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    const filteredLibrary = React.useMemo(() => {
+        return library.filter(book => {
+            const matchesSearch = !searchTerm || 
+                book.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                (book.author && book.author.toLowerCase().includes(searchTerm.toLowerCase()));
+            
+            const matchesCategory = filters.category === "Todas" || book.category === filters.category;
+            
+            const matchesDifficulty = filters.difficulty === "Todas" || book.difficulty === filters.difficulty;
+            
+            let matchesSource = true;
+            if (filters.source === "Catálogo Base") matchesSource = !book.isCustom;
+            if (filters.source === "Generados por IA") matchesSource = book.isCustom && book.author?.startsWith("IA");
+            if (filters.source === "Material Propio") matchesSource = book.isCustom && !book.author?.startsWith("IA");
+            
+            return matchesSearch && matchesCategory && matchesDifficulty && matchesSource;
+        });
+    }, [library, searchTerm, filters]);
+
+    const uniqueCategories = React.useMemo(() => {
+        const cats = new Set(library.map(b => b.category).filter(Boolean));
+        return ["Todas", ...Array.from(cats)];
+    }, [library]);
+
     // Estados para la IA
     const [isGeneratingText, setIsGeneratingText] = useState(false);
     const [showGeneratorModal, setShowGeneratorModal] = useState(false);
@@ -267,7 +314,7 @@ const TeacherLibrary = () => {
                     const newBook = MockBackendService.addToLibrary({
                         title: `${titlePrefix}: ${topicText}`,
                         author: `IA Generativa - Nivel ${levelText}`,
-                        category: "Generado por IA",
+                        category: `IA ${genre.toUpperCase()}`,
                         difficulty: levelText,
                         content: textResult,
                         pages: [textResult],
@@ -356,14 +403,7 @@ const TeacherLibrary = () => {
     }), [config.speed, config.technique, config.theme, config.fontSize, config.fontFamily, config.voiceEnabled]);
 
     return (
-        <div className="space-y-6">
-            <div className="bg-surface p-6 rounded-3xl border border-border-color shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-text-main">Biblioteca General</h1>
-                    <p className="text-text-muted font-medium">Explora y asigna lecturas a tus estudiantes</p>
-                </div>
-            </div>
-
+        <div className="h-full flex flex-col">
             {/* Assignment Mode - Preview with Configuration */}
             {isAssignmentMode && selectedBook ? (
                 <div className="fixed inset-0 z-50 bg-background flex flex-col">
@@ -398,20 +438,31 @@ const TeacherLibrary = () => {
                     </div>
                 </div>
             ) : (
-                <>
-                    <div className="flex flex-wrap justify-end gap-3 mb-4">
-                        <button
-                            onClick={() => setShowGeneratorModal(true)}
-                            className="bg-purple-100 text-purple-700 hover:bg-purple-200 px-5 py-3 rounded-xl font-bold transition-all flex items-center gap-2"
-                        >
-                            <span>✨</span>
-                            Generar con IA
-                        </button>
+                <div className="space-y-6 flex-1 flex flex-col">
+                    <div className="bg-surface/80 backdrop-blur-xl p-4 md:p-5 rounded-2xl border border-border-color/50 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                                <span className="text-xl">📚</span>
+                            </div>
+                            <div>
+                                <h1 className="text-xl md:text-2xl font-display font-black text-text-main leading-tight">Biblioteca General</h1>
+                                <p className="text-text-muted font-medium text-xs md:text-sm">Explora y asigna lecturas a tus estudiantes</p>
+                            </div>
+                        </div>
 
-                        <label className="cursor-pointer bg-gradient-to-r from-orange-500 to-orange-600 text-white px-5 py-3 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all font-bold flex items-center gap-2 shadow-orange-200 shadow-md">
-                            <span>📤</span>
-                            Cargar Material
-                            <input
+                        <div className="flex flex-wrap w-full md:w-auto gap-3">
+                            <button
+                                onClick={() => setShowGeneratorModal(true)}
+                                className="flex-1 md:flex-none bg-purple-100 text-purple-700 hover:bg-purple-200 px-4 py-2.5 rounded-xl font-bold transition-all flex justify-center items-center gap-2 text-sm shadow-sm"
+                            >
+                                <span>✨</span>
+                                <span>Generar con IA</span>
+                            </button>
+
+                            <label className="flex-1 md:flex-none cursor-pointer bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2.5 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all font-bold flex justify-center items-center gap-2 shadow-orange-500/20 shadow-md text-sm">
+                                <span>📤</span>
+                                <span>Cargar Material</span>
+                                <input
                                 type="file"
                                 accept=".pdf,.txt"
                                 className="hidden"
@@ -571,17 +622,167 @@ const TeacherLibrary = () => {
                             />
                         </label>
                     </div>
+                </div>
 
-                    {/* Layout de dos columnas: Lista + Vista Previa */}
-                    <div className="grid lg:grid-cols-2 gap-8 h-[calc(100vh-200px)]">
+                {/* Filter Bar */}
+                <div className="flex flex-col md:flex-row gap-3 items-start md:items-center relative z-20">
+                    <div className="relative flex-1 w-full">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+                        <input 
+                            type="text"
+                            placeholder="Buscar por título o autor..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 bg-surface border border-border-color rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm shadow-sm"
+                        />
+                    </div>
+                    
+                    <div className="relative" ref={filterMenuRef}>
+                        <button
+                            onClick={() => setShowFilterMenu(!showFilterMenu)}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border font-medium text-sm transition-all ${
+                                showFilterMenu || Object.values(filters).some(v => v !== 'Todas' && v !== 'Todos') 
+                                    ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' 
+                                    : 'bg-surface text-text-main border-border-color hover:bg-surface-elevated'
+                            }`}
+                        >
+                            <span>⚙️</span>
+                            <span>Filtros Avanzados</span>
+                            {Object.values(filters).filter(v => v !== 'Todas' && v !== 'Todos').length > 0 && (
+                                <span className="bg-white/30 px-2 py-0.5 rounded-full text-xs">
+                                    {Object.values(filters).filter(v => v !== 'Todas' && v !== 'Todos').length}
+                                </span>
+                            )}
+                        </button>
+
+                        {/* Dropdown de Filtros */}
+                        {showFilterMenu && (
+                            <div className="absolute right-0 top-full mt-2 w-72 bg-surface border border-border-color shadow-xl rounded-2xl p-4 z-50">
+                                <h3 className="font-bold text-text-main mb-3">Filtros Avanzados</h3>
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-semibold text-text-muted mb-1 block">Categoría</label>
+                                        <select 
+                                            value={filters.category} 
+                                            onChange={(e) => setFilters({...filters, category: e.target.value})}
+                                            className="w-full bg-background border border-border-color rounded-lg px-3 py-2 text-sm outline-none focus:border-primary"
+                                        >
+                                            {uniqueCategories.map(cat => (
+                                                <option key={cat} value={cat}>{cat}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-semibold text-text-muted mb-1 block">Origen</label>
+                                        <select 
+                                            value={filters.source} 
+                                            onChange={(e) => setFilters({...filters, source: e.target.value})}
+                                            className="w-full bg-background border border-border-color rounded-lg px-3 py-2 text-sm outline-none focus:border-primary"
+                                        >
+                                            <option value="Todos">Todos los orígenes</option>
+                                            <option value="Catálogo Base">Catálogo Base</option>
+                                            <option value="Generados por IA">Generados por IA</option>
+                                            <option value="Material Propio">Material Propio</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-semibold text-text-muted mb-1 block">Dificultad</label>
+                                        <select 
+                                            value={filters.difficulty} 
+                                            onChange={(e) => setFilters({...filters, difficulty: e.target.value})}
+                                            className="w-full bg-background border border-border-color rounded-lg px-3 py-2 text-sm outline-none focus:border-primary"
+                                        >
+                                            <option value="Todas">Cualquier dificultad</option>
+                                            <option value="Fácil">Fácil</option>
+                                            <option value="Medio">Medio</option>
+                                            <option value="Difícil">Difícil</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div className="mt-4 pt-3 border-t border-border-color flex justify-end">
+                                    <button 
+                                        onClick={() => setFilters({category: 'Todas', difficulty: 'Todas', source: 'Todos'})}
+                                        className="text-xs text-red-500 hover:text-red-600 font-medium px-2 py-1"
+                                    >
+                                        Limpiar Filtros
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Chips de filtros activos */}
+                {(filters.category !== 'Todas' || filters.source !== 'Todos' || filters.difficulty !== 'Todas') && (
+                    <div className="flex flex-wrap gap-2 items-center mb-1">
+                        <span className="text-xs text-text-muted font-medium mr-1">Activos:</span>
+                        {filters.category !== 'Todas' && (
+                            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                                {filters.category}
+                                <button onClick={() => setFilters({...filters, category: 'Todas'})} className="hover:text-blue-900 font-bold ml-1">×</button>
+                            </span>
+                        )}
+                        {filters.source !== 'Todos' && (
+                            <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                                {filters.source}
+                                <button onClick={() => setFilters({...filters, source: 'Todos'})} className="hover:text-purple-900 font-bold ml-1">×</button>
+                            </span>
+                        )}
+                        {filters.difficulty !== 'Todas' && (
+                            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                                {filters.difficulty}
+                                <button onClick={() => setFilters({...filters, difficulty: 'Todas'})} className="hover:text-green-900 font-bold ml-1">×</button>
+                            </span>
+                        )}
+                    </div>
+                )}
+
+                {/* Layout de dos columnas: Lista + Vista Previa */}
+                <div className="grid lg:grid-cols-2 gap-8 h-[calc(100vh-200px)]">
                         {/* Columna Izquierda: Lista de Libros */}
-                        <div className="space-y-4">
-                            <h2 className="text-lg font-semibold text-text-main mb-4">Materiales Disponibles</h2>
-                            <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                                {library.map((book) => (
+                        <div className="flex flex-col h-full min-h-0">
+                            <h2 className="text-lg font-semibold text-text-main mb-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <span>Materiales Disponibles</span>
+                                    <span className="text-sm font-normal text-text-muted bg-surface-elevated px-3 py-1 rounded-full">
+                                        {filteredLibrary.length} {filteredLibrary.length === 1 ? 'resultado' : 'resultados'}
+                                    </span>
+                                </div>
+                                <div className="flex bg-surface-elevated rounded-lg p-1 border border-border-color">
+                                    <button
+                                        onClick={() => setViewMode('detailed')}
+                                        className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${viewMode === 'detailed' ? 'bg-background shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
+                                        title="Vista Detallada"
+                                    >
+                                        Detalle
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('compact')}
+                                        className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${viewMode === 'compact' ? 'bg-background shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
+                                        title="Vista Compacta"
+                                    >
+                                        Lista
+                                    </button>
+                                </div>
+                            </h2>
+                            <div className="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-0 mb-4">
+                                {filteredLibrary.length === 0 && (
+                                    <div className="text-center py-10 bg-surface rounded-2xl border border-border-color border-dashed">
+                                        <span className="text-3xl mb-3 block">🕵️‍♂️</span>
+                                        <h3 className="text-text-main font-semibold">No hay resultados</h3>
+                                        <p className="text-text-muted text-sm mt-1">Prueba quitando algunos filtros o cambiando tu búsqueda.</p>
+                                    </div>
+                                )}
+                                {filteredLibrary.map((book) => (
                                     <div
                                         key={book.id}
-                                        className={`rounded-2xl p-4 transition-all cursor-pointer relative group border ${previewBook?.id === book.id
+                                        className={`transition-all cursor-pointer relative group border ${
+                                            viewMode === 'detailed' ? 'rounded-2xl p-4' : 'rounded-xl p-3 flex items-center justify-between gap-3'
+                                        } ${previewBook?.id === book.id
                                             ? 'bg-primary text-background border-primary shadow-lg shadow-primary/20'
                                             : 'bg-surface text-text-main border-border-color hover:bg-surface-elevated hover:shadow-md'
                                             }`}
@@ -594,26 +795,42 @@ const TeacherLibrary = () => {
                                                     e.stopPropagation(); // Prevenir que active la selección
                                                     handleDelete(book);
                                                 }}
-                                                className={`absolute top-2 right-2 p-1.5 rounded-lg transition-colors opacity-0 group-hover:opacity-100 ${previewBook?.id === book.id ? 'bg-background/20 hover:bg-background/30 text-background' : 'bg-red-500/10 hover:bg-red-500/20 text-red-500'}`}
+                                                className={`absolute ${viewMode === 'detailed' ? 'top-2 right-2' : 'top-1/2 -translate-y-1/2 right-2'} p-1.5 rounded-lg transition-colors opacity-0 group-hover:opacity-100 ${previewBook?.id === book.id ? 'bg-background/20 hover:bg-background/30 text-background' : 'bg-red-500/10 hover:bg-red-500/20 text-red-500'}`}
                                                 title={`Eliminar "${book.title}"`}
                                             >
                                                 <TrashIcon className="w-4 h-4" />
                                             </button>
                                         )}
 
-                                        <div className="flex justify-between items-start mb-2 pr-10">
-                                            <span className={`text-xs font-bold px-2 py-1 rounded-md ${previewBook?.id === book.id ? 'bg-background/20 text-background' : 'bg-surface-elevated text-text-muted border border-border-color'}`}>
-                                                {book.category}
-                                            </span>
-                                            {previewBook?.id === book.id && (
-                                                <span className="text-xs text-background/80 font-medium">Seleccionado</span>
-                                            )}
-                                        </div>
-                                        <h3 className={`text-base font-bold mb-1 ${previewBook?.id === book.id ? 'text-background' : 'text-text-main'}`}>{book.title}</h3>
-                                        <p className={`text-sm mb-2 ${previewBook?.id === book.id ? 'text-background/80' : 'text-text-muted'}`}>{book.author}</p>
-                                        <p className={`text-xs line-clamp-2 italic ${previewBook?.id === book.id ? 'text-background/70' : 'text-text-muted'}`}>
-                                            "{book.content.substring(0, 80)}..."
-                                        </p>
+                                        {viewMode === 'detailed' ? (
+                                            <>
+                                                <div className="flex justify-between items-start mb-2 pr-10">
+                                                    <span className={`text-xs font-bold px-2 py-1 rounded-md ${previewBook?.id === book.id ? 'bg-background/20 text-background' : 'bg-surface-elevated text-text-muted border border-border-color'}`}>
+                                                        {book.category}
+                                                    </span>
+                                                    {previewBook?.id === book.id && (
+                                                        <span className="text-xs text-background/80 font-medium">Seleccionado</span>
+                                                    )}
+                                                </div>
+                                                <h3 className={`text-base font-bold mb-1 ${previewBook?.id === book.id ? 'text-background' : 'text-text-main'}`}>{book.title}</h3>
+                                                <p className={`text-sm mb-2 ${previewBook?.id === book.id ? 'text-background/80' : 'text-text-muted'}`}>{book.author}</p>
+                                                <p className={`text-xs line-clamp-2 italic ${previewBook?.id === book.id ? 'text-background/70' : 'text-text-muted'}`}>
+                                                    "{book.content.substring(0, 80)}..."
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="flex-1 min-w-0 pr-8">
+                                                    <div className="flex items-center gap-2 mb-0.5">
+                                                        <h3 className={`text-sm font-bold truncate ${previewBook?.id === book.id ? 'text-background' : 'text-text-main'}`}>{book.title}</h3>
+                                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${previewBook?.id === book.id ? 'bg-background/20 text-background' : 'bg-surface-elevated text-text-muted border border-border-color'}`}>
+                                                            {book.category}
+                                                        </span>
+                                                    </div>
+                                                    <p className={`text-xs truncate ${previewBook?.id === book.id ? 'text-background/80' : 'text-text-muted'}`}>{book.author}</p>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -695,9 +912,9 @@ const TeacherLibrary = () => {
                                         {readabilityStats && (
                                             <div className="mb-4 bg-surface rounded-xl border border-border-color p-4 shadow-sm">
                                                 <h4 className="text-sm font-bold text-text-main mb-3 flex items-center gap-2">
-                                                    <span>🧠</span> Análisis de Legibilidad (Fernández Huerta)
+                                                    <span>🧠</span> Análisis de Legibilidad
                                                 </h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                     <div className="bg-surface-elevated p-3 rounded-lg border border-border-color">
                                                         <p className="text-xs text-text-muted mb-1">Nivel Recomendado</p>
                                                         <p className={`font-bold ${readabilityStats.color}`}>{readabilityStats.ageGroup}</p>
@@ -711,19 +928,6 @@ const TeacherLibrary = () => {
                                                         <p className="font-bold text-text-main">{readabilityStats.score} <span className="text-xs font-normal text-text-muted">/ 100</span></p>
                                                     </div>
                                                 </div>
-                                                
-                                                {readabilityStats.complexWords.length > 0 && (
-                                                    <div>
-                                                        <p className="text-xs text-text-muted mb-2 font-medium">Palabras complejas sugeridas para técnica de Previewing:</p>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {readabilityStats.complexWords.map((word, idx) => (
-                                                                <span key={idx} className="text-xs bg-primary/10 text-primary border border-primary/20 px-2 py-1 rounded-md">
-                                                                    {word}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                )}
                                             </div>
                                         )}
 
@@ -992,7 +1196,7 @@ const TeacherLibrary = () => {
                     )}
 
 
-                </>
+                </div>
             )}
         </div>
     );

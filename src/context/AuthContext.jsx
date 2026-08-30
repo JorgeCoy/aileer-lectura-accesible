@@ -34,12 +34,19 @@ export const AuthProvider = ({ children }) => {
                 createdAt: new Date().toISOString()
             };
 
-            await setDoc(doc(db, 'users', firebaseUser.uid), userProfile);
-            
+            try {
+                await setDoc(doc(db, 'users', firebaseUser.uid), userProfile);
+            } catch (fsErr) {
+                console.warn('Firestore setDoc notice (using local fallback for role):', fsErr);
+            }
+
+            // Guardar rol localmente de respaldo
+            localStorage.setItem(`aleer_user_role_${firebaseUser.uid}`, selectedRole);
+
             setUser(firebaseUser);
             setRole(selectedRole);
             setSchoolId(assignedSchoolId);
-            
+
             return firebaseUser;
         } catch (error) {
             console.error('Error en registro:', error);
@@ -76,6 +83,7 @@ export const AuthProvider = ({ children }) => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             if (currentUser) {
                 setUser(currentUser);
+                const localRole = localStorage.getItem(`aleer_user_role_${currentUser.uid}`);
                 // Buscar el rol del usuario en la base de datos
                 try {
                     const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
@@ -83,12 +91,16 @@ export const AuthProvider = ({ children }) => {
                         const userData = userDoc.data();
                         setRole(userData.role);
                         setSchoolId(userData.schoolId);
+                        localStorage.setItem(`aleer_user_role_${currentUser.uid}`, userData.role);
+                    } else if (localRole) {
+                        setRole(localRole);
                     } else {
                         // Si no existe, por defecto es un estudiante
                         setRole('student');
                     }
                 } catch (err) {
                     console.error("Error obteniendo datos del usuario:", err);
+                    setRole(localRole || 'student');
                 }
             } else {
                 setUser(null);
