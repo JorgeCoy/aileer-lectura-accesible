@@ -178,7 +178,7 @@ const PreReadingPanel = ({ previewData, theme, styles, onStartPreview, onStartRe
                                             </div>
                                             <div>
                                                 <h4 className={`font-bold capitalize text-xs ${styles.textMain}`}>
-                                                    {char.name} {char.isMain && <span className="text-[8px] font-bold text-pink-505 bg-pink-500/10 px-1 py-0.5 rounded-full ml-1">Principal</span>}
+                                                    {char.name} {char.isMain && <span className="text-[8px] font-bold text-pink-500 bg-pink-500/10 px-1 py-0.5 rounded-full ml-1">Principal</span>}
                                                 </h4>
                                                 {char.actions.length > 0 && (
                                                     <p className={`text-[9px] mt-0.5 ${styles.textMuted}`}>

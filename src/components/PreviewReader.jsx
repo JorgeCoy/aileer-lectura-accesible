@@ -184,7 +184,7 @@ const PreReadingPanel = ({ previewData, theme, styles, onStartPreview, onStartRe
                                             </div>
                                             <div>
                                                 <h4 className={`font-bold capitalize text-xs ${styles.textMain}`}>
-                                                    {char.name} {char.isMain && <span className="text-[8px] font-bold text-pink-505 bg-pink-500/10 px-1 py-0.5 rounded-full ml-1">Principal</span>}
+                                                    {char.name} {char.isMain && <span className="text-[8px] font-bold text-pink-500 bg-pink-500/10 px-1 py-0.5 rounded-full ml-1">Principal</span>}
                                                 </h4>
                                                 {char.actions.length > 0 && (
                                                     <p className={`text-[9px] mt-0.5 ${styles.textMuted}`}>
@@ -543,7 +543,7 @@ const PreviewReader = ({
                 };
             case 'cinematic':
                 return {
-                    text: 'text-gray-550',
+                    text: 'text-slate-400',
                     highlight: 'text-white bg-blue-900/50 font-bold shadow-[0_0_10px_rgba(59,130,246,0.5)]',
                     bg: 'bg-gradient-to-br from-gray-950 via-slate-900 to-indigo-950',
                     nav: 'bg-white/10 text-white hover:bg-white/20',
@@ -559,7 +559,7 @@ const PreviewReader = ({
             case 'zen':
                 return {
                     text: 'text-stone-400',
-                    highlight: 'text-stone-850 bg-stone-200 font-bold',
+                    highlight: 'text-stone-900 bg-stone-200 font-bold',
                     bg: 'bg-[#f5f5f4]',
                     nav: 'bg-stone-200 text-stone-600 hover:bg-stone-300',
                     textMain: 'text-stone-800',
@@ -578,7 +578,7 @@ const PreviewReader = ({
                     bg: 'bg-slate-50/80',
                     nav: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
                     textMain: 'text-slate-900',
-                    textMuted: 'text-slate-505',
+                    textMuted: 'text-slate-500',
                     border: 'border-slate-200',
                     cardBg: 'bg-white border-slate-200 shadow-sm',
                     badgeBg: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -592,7 +592,7 @@ const PreviewReader = ({
                     highlight: 'text-amber-900 bg-amber-100 font-bold',
                     bg: 'bg-[#f7f2e8]',
                     nav: 'bg-amber-200 text-amber-800 hover:bg-amber-300',
-                    textMain: 'text-amber-955',
+                    textMain: 'text-amber-950',
                     textMuted: 'text-amber-800/70',
                     border: 'border-amber-200',
                     cardBg: 'bg-amber-100/30 border-amber-200 shadow-sm',
