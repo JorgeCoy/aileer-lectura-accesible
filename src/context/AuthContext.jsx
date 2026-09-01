@@ -34,14 +34,7 @@ export const AuthProvider = ({ children }) => {
                 createdAt: new Date().toISOString()
             };
 
-            try {
-                await setDoc(doc(db, 'users', firebaseUser.uid), userProfile);
-            } catch (fsErr) {
-                console.warn('Firestore setDoc notice (using local fallback for role):', fsErr);
-            }
-
-            // Guardar rol localmente de respaldo
-            localStorage.setItem(`aleer_user_role_${firebaseUser.uid}`, selectedRole);
+            await setDoc(doc(db, 'users', firebaseUser.uid), userProfile);
 
             setUser(firebaseUser);
             setRole(selectedRole);
@@ -83,24 +76,21 @@ export const AuthProvider = ({ children }) => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             if (currentUser) {
                 setUser(currentUser);
-                const localRole = localStorage.getItem(`aleer_user_role_${currentUser.uid}`);
-                // Buscar el rol del usuario en la base de datos
                 try {
                     const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
                     if (userDoc.exists()) {
                         const userData = userDoc.data();
                         setRole(userData.role);
                         setSchoolId(userData.schoolId);
-                        localStorage.setItem(`aleer_user_role_${currentUser.uid}`, userData.role);
-                    } else if (localRole) {
-                        setRole(localRole);
                     } else {
-                        // Si no existe, por defecto es un estudiante
-                        setRole('student');
+                        console.warn("No user profile document found in Firestore for UID:", currentUser.uid);
+                        setRole(null);
+                        setSchoolId(null);
                     }
                 } catch (err) {
-                    console.error("Error obteniendo datos del usuario:", err);
-                    setRole(localRole || 'student');
+                    console.error("Error fetching user profile from Firestore:", err);
+                    setRole(null);
+                    setSchoolId(null);
                 }
             } else {
                 setUser(null);
