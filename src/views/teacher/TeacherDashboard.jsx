@@ -32,10 +32,6 @@ const TeacherDashboard = () => {
             const fbClasses = await FirebaseBackendService.getTeacherClasses(user.uid);
             const fbAssignments = await FirebaseBackendService.getTeacherAssignments(user.uid);
             
-            // Sync with local storage so AnalyticsService works seamlessly
-            localStorage.setItem('aleer_db_classes', JSON.stringify(fbClasses));
-            localStorage.setItem('aleer_db_assignments', JSON.stringify(fbAssignments));
-            
             setClasses(fbClasses);
         };
         
