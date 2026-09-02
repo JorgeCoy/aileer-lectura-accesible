@@ -1,11 +1,9 @@
 import { collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, arrayUnion, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
-import MockBackendService from './MockBackendService';
 
 const FirebaseBackendService = {
     // --- CLASSES (AULAS VIRTUALES) ---
     createClass: async (schoolId, teacherId, classData) => {
-        const localClass = MockBackendService.createClass({ ...classData, schoolId, teacherId });
         try {
             const docRef = await addDoc(collection(db, 'classes'), {
                 ...classData,
@@ -15,8 +13,8 @@ const FirebaseBackendService = {
             });
             return { id: docRef.id, ...classData };
         } catch (error) {
-            console.warn("Firestore notice (using local fallback for createClass):", error);
-            return localClass;
+            console.error("Error creating class in Firestore:", error);
+            throw error;
         }
     },
 
@@ -24,23 +22,20 @@ const FirebaseBackendService = {
         try {
             const q = query(collection(db, 'classes'), where('teacherId', '==', teacherId));
             const querySnapshot = await getDocs(q);
-            const fbClasses = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if (fbClasses.length > 0) return fbClasses;
-            return MockBackendService.getClasses();
+            return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         } catch (error) {
-            console.warn("Firestore notice (using local fallback for getTeacherClasses):", error);
-            return MockBackendService.getClasses();
+            console.error("Error fetching teacher classes from Firestore:", error);
+            return [];
         }
     },
 
     deleteClass: async (classId) => {
-        MockBackendService.deleteClass(classId);
         try {
             await deleteDoc(doc(db, 'classes', classId));
             return true;
         } catch (error) {
-            console.warn("Firestore notice (deleted class locally):", error);
-            return true;
+            console.error("Error deleting class from Firestore:", error);
+            throw error;
         }
     },
 

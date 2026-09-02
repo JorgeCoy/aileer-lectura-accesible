@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 
 // Configuración del proyecto aLeer desde variables de entorno
 const firebaseConfig = {
@@ -16,5 +16,16 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// Activar persistencia fuera de línea nativa (IndexedDB)
+if (typeof window !== 'undefined') {
+    enableIndexedDbPersistence(db).catch((err) => {
+        if (err.code === 'failed-precondition') {
+            console.warn('Persistencia de Firestore notice: múltiples pestañas abiertas');
+        } else if (err.code === 'unimplemented') {
+            console.warn('Persistencia de Firestore no soportada por el navegador');
+        }
+    });
+}
 
 export default app;
