@@ -171,6 +171,93 @@ const FirebaseBackendService = {
             console.error("Error fetching class progress stats:", error);
             return { totalAssignments: 0, completedCount: 0, avgWpm: 0 };
         }
+    },
+
+    // --- B2B CORE: DIAGNÓSTICO POR PIN EXPRÉS DE 3 MINUTOS ---
+    createDiagnosticSession: async (teacherId, classId, sessionTitle = 'Diagnóstico Inicial') => {
+        try {
+            const pin = Math.floor(100000 + Math.random() * 900000).toString();
+            const sessionRef = await addDoc(collection(db, 'diagnostic_sessions'), {
+                pin,
+                teacherId,
+                classId: classId || 'express',
+                sessionTitle,
+                status: 'active',
+                submissions: [],
+                createdAt: new Date().toISOString()
+            });
+            return { id: sessionRef.id, pin, sessionTitle };
+        } catch (error) {
+            console.error("Error creating diagnostic PIN session:", error);
+            throw error;
+        }
+    },
+
+    getDiagnosticSessionByPin: async (pin) => {
+        try {
+            const q = query(collection(db, 'diagnostic_sessions'), where('pin', '==', pin.toString()), where('status', '==', 'active'));
+            const snap = await getDocs(q);
+            if (snap.empty) return null;
+            const docData = snap.docs[0];
+            return { id: docData.id, ...docData.data() };
+        } catch (error) {
+            console.error("Error fetching diagnostic session by PIN:", error);
+            return null;
+        }
+    },
+
+    submitDiagnosticResult: async (pin, studentName, resultData) => {
+        try {
+            const session = await FirebaseBackendService.getDiagnosticSessionByPin(pin);
+            if (!session) throw new Error("Sesión de diagnóstico no encontrada o expirada.");
+
+            const sessionRef = doc(db, 'diagnostic_sessions', session.id);
+            const newSubmission = {
+                studentName,
+                submittedAt: new Date().toISOString(),
+                ...resultData
+            };
+
+            await updateDoc(sessionRef, {
+                submissions: arrayUnion(newSubmission)
+            });
+            return true;
+        } catch (error) {
+            console.error("Error submitting diagnostic result:", error);
+            throw error;
+        }
+    },
+
+    // --- B2B CORE: RECONCILIACIÓN FREEMIUM A TENANT INSTITUCIONAL ---
+    claimSchoolTenant: async (teacherId, schoolId) => {
+        try {
+            const classesQ = query(collection(db, 'classes'), where('teacherId', '==', teacherId));
+            const snap = await getDocs(classesQ);
+            const updates = snap.docs.map(docSnap => updateDoc(doc(db, 'classes', docSnap.id), { schoolId }));
+            await Promise.all(updates);
+            return true;
+        } catch (error) {
+            console.error("Error claiming school tenant for teacher:", error);
+            throw error;
+        }
+    },
+
+    // --- B2B CORE: CARGA MASIVA DE ESTUDIANTES CSV ---
+    batchAddStudentsToClass: async (classId, newStudents) => {
+        try {
+            const classRef = doc(db, 'classes', classId);
+            const classSnap = await getDoc(classRef);
+            if (!classSnap.exists()) throw new Error("La clase no existe.");
+
+            const currentStudents = classSnap.data().students || [];
+            const updatedStudents = [...currentStudents, ...newStudents];
+
+            await updateDoc(classRef, { students: updatedStudents });
+            return updatedStudents;
+        } catch (error) {
+            console.error("Error batch adding students:", error);
+            throw error;
+        }
     }
 };
 

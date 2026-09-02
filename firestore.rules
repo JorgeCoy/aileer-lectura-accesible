@@ -45,6 +45,11 @@ service cloud.firestore {
       allow create, update: if isAuthenticated();
     }
 
+    // Colección de Sesiones de Diagnóstico (PIN Exprés de 3 Minutos)
+    match /diagnostic_sessions/{sessionId} {
+      allow read, create, update: if true;
+    }
+
     // Bloqueo por defecto para cualquier otra colección no especificada
     match /{document=**} {
       allow read, write: if false;
