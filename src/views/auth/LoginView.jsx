@@ -84,6 +84,16 @@ const LoginView = () => {
                         Regístrate aquí
                     </Link>
                 </div>
+
+                <div className="mt-6 pt-6 border-t border-border-color text-center">
+                    <p className="text-xs text-text-muted mb-3">¿Eres estudiante en una prueba diagnóstica?</p>
+                    <Link
+                        to="/pin"
+                        className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-surface-elevated border border-primary/30 text-primary hover:bg-primary/5 rounded-xl font-medium text-sm transition"
+                    >
+                        <span>Ingresar con PIN de 6 dígitos 🔑</span>
+                    </Link>
+                </div>
             </motion.div>
         </div>
     );

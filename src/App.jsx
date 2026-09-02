@@ -17,6 +17,7 @@ const StudentLayout = lazy(() => import('./layouts/StudentLayout'));
 const StudentDashboard = lazy(() => import('./views/student/StudentDashboard'));
 const StudentLibrary = lazy(() => import('./views/student/StudentLibrary'));
 const StudentReadingWrapper = lazy(() => import('./views/student/StudentReadingWrapper'));
+const SessionPinJoin = lazy(() => import('./components/student/SessionPinJoin'));
 
 // Componente para proteger rutas
 const ProtectedRoute = ({ children, allowedRole }) => {
@@ -47,6 +48,7 @@ const App = () => {
             {/* Rutas Públicas */}
           <Route path="/login" element={<LoginView />} />
           <Route path="/register" element={<RegisterView />} />
+          <Route path="/pin" element={<SessionPinJoin />} />
 
           {/* Redirección raíz */}
           <Route path="/" element={<ProtectedRoute><Navigate to="/estudiante" replace /></ProtectedRoute>} />
