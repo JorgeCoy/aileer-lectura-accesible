@@ -16,29 +16,33 @@
 ## 🚀 2. Enfoque Estratégico B2B (Colegios & Escuelas)
 
 ### 🎯 **Público Objetivo**
-* **Compradores**: Rectores, Directores Académicos, Coordinadores de Inclusión/PIAR y Comités Educativos.
+* **Compradores**: Rectores, Directores Académicos, Coordinadores de Inclusión/Orientación y Comités Educativos.
 * **Usuarios**: Docentes de Lenguaje/Español y Estudiantes de K-12.
 
 ### 💰 **Modelo de Negocio & Pricing**
 * **Suscripción Anual por Estudiante**: Tarifas por año escolar (alineadas con el presupuesto académico de los colegios), con descuentos por volumen.
-* **Onboarding Automatizado**: Carga masiva de estudiantes mediante CSV o SSO institucional.
+* **Onboarding Automatizado**: Carga masiva de estudiantes mediante CSV, PIN de sesión o SSO institucional.
 
 ---
 
-## ⚡ 3. Palancas de Aceleración de Ventas (Estrategias de Alto Impacto LATAM)
+## ⚡ 3. Palancas de Aceleración de Ventas (Refinadas & Conforme a Norma)
 
-Para maximizar el alcance y cerrar contratos institucionales más rápido, se incorporan 5 ganchos estratégicos:
+Para maximizar el alcance y cerrar contratos institucionales sin riesgos legales ni pedagógicos, se establecen 5 palancas refinadas:
 
-1. **Soporte Normativo al PIAR / Inclusión (Decreto 1421 / Ley de Inclusión)**:
-   * Generación automática del *"Reporte de Ajustes Razonables en Lectura"* para la carpeta de inclusión del estudiante. Es el argumento n° 1 para coordinadores de inclusión.
-2. **Diagnóstico Exprés de 3 Minutos (Benchmark Lector)**:
-   * Evaluación diagnóstica inicial rápida que le entrega al Rector un *"Mapa de Salud Lectora"* del colegio. Ver un % alto en semáforo rojo genera la urgencia inmediata de compra.
-3. **Alineación con Pruebas Estandarizadas (ICFES Saber / PISA / SIMCE)**:
-   * Preguntas agrupadas por competencias oficiales (Literal, Inferencial, Crítica/Sintáctica), demostrando mejoras de puntaje en pruebas estatales.
-4. **Estrategia "Freemium Docente" (Product-Led Growth)**:
-   * Permite a un docente usar la plataforma gratis en 1 aula (hasta 25 alumnos). Cuando 3 o 4 docentes la usan y aman los reportes, ellos mismos solicitan el plan institucional al Rector.
-5. **Boletines de Progreso para Padres de Familia (PDF con QR)**:
-   * Informes mensuales sencillos para enviar a los padres. Aumenta la percepción de valor del colegio ante las familias.
+1. **Insumo Pedagógico de Inclusión ("Registro de Ajustes Lectores")**:
+   * *Ajuste Normativo*: No califica diagnósticos médicos ni suplanta el PIAR oficial (Decreto 1421). Genera el *"Registro de Avances y Ajustes Lectores"*, un documento de insumo pedagógico para los comités de evaluación y carpetas de orientación.
+   * *Habeas Data (Ley 1581)*: **No almacena datos de salud ni diagnósticos clínicos**. Solo registra métricas pedagógicas (WPM, tasa de acierto y preferencias de accesibilidad visual).
+2. **Evaluación Psicometría por Competencias (ICFES Saber / PISA / SIMCE)**:
+   * Evalúa separadamente velocidad (WPM) de la comprensión profunda.
+   * Quizzes estructurados y categorizados por competencias oficiales (**Literal, Inferencial y Crítica/Sintáctica**), respaldados por datos medibles reales.
+3. **Diagnóstico Exprés por PIN de Sesión (Cero Fricción)**:
+   * Prueba diagnóstica inicial de 3 minutos ejecutada por **Código de Sesión PIN** (estilo Kahoot/Nearpod), sin requerir registro individual de correos para 300+ alumnos en 1 día. Genera el *"Mapa de Salud Lectora"* del colegio.
+4. **Estrategia "Freemium Docente" con Migración de Tenant (PLG)**:
+   * Permite a un docente usar la app gratis en 1 aula (hasta 25 alumnos). 
+   * *Arquitectura de Datos*: Incluye el proceso de **Fusión/Reconciliación de Cuentas (`claimSchoolTenant`)** para vincular automáticamente aulas freemium al tenant institucional del colegio al cerrar la venta.
+5. **Boletín para Padres con QR Seguro (Protección de Menores)**:
+   * Generación de reportes visuales en PDF para las familias.
+   * *Seguridad Ciber*: Los códigos QR contienen **tokens temporales firmados criptográficamente (o PIN de validación)**, impidiendo que datos de menores sean públicos o indexables.
 
 ---
 
@@ -49,25 +53,25 @@ graph TD
     A[Super Admin Portal] --> B[Colegio / Tenant]
     B --> C[Panel Docente]
     B --> D[Portal Estudiante PWA]
-    C --> E[Asignación de Lecturas & Quizzes]
-    C --> F[Dashboard, PIAR & Reportes PDF/Excel]
+    C --> E[Asignación de Lecturas & Quizzes por Competencia]
+    C --> F[Dashboard, Insumos de Inclusión & Reportes PDF/Excel]
     D --> G[Lector Accesible Offline]
     D --> H[Gamificación & Progreso Individual]
 ```
 
 ### **A. Panel Docente & Gestión Académica**
 * **Asignación de Lecturas**: Asignación diferenciada por grado, tema y nivel de dificultad.
-* **Evaluación de Comprensión**: Quizzes automáticos (opción múltiple y preguntas abiertas) generados por IA o catálogo.
+* **Evaluación de Comprensión**: Quizzes automáticos por competencia (Literal, Inferencial, Crítica) generados por IA o catálogo.
 * **Semáforo de Riesgo Lector**: Identificación oportuna de estudiantes con rezago en WPM o comprensión.
-* **Reportes Exportables**: Descarga de informes individuales, grupales y de inclusión (PIAR) en PDF/Excel.
+* **Reportes Exportables**: Descarga de informes individuales, grupales e insumos de inclusión en PDF/Excel.
 
 ### **B. Experiencia del Estudiante (PWA Accesible)**
-* **Entrenamiento Adaptativo**: Incremento gradual de WPM según desempeño.
+* **Entrenamiento Adaptativo**: Incremento gradual de WPM según desempeño sin degradar comprensión.
 * **Soporte de Inclusión**: Ajustes instantáneos de tipografía, tamaño, espaciado y lectura en voz alta.
 * **Modo Offline**: Registro local de avances y sincronización automática al recuperar internet.
 
 ### **C. Infraestructura & Cumplimiento**
-* **Habeas Data & Ley 1581 (Colombia/LATAM)**: Protocolos de protección de datos de menores y consentimiento institucional.
+* **Habeas Data & Ley 1581 (Colombia/LATAM)**: Protección estricta de datos de menores; cero almacenamiento de datos médicos sensibles.
 * **Seguridad Servidor**: Firestore Security Rules strictly scoped por rol (`teacher` / `student`).
 * **Inteligencia Artificial Híbrida**: Procesamiento local mediante Web Worker (`@huggingface/transformers`) y nube opcional vía servidor.
 
@@ -79,17 +83,17 @@ graph TD
 - [x] Reglas de seguridad de Firestore y eliminación de fallbacks locales.
 - [x] Control de concurrencia en Workers de IA e higiene de datos.
 - [x] Panel docente para creación de clases y seguimiento.
-- [ ] Exportación de reportes en PDF/Excel (Ficha individual + Reporte PIAR).
-- [ ] Módulo de carga masiva de alumnos por archivo CSV.
+- [ ] Exportación de reportes en PDF/Excel (Ficha individual + Registro de Ajustes Lectores).
+- [ ] Módulo de carga masiva por CSV y Código PIN de Sesión (Diagnóstico Exprés).
 
 ### 🟡 **Fase 2: Integración & Automatización (Próximo Trimestre)**
-- [ ] Prueba diagnóstica de 3 minutos (Benchmark Inicial).
+- [ ] Mecanismo de reconciliación de cuentas Freemium a Tenant Institucional (`claimSchoolTenant`).
+- [ ] Cifrado y tokens de seguridad en códigos QR para boletines de padres.
 - [ ] Integración de SSO con Google Workspace for Education.
 - [ ] Banco de lecturas categorizado por competencias ICFES / Saber.
-- [ ] Módulo de licenciamiento institucional (gestión de cupos/seats activos).
 
 ### 🔴 **Fase 3: Expansión & Ecosistema (Futuro)**
 - [ ] Integración con LMS (Google Classroom / Canvas).
 - [ ] Soporte bilingüe completo (Español / Inglés).
 
-> ⚠️ **Nota de Enfoque**: Se descartan desarrollos de hardware (VR/AR, eye-tracking) para concentrar el 100% de la ingeniería en funciones que impulsan la venta, satisfacción de padres y retención B2B educativa.
+> ⚠️ **Nota de Enfoque**: Se descartan desarrollos de hardware (VR/AR, eye-tracking) para concentrar el 100% de la ingeniería en funciones que impulsan la venta, satisfacción de padres y retención B2B educativa con estricto apego a la ley.
