@@ -114,15 +114,16 @@ const FirebaseBackendService = {
     // --- PROGRESS (PROGRESO DEL ESTUDIANTE) ---
     saveProgress: async (studentId, assignmentId, progressData, classId = null) => {
         try {
-            const progressRef = collection(db, 'progress');
-            await addDoc(progressRef, {
+            const progressId = `${studentId}_${assignmentId}`;
+            const progressRef = doc(db, 'progress', progressId);
+            await setDoc(progressRef, {
                 studentId,
                 assignmentId,
                 classId: classId || progressData?.classId || null,
                 ...progressData,
                 status: 'completed',
-                completedAt: new Date().toISOString()
-            });
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
             return true;
         } catch (error) {
             console.error("Error saving progress:", error);
