@@ -98,8 +98,8 @@ export async function summarizeText(text, options = {}) {
 
 // Método para generar preguntas de comprensión
 export async function generateQuestions(text, multipleChoiceCount = 3, openEndedCount = 1, options = {}) {
-// Obtener API Key de entorno (recomendado) o fallback de localStorage
-  const cloudApiKey = import.meta.env.VITE_OPENROUTER_API_KEY || localStorage.getItem('cloud_api_key');
+// Obtener API Key exclusivamente desde variables de entorno secretas (VITE_OPENROUTER_API_KEY)
+  const cloudApiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
   
   if (cloudApiKey) {
     try {
@@ -167,8 +167,8 @@ ${text}`;
 
 // Método para generar lecturas por tema y nivel
 export async function generateTextByTopic(topic, level, wordsCount = 150, options = {}) {
-  // Verificar si hay una API Key en variables de entorno o localStorage
-  const cloudApiKey = import.meta.env.VITE_OPENROUTER_API_KEY || localStorage.getItem('cloud_api_key');
+  // Verificar si hay una API Key en la nube configurada mediante variables de entorno
+  const cloudApiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
   
   if (cloudApiKey) {
     try {
