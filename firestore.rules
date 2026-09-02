@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Auxiliar: ¿El usuario inició sesión?
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Auxiliar: ¿Es el propio usuario?
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Auxiliar: Obtener el rol del usuario desde su documento en /users
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    // Colección de Usuarios
+    match /users/{userId} {
+      // Cualquier usuario autenticado puede leer datos de perfil
+      allow read: if isAuthenticated();
+      // Cada usuario solo puede crear o actualizar su propio documento de perfil
+      allow create, update: if isOwner(userId);
+    }
+
+    // Colección de Clases
+    match /classes/{classId} {
+      // Estudiantes y docentes autenticados pueden ver información de clases
+      allow read: if isAuthenticated();
+      // Solo docentes pueden crear, editar o eliminar clases
+      allow create, update, delete: if isAuthenticated() && (getUserRole() == 'teacher' || !exists(/databases/$(database)/documents/users/$(request.auth.uid)));
+    }
+
+    // Colección de Tareas / Asignaciones
+    match /assignments/{assignmentId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated() && (getUserRole() == 'teacher' || !exists(/databases/$(database)/documents/users/$(request.auth.uid)));
+    }
+
+    // Colección de Progreso y Lecturas
+    match /student_progress/{progressId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+    }
+
+    // Bloqueo por defecto para cualquier otra colección no especificada
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
