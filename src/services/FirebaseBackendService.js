@@ -112,14 +112,13 @@ const FirebaseBackendService = {
     },
 
     // --- PROGRESS (PROGRESO DEL ESTUDIANTE) ---
-    saveProgress: async (studentId, assignmentId, progressData) => {
+    saveProgress: async (studentId, assignmentId, progressData, classId = null) => {
         try {
             const progressRef = collection(db, 'progress');
-            // Simplificación: crear un nuevo documento cada vez que completan. 
-            // En un caso real se buscaría si ya existe para actualizarlo.
             await addDoc(progressRef, {
                 studentId,
                 assignmentId,
+                classId: classId || progressData?.classId || null,
                 ...progressData,
                 status: 'completed',
                 completedAt: new Date().toISOString()
@@ -143,31 +142,27 @@ const FirebaseBackendService = {
     },
 
     getClassProgress: async (classId) => {
-        // Obtenemos los assignments de la clase primero
         try {
+            // 1. Obtener conteo de asignaciones de la clase
             const assignmentsQ = query(collection(db, 'assignments'), where('classId', '==', classId));
             const assignmentsSnap = await getDocs(assignmentsQ);
-            const assignments = assignmentsSnap.docs.map(doc => doc.id);
-            
-            if (assignments.length === 0) {
+            const totalAssignments = assignmentsSnap.size;
+
+            if (totalAssignments === 0) {
                 return { totalAssignments: 0, completedCount: 0, avgWpm: 0 };
             }
 
-            // Para cada assignment buscamos su progreso (en Firestore v9 "in" soporta hasta 10, simplificamos aquí con consultas)
-            // Esto es ineficiente en producción real a escala, pero funciona para el demo
-            let allProgress = [];
-            for (let aId of assignments) {
-                const progQ = query(collection(db, 'progress'), where('assignmentId', '==', aId));
-                const progSnap = await getDocs(progQ);
-                allProgress = [...allProgress, ...progSnap.docs.map(doc => doc.data())];
-            }
+            // 2. Consulta optimizada O(1): Obtener todo el progreso de la clase en una sola llamada
+            const progQ = query(collection(db, 'progress'), where('classId', '==', classId));
+            const progSnap = await getDocs(progQ);
+            const allProgress = progSnap.docs.map(doc => doc.data());
 
             const completedCount = allProgress.filter(p => p.status === 'completed').length;
             const totalWpm = allProgress.reduce((sum, p) => sum + (p.wpmAchieved || p.wpm || 0), 0);
             const avgWpm = allProgress.length > 0 ? Math.round(totalWpm / allProgress.length) : 0;
 
             return {
-                totalAssignments: assignments.length,
+                totalAssignments,
                 completedCount,
                 avgWpm
             };
