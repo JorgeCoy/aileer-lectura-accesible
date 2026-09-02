@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { UserIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
+import { isValidEmail, sanitizeString, isValidRole } from '../../utils/validation';
 
 const RegisterView = () => {
     const [email, setEmail] = useState('');
@@ -17,14 +18,37 @@ const RegisterView = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        const cleanName = sanitizeString(name, 100);
+        const cleanEmail = sanitizeString(email, 150);
+
+        if (!cleanName || cleanName.length < 2) {
+            setError('Por favor ingresa un nombre válido de al menos 2 caracteres.');
+            return;
+        }
+
+        if (!isValidEmail(cleanEmail)) {
+            setError('Por favor ingresa un correo electrónico válido.');
+            return;
+        }
+
+        if (!isValidRole(role)) {
+            setError('Por favor selecciona un rol válido.');
+            return;
+        }
+
+        if (!password || password.length < 6) {
+            setError('La contraseña debe tener al menos 6 caracteres.');
+            return;
+        }
+
         setIsLoading(true);
         try {
-            await register(email, password, name, role);
+            await register(cleanEmail, password, cleanName, role);
             // Redirigir según el rol
             navigate(role === 'teacher' ? '/docente' : '/estudiante');
         } catch (err) {
             console.error(err);
-            // Mostrar el mensaje exacto de Firebase para depurar
             setError(`Error: ${err.code || err.message}`);
         } finally {
             setIsLoading(false);

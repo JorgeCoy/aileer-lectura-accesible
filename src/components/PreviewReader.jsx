@@ -5,6 +5,7 @@ import { useReadingComponentFactory } from '../patterns/ReadingComponentFactory.
 import HighlightedWord from './HighlightedWord';
 import SpritzReader from './SpritzReader';
 import { analyzeReadability, analyzePreview } from '../utils/readability';
+import { clampWpm } from '../utils/validation';
 
 // ============================================
 // COMPONENTE PANEL DE PRELECTURA
@@ -507,7 +508,8 @@ const PreviewReader = ({
     useEffect(() => {
         let interval;
         if (isReadingMode && isPlaying && allWords.length > 0) {
-            const intervalMs = 60000 / (speed || 200); // Convert WPM to ms
+            const safeWpm = clampWpm(speed || 200, 30, 1200);
+            const intervalMs = 60000 / safeWpm; // Convert WPM to ms
             interval = setInterval(() => {
                 setCurrentWordIndex(prev => {
                     if (prev >= allWords.length - 1) {

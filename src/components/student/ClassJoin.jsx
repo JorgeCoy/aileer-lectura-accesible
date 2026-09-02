@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import MockBackendService from '../../services/MockBackendService';
+import { sanitizeString, isValidClassCode } from '../../utils/validation';
 
 const ClassJoin = ({ onJoinSuccess }) => {
     const [method, setMethod] = useState('code'); // 'code' | 'qr'
@@ -9,7 +10,20 @@ const ClassJoin = ({ onJoinSuccess }) => {
     const handleJoin = (e) => {
         e.preventDefault();
 
-        const result = MockBackendService.enrollStudent(code, studentName);
+        const cleanName = sanitizeString(studentName, 100);
+        const cleanCode = sanitizeString(code, 20).toUpperCase();
+
+        if (!cleanName || cleanName.length < 2) {
+            alert('❌ Por favor ingresa tu nombre (al menos 2 caracteres).');
+            return;
+        }
+
+        if (!isValidClassCode(cleanCode)) {
+            alert('❌ El código de clase debe tener 6 caracteres alfanuméricos.');
+            return;
+        }
+
+        const result = MockBackendService.enrollStudent(cleanCode, cleanName);
 
         if (result.success) {
             alert(`✅ ¡Bienvenido a la clase de ${result.className}!`);
