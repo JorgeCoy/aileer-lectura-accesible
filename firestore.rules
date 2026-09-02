@@ -40,7 +40,7 @@ service cloud.firestore {
     }
 
     // Colección de Progreso y Lecturas
-    match /student_progress/{progressId} {
+    match /progress/{progressId} {
       allow read: if isAuthenticated();
       allow create, update: if isAuthenticated();
     }
