@@ -39,18 +39,44 @@ function getWorker() {
   return workerInstance;
 }
 
-// Helper para enviar mensajes al worker y retornar una promesa
+// Cola de tareas secuencial para controlar la concurrencia y memoria en el navegador
+const requestQueue = [];
+let isProcessingQueue = false;
+
+async function processQueue() {
+  if (isProcessingQueue || requestQueue.length === 0) return;
+  isProcessingQueue = true;
+
+  while (requestQueue.length > 0) {
+    const currentTask = requestQueue.shift();
+    try {
+      const result = await currentTask.execute();
+      currentTask.resolve(result);
+    } catch (err) {
+      currentTask.reject(err);
+    }
+  }
+
+  isProcessingQueue = false;
+}
+
+// Helper para enviar mensajes al worker de forma secuencial
 function sendToWorker(type, text, model, options = {}) {
   return new Promise((resolve, reject) => {
-    const worker = getWorker();
-    if (!worker) {
-      reject(new Error('No se pudo inicializar el Worker de IA (Entorno no compatible)'));
-      return;
-    }
+    const executeTask = () => new Promise((taskResolve, taskReject) => {
+      const worker = getWorker();
+      if (!worker) {
+        taskReject(new Error('No se pudo inicializar el Worker de IA (Entorno no compatible)'));
+        return;
+      }
 
-    const id = ++requestIdCounter;
-    pendingRequests.set(id, { resolve, reject });
-    worker.postMessage({ id, type, text, model, options });
+      const id = ++requestIdCounter;
+      pendingRequests.set(id, { resolve: taskResolve, reject: taskReject });
+      worker.postMessage({ id, type, text, model, options });
+    });
+
+    requestQueue.push({ execute: executeTask, resolve, reject });
+    processQueue();
   });
 }
 

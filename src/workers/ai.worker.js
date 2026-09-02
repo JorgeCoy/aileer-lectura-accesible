@@ -3,14 +3,26 @@ import { env, pipeline } from '@huggingface/transformers';
 // Configurar CDN global
 env.allowLocalModels = false;
 
-// Almacén de pipelines activos (Singletons por modelo/tarea)
-const activePipelines = {};
+// Almacén de pipelines activos (Máximo 2 modelos simultáneos en RAM para evitar OOM)
+const activePipelines = new Map();
+const MAX_ACTIVE_PIPELINES = 2;
 
-// Obtener o crear un pipeline asíncronamente
+// Obtener o crear un pipeline asíncronamente con evicción de memoria
 async function getPipeline(task, model, progressCallback) {
   const cacheKey = `${task}_${model}`;
-  if (activePipelines[cacheKey]) {
-    return activePipelines[cacheKey];
+  if (activePipelines.has(cacheKey)) {
+    return activePipelines.get(cacheKey);
+  }
+
+  // Si se supera el límite de memoria, liberar el pipeline más antiguo
+  if (activePipelines.size >= MAX_ACTIVE_PIPELINES) {
+    const oldestKey = activePipelines.keys().next().value;
+    const oldPipeline = activePipelines.get(oldestKey);
+    if (oldPipeline && typeof oldPipeline.dispose === 'function') {
+      try { await oldPipeline.dispose(); } catch (e) { console.warn('Error liberando pipeline:', e); }
+    }
+    activePipelines.delete(oldestKey);
+    console.log(`[AI Worker] Pipeline '${oldestKey}' liberado de la memoria RAM.`);
   }
 
   // Determinar opciones por defecto
@@ -22,23 +34,25 @@ async function getPipeline(task, model, progressCallback) {
     }
   };
 
+  let newPipe;
   // Intentar usar WebGPU si está disponible
   try {
-    activePipelines[cacheKey] = await pipeline(task, model, {
+    newPipe = await pipeline(task, model, {
       ...options,
       device: 'webgpu',
     });
     console.log(`[AI Worker] Pipeline '${cacheKey}' inicializado con WebGPU`);
   } catch (error) {
     console.warn(`[AI Worker] WebGPU falló, reintentando con CPU (Wasm):`, error.message);
-    activePipelines[cacheKey] = await pipeline(task, model, {
+    newPipe = await pipeline(task, model, {
       ...options,
       device: 'wasm',
     });
     console.log(`[AI Worker] Pipeline '${cacheKey}' inicializado con Wasm (CPU)`);
   }
 
-  return activePipelines[cacheKey];
+  activePipelines.set(cacheKey, newPipe);
+  return newPipe;
 }
 
 // Escuchar mensajes del hilo principal
