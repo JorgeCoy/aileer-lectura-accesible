@@ -62,7 +62,10 @@ graph TD
 ### **A. Panel Docente & Gestión Académica**
 * **Asignación de Lecturas**: Asignación diferenciada por grado, tema y nivel de dificultad.
 * **Evaluación de Comprensión**: Quizzes automáticos por competencia (Literal, Inferencial, Crítica) generados por IA o catálogo.
-* **Semáforo de Riesgo Lector**: Identificación oportuna de estudiantes con rezago en WPM o comprensión.
+* **Semáforo Pedagógico No-Clínico**:
+  * 🟢 **Consolidado**: Desempeño lector óptimo.
+  * 🟡 **En desarrollo**: Avanzando según los objetivos académicos.
+  * 🔴 **Requiere acompañamiento**: Necesidad de apoyo pedagógico focalizado.
 * **Reportes Exportables**: Descarga de informes individuales, grupales e insumos de inclusión en PDF/Excel.
 
 ### **B. Experiencia del Estudiante (PWA Accesible)**
