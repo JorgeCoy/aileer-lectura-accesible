@@ -1,9 +1,9 @@
-import MockBackendService from './MockBackendService';
+import FirebaseBackendService from './FirebaseBackendService';
 
 /**
  * AnalyticsService
  * Módulo especializado en cálculos matemáticos, estadísticas y promedios.
- * En un backend real, esto viviría en el servidor o en una base de datos analítica.
+ * Totalmente abstraído para recibir datos dinámicos de cualquier proveedor (Firebase / API).
  */
 class AnalyticsService {
 
@@ -12,10 +12,9 @@ class AnalyticsService {
      * @param {Array} progressList 
      * @param {Array} assignments 
      */
-    static _calculateTopReading(progressList, assignments) {
+    static _calculateTopReading(progressList = [], assignments = []) {
         if (!progressList.length || !assignments.length) return { title: 'Ninguna', count: 0 };
         
-        // Count frequencies of assignmentId
         const counts = {};
         progressList.forEach(p => {
             if (p.status === 'completed') {
@@ -23,7 +22,6 @@ class AnalyticsService {
             }
         });
 
-        // Find the most frequent
         let topId = null;
         let maxCount = 0;
         for (const [id, count] of Object.entries(counts)) {
@@ -37,38 +35,26 @@ class AnalyticsService {
         
         const topAssignment = assignments.find(a => a.id === topId);
         return {
-            title: topAssignment ? topAssignment.textTitle : 'Lectura Desconocida',
+            title: topAssignment ? (topAssignment.textTitle || topAssignment.title || 'Lectura') : 'Lectura Desconocida',
             count: maxCount
         };
     }
 
     /**
-     * Obtiene estadísticas globales para todo el colegio
+     * Obtiene estadísticas globales para todo el colegio o conjunto de clases
      */
-    static getGlobalStats() {
-        const classes = MockBackendService.getClasses();
-        const assignments = MockBackendService.getAssignments();
-        const progressList = JSON.parse(localStorage.getItem('aleer_db_progress') || '[]');
-
+    static getGlobalStats(classes = [], assignments = [], progressList = []) {
         const totalStudents = classes.reduce((sum, cls) => sum + (cls.students?.length || 0), 0);
         const totalAssignments = assignments.length;
-        
-        // Calculate Global Risk
-        const classRiskList = this.getClassRiskList();
-        // Since we don't have individual risk pre-calculated easily globally without looping, 
-        // we sum the risks of all classes. For simplicity, we calculate global completion rate.
-        
-        let completedEntries = progressList.filter(p => p.status === 'completed').length;
-        // Approximation: Total possible completions = totalStudents * assignments per student
-        // Here we just use the average of class completion rates
+
+        const classRiskList = this.getClassRiskList(classes);
         const avgComprehension = classRiskList.length > 0 
-            ? Math.round(classRiskList.reduce((sum, cls) => sum + cls.completionRate, 0) / classRiskList.length)
+            ? Math.round(classRiskList.reduce((sum, cls) => sum + (cls.completionRate || 0), 0) / classRiskList.length)
             : 0;
 
-        // Sum students in risk globally
         let globalStudentsInRisk = 0;
         classes.forEach(cls => {
-            const studentRisk = this.getStudentRiskList(cls.id);
+            const studentRisk = this.getStudentRiskList(cls, assignments, progressList);
             globalStudentsInRisk += studentRisk.filter(s => s.status === 'risk').length;
         });
 
@@ -87,26 +73,21 @@ class AnalyticsService {
     /**
      * Obtiene estadísticas para una clase específica
      */
-    static getClassStats(classId) {
-        const classes = MockBackendService.getClasses();
-        const assignments = MockBackendService.getAssignments().filter(a => a.classId === classId);
-        const progressList = JSON.parse(localStorage.getItem('aleer_db_progress') || '[]')
-            .filter(p => assignments.some(a => a.id === p.assignmentId));
-        
-        const selectedClass = classes.find(c => c.id === classId);
-        if (!selectedClass) return { students: 0, assignments: 0, avgComprehension: 0, studentsInRisk: 0, topReadingName: 'Ninguna', topReadingCount: 0, avgWpm: 0 };
+    static getClassStats(classId, classes = [], assignments = [], progressList = [], classHealth = {}) {
+        const selectedClass = classes.find(c => c.id === classId) || { id: classId, students: [] };
+        const classAssignments = assignments.filter(a => a.classId === classId);
+        const classProgress = progressList.filter(p => classAssignments.some(a => a.id === p.assignmentId));
 
         const totalStudents = selectedClass.students?.length || 0;
-        const totalAssignments = assignments.length;
+        const totalAssignments = classAssignments.length;
 
-        const classHealth = MockBackendService.getClassHealth(classId);
         const avgWpm = classHealth.avgWpm || 0;
         const avgComprehension = classHealth.completionRate || 0;
 
-        const studentRiskList = this.getStudentRiskList(classId);
+        const studentRiskList = this.getStudentRiskList(selectedClass, classAssignments, classProgress);
         const studentsInRisk = studentRiskList.filter(s => s.status === 'risk').length;
 
-        const topReading = this._calculateTopReading(progressList, assignments);
+        const topReading = this._calculateTopReading(classProgress, classAssignments);
 
         return {
             students: totalStudents,
@@ -122,23 +103,16 @@ class AnalyticsService {
     /**
      * Obtiene el listado de estudiantes y su nivel de riesgo para una clase
      */
-    static getStudentRiskList(classId) {
-        if (classId === 'global') return [];
-
-        const classes = MockBackendService.getClasses();
-        const selectedClass = classes.find(c => c.id === classId);
+    static getStudentRiskList(selectedClass = {}, classAssignments = [], progressList = []) {
         if (!selectedClass || !selectedClass.students) return [];
 
-        const assignments = MockBackendService.getAssignments().filter(a => a.classId === classId);
-        const progressList = JSON.parse(localStorage.getItem('aleer_db_progress') || '[]');
-
-        const totalClassAssignments = assignments.length;
+        const totalClassAssignments = classAssignments.length;
         let classStudentsStatus = [];
 
         selectedClass.students.forEach(student => {
             const studentProgress = progressList.filter(p =>
-                p.studentName === student.name &&
-                assignments.some(a => a.id === p.assignmentId)
+                (p.studentId === student.id || p.studentName === student.name) &&
+                classAssignments.some(a => a.id === p.assignmentId)
             );
             
             const completedCount = studentProgress.filter(p => p.status === 'completed').length;
@@ -152,7 +126,7 @@ class AnalyticsService {
 
             classStudentsStatus.push({
                 name: student.name,
-                className: selectedClass.name,
+                className: selectedClass.name || 'Clase',
                 completionRate,
                 status
             });
@@ -164,25 +138,31 @@ class AnalyticsService {
     /**
      * Obtiene el listado de clases y su nivel de riesgo general
      */
-    static getClassRiskList() {
-        const classes = MockBackendService.getClasses();
-        return classes.map(cls => MockBackendService.getClassHealth(cls.id));
+    static getClassRiskList(classes = []) {
+        return classes.map(cls => ({
+            id: cls.id,
+            name: cls.name,
+            studentsCount: cls.students?.length || 0,
+            completionRate: cls.completionRate || 0,
+            avgWpm: cls.avgWpm || 0,
+            status: (cls.completionRate || 0) >= 70 ? 'healthy' : 'risk'
+        }));
     }
 
     /**
      * Genera notificaciones/insights basados en análisis
      */
-    static getInsights(classId = 'global') {
+    static getInsights(classId = 'global', stats = {}) {
         let insights = [];
         const timestamp = Date.now();
+        const studentsInRisk = stats.studentsInRisk || 0;
 
         if (classId === 'global') {
-            const globalStats = this.getGlobalStats();
-            if (globalStats.studentsInRisk > 0) {
+            if (studentsInRisk > 0) {
                 insights.push({
                     id: timestamp + 1,
                     type: 'risk',
-                    message: `Hay ${globalStats.studentsInRisk} estudiantes en riesgo en el colegio.`,
+                    message: `Hay ${studentsInRisk} estudiantes en riesgo en el colegio.`,
                     action: 'Revisar semáforo'
                 });
             } else {
@@ -194,12 +174,11 @@ class AnalyticsService {
                 });
             }
         } else {
-            const classStats = this.getClassStats(classId);
-            if (classStats.studentsInRisk > 0) {
+            if (studentsInRisk > 0) {
                 insights.push({
                     id: timestamp + 3,
                     type: 'risk',
-                    message: `Tienes ${classStats.studentsInRisk} estudiantes en riesgo en este salón.`,
+                    message: `Tienes ${studentsInRisk} estudiantes en riesgo en este salón.`,
                     action: 'Ver Semáforo'
                 });
             } else {
@@ -216,12 +195,9 @@ class AnalyticsService {
     }
 
     /**
-     * Obtiene el análisis de comprensión por tipo de pregunta (Mock data)
-     * @param {string} classId
+     * Obtiene el análisis de comprensión por tipo de pregunta
      */
     static getComprehensionAnalysis(classId = 'global') {
-        // En un escenario real, esto cruzaría los datos de las respuestas fallidas
-        // con la categorización de la pregunta (Literal, Inferencia, etc.)
         return [
             { type: 'Inferencia', failRate: 65, color: 'bg-orange-400' },
             { type: 'Vocabulario', failRate: 40, color: 'bg-yellow-400' },

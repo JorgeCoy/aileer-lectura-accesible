@@ -46,22 +46,19 @@ const TeacherDashboard = () => {
         if (classes.length === 0) return;
 
         if (selectedClassId === 'global') {
-            setStats(AnalyticsService.getGlobalStats());
-            setInsights(AnalyticsService.getInsights('global'));
-            setClassesHealth(AnalyticsService.getClassRiskList());
+            const globalStats = AnalyticsService.getGlobalStats(classes, assignments);
+            setStats(globalStats);
+            setInsights(AnalyticsService.getInsights('global', globalStats));
+            setClassesHealth(AnalyticsService.getClassRiskList(classes));
             setStudentStatusList([]);
         } else {
-            setStats(AnalyticsService.getClassStats(selectedClassId));
-            setInsights(AnalyticsService.getInsights(selectedClassId));
-            
-            const classHealth = MockBackendService.getClassHealth(selectedClassId);
-            setClassesHealth([classHealth]);
-            
-            setStudentStatusList(AnalyticsService.getStudentRiskList(selectedClassId));
+            const selectedClass = classes.find(c => c.id === selectedClassId) || { id: selectedClassId, students: [] };
+            const classStats = AnalyticsService.getClassStats(selectedClassId, classes, assignments);
+            setStats(classStats);
+            setInsights(AnalyticsService.getInsights(selectedClassId, classStats));
+            setClassesHealth(AnalyticsService.getClassRiskList([selectedClass]));
+            setStudentStatusList(AnalyticsService.getStudentRiskList(selectedClass, assignments));
         }
-        
-        const history = MockBackendService.getClassHistory(selectedClassId === 'global' ? classes[0].id : selectedClassId);
-        setClassHistory(history);
     };
 
     // --- PRESENTATION MODE LAYOUT ---
