@@ -25,7 +25,24 @@
 
 ---
 
-## 🛠️ 3. Módulos Clave del Sistema (Core Product)
+## ⚡ 3. Palancas de Aceleración de Ventas (Estrategias de Alto Impacto LATAM)
+
+Para maximizar el alcance y cerrar contratos institucionales más rápido, se incorporan 5 ganchos estratégicos:
+
+1. **Soporte Normativo al PIAR / Inclusión (Decreto 1421 / Ley de Inclusión)**:
+   * Generación automática del *"Reporte de Ajustes Razonables en Lectura"* para la carpeta de inclusión del estudiante. Es el argumento n° 1 para coordinadores de inclusión.
+2. **Diagnóstico Exprés de 3 Minutos (Benchmark Lector)**:
+   * Evaluación diagnóstica inicial rápida que le entrega al Rector un *"Mapa de Salud Lectora"* del colegio. Ver un % alto en semáforo rojo genera la urgencia inmediata de compra.
+3. **Alineación con Pruebas Estandarizadas (ICFES Saber / PISA / SIMCE)**:
+   * Preguntas agrupadas por competencias oficiales (Literal, Inferencial, Crítica/Sintáctica), demostrando mejoras de puntaje en pruebas estatales.
+4. **Estrategia "Freemium Docente" (Product-Led Growth)**:
+   * Permite a un docente usar la plataforma gratis en 1 aula (hasta 25 alumnos). Cuando 3 o 4 docentes la usan y aman los reportes, ellos mismos solicitan el plan institucional al Rector.
+5. **Boletines de Progreso para Padres de Familia (PDF con QR)**:
+   * Informes mensuales sencillos para enviar a los padres. Aumenta la percepción de valor del colegio ante las familias.
+
+---
+
+## 🛠️ 4. Módulos Clave del Sistema (Core Product)
 
 ```mermaid
 graph TD
@@ -33,7 +50,7 @@ graph TD
     B --> C[Panel Docente]
     B --> D[Portal Estudiante PWA]
     C --> E[Asignación de Lecturas & Quizzes]
-    C --> F[Dashboard & Reportes Exportables PDF/Excel]
+    C --> F[Dashboard, PIAR & Reportes PDF/Excel]
     D --> G[Lector Accesible Offline]
     D --> H[Gamificación & Progreso Individual]
 ```
@@ -42,7 +59,7 @@ graph TD
 * **Asignación de Lecturas**: Asignación diferenciada por grado, tema y nivel de dificultad.
 * **Evaluación de Comprensión**: Quizzes automáticos (opción múltiple y preguntas abiertas) generados por IA o catálogo.
 * **Semáforo de Riesgo Lector**: Identificación oportuna de estudiantes con rezago en WPM o comprensión.
-* **Reportes Exportables**: Descarga de informes individuales y grupales en PDF/Excel para presentar a coordinación y padres de familia.
+* **Reportes Exportables**: Descarga de informes individuales, grupales y de inclusión (PIAR) en PDF/Excel.
 
 ### **B. Experiencia del Estudiante (PWA Accesible)**
 * **Entrenamiento Adaptativo**: Incremento gradual de WPM según desempeño.
@@ -56,22 +73,23 @@ graph TD
 
 ---
 
-## 🗺️ 4. Hoja de Ruta Priorizada (Roadmap)
+## 🗺️ 5. Hoja de Ruta Priorizada (Roadmap)
 
 ### 🟢 **Fase 1: Preparación Institucional & Pilotos (En Curso)**
 - [x] Reglas de seguridad de Firestore y eliminación de fallbacks locales.
 - [x] Control de concurrencia en Workers de IA e higiene de datos.
 - [x] Panel docente para creación de clases y seguimiento.
-- [ ] Exportación de reportes en PDF/Excel para entregables a padres.
+- [ ] Exportación de reportes en PDF/Excel (Ficha individual + Reporte PIAR).
 - [ ] Módulo de carga masiva de alumnos por archivo CSV.
 
 ### 🟡 **Fase 2: Integración & Automatización (Próximo Trimestre)**
+- [ ] Prueba diagnóstica de 3 minutos (Benchmark Inicial).
 - [ ] Integración de SSO con Google Workspace for Education.
-- [ ] Banco de lecturas alineado por grados académicos (Primaria y Secundaria).
+- [ ] Banco de lecturas categorizado por competencias ICFES / Saber.
 - [ ] Módulo de licenciamiento institucional (gestión de cupos/seats activos).
 
 ### 🔴 **Fase 3: Expansión & Ecosistema (Futuro)**
 - [ ] Integración con LMS (Google Classroom / Canvas).
 - [ ] Soporte bilingüe completo (Español / Inglés).
 
-> ⚠️ **Nota de Enfoque**: Se descartan temporalmente desarrollos de hardware (VR/AR, eye-tracking) para concentrar el 100% de la ingeniería en funciones que impulsan la venta y retención B2B educativa.
+> ⚠️ **Nota de Enfoque**: Se descartan desarrollos de hardware (VR/AR, eye-tracking) para concentrar el 100% de la ingeniería en funciones que impulsan la venta, satisfacción de padres y retención B2B educativa.
