@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import FirebaseBackendService from '../../services/FirebaseBackendService';
+import StudentDiagnosticRunner from './StudentDiagnosticRunner';
 
-const SessionPinJoin = ({ onStartDiagnostic }) => {
+const SessionPinJoin = () => {
     const [pin, setPin] = useState('');
     const [studentName, setStudentName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [activeSessionInfo, setActiveSessionInfo] = useState(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -30,15 +32,12 @@ const SessionPinJoin = ({ onStartDiagnostic }) => {
                 return;
             }
 
-            // Iniciar prueba diagnóstica de 3 minutos
-            if (onStartDiagnostic) {
-                onStartDiagnostic({
-                    sessionPin: pin.trim(),
-                    studentName: studentName.trim(),
-                    sessionTitle: session.sessionTitle,
-                    classId: session.classId
-                });
-            }
+            setActiveSessionInfo({
+                sessionPin: pin.trim(),
+                studentName: studentName.trim(),
+                sessionTitle: session.sessionTitle,
+                classId: session.classId
+            });
         } catch (err) {
             console.error("Error al unirse con PIN:", err);
             setError('Ocurrió un error al buscar la sesión. Inténtalo de nuevo.');
@@ -47,62 +46,66 @@ const SessionPinJoin = ({ onStartDiagnostic }) => {
         }
     };
 
-    return (
-        <div className="max-w-md mx-auto my-8 p-6 bg-surface border border-border-color rounded-2xl shadow-lg">
-            <div className="text-center mb-6">
-                <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                </div>
-                <h2 className="text-xl font-bold text-text-main">Diagnóstico Exprés (3 Minutos)</h2>
-                <p className="text-xs text-text-muted mt-1">Ingresa el PIN de 6 dígitos proyectado por tu profesor</p>
-            </div>
+    if (activeSessionInfo) {
+        return <StudentDiagnosticRunner sessionInfo={activeSessionInfo} />;
+    }
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+    return (
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+            <div className="max-w-md w-full p-8 bg-surface border border-border-color rounded-3xl shadow-xl text-text-main">
+                <div className="text-center mb-6">
+                    <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
+                        🔑
+                    </div>
+                    <h2 className="text-2xl font-bold text-text-main">Diagnóstico Exprés (3 Min)</h2>
+                    <p className="text-xs text-text-muted mt-1">Ingresa el PIN de 6 dígitos proyectado por tu profesor</p>
+                </div>
+
                 {error && (
-                    <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 text-xs rounded-lg">
+                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl text-sm text-center font-medium">
                         {error}
                     </div>
                 )}
 
-                <div>
-                    <label className="block text-xs font-bold text-text-muted uppercase mb-1">PIN de la Sesión</label>
-                    <input
-                        type="text"
-                        maxLength="6"
-                        value={pin}
-                        onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                        placeholder="Ej. 583921"
-                        className="w-full text-center text-2xl tracking-widest font-mono py-3 bg-surface-elevated border border-border-color rounded-xl text-text-main focus:ring-2 focus:ring-primary outline-none transition"
-                        required
-                    />
-                </div>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <div>
+                        <label className="block text-sm font-semibold mb-2 text-text-main">
+                            PIN de la Sesión (6 dígitos)
+                        </label>
+                        <input
+                            type="text"
+                            maxLength={6}
+                            required
+                            value={pin}
+                            onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                            placeholder="Ej: 583921"
+                            className="w-full text-center text-3xl tracking-widest font-mono py-3 rounded-xl border border-border-color bg-surface-elevated text-text-main focus:ring-2 focus:ring-primary focus:border-primary transition"
+                        />
+                    </div>
 
-                <div>
-                    <label className="block text-xs font-bold text-text-muted uppercase mb-1">Tu Nombre Completo</label>
-                    <input
-                        type="text"
-                        value={studentName}
-                        onChange={(e) => setStudentName(e.target.value)}
-                        placeholder="Ej. Camila Morales"
-                        className="w-full px-4 py-2.5 bg-surface-elevated border border-border-color rounded-xl text-text-main focus:ring-2 focus:ring-primary outline-none transition text-sm"
-                        required
-                    />
-                </div>
+                    <div>
+                        <label className="block text-sm font-semibold mb-2 text-text-main">
+                            Nombre y Apellido del Estudiante
+                        </label>
+                        <input
+                            type="text"
+                            required
+                            value={studentName}
+                            onChange={(e) => setStudentName(e.target.value)}
+                            placeholder="Ej: María Gómez"
+                            className="w-full px-4 py-3 rounded-xl border border-border-color bg-surface-elevated text-text-main focus:ring-2 focus:ring-primary focus:border-primary transition"
+                        />
+                    </div>
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                    {loading ? (
-                        <span>Validando PIN...</span>
-                    ) : (
-                        <span>Comenzar Prueba Diagnóstica 🚀</span>
-                    )}
-                </button>
-            </form>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-3.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition shadow-lg shadow-primary/30 disabled:opacity-50"
+                    >
+                        {loading ? 'Buscando Sesión...' : '🚀 Iniciar Diagnóstico'}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 };

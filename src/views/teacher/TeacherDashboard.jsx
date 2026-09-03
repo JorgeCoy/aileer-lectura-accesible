@@ -10,6 +10,7 @@ import ClassHeatmap from '../../components/teacher/ClassHeatmap';
 import TrendChart from '../../components/teacher/TrendChart';
 import FirebaseBackendService from '../../services/FirebaseBackendService';
 import { useAuth } from '../../context/AuthContext';
+import PinDiagnosticModal from '../../components/teacher/PinDiagnosticModal';
 
 const TeacherDashboard = () => {
     const navigate = useNavigate();
@@ -24,6 +25,7 @@ const TeacherDashboard = () => {
     const [isPresentationMode, setIsPresentationMode] = useState(false);
     const [showPodium, setShowPodium] = useState(false);
     const [showInsights, setShowInsights] = useState(false);
+    const [isPinModalOpen, setIsPinModalOpen] = useState(false);
 
     useEffect(() => {
         // Initial load of classes synced from Firebase
@@ -215,6 +217,13 @@ const TeacherDashboard = () => {
                         )}
                     </div>
                     <button
+                        onClick={() => setIsPinModalOpen(true)}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-2xl hover:scale-105 transition-all flex items-center gap-2 shadow-xl shadow-emerald-600/30 font-bold cursor-pointer"
+                        title="Lanzar Evaluación Exprés por PIN de 6 dígitos"
+                    >
+                        <span className="text-xl">🔑</span> Lanzar Diagnóstico (PIN)
+                    </button>
+                    <button
                         onClick={() => setIsPresentationMode(true)}
                         className="bg-primary text-white px-6 py-3 rounded-2xl hover:scale-105 transition-all flex items-center gap-2 shadow-xl shadow-primary/20 font-bold"
                         title="Modo Proyección para Aula"
@@ -223,6 +232,14 @@ const TeacherDashboard = () => {
                     </button>
                 </div>
             </header>
+
+            {/* Modal de Diagnóstico por PIN Proyectable */}
+            <PinDiagnosticModal
+                isOpen={isPinModalOpen}
+                onClose={() => setIsPinModalOpen(false)}
+                teacherUid={user?.uid}
+                classes={classes}
+            />
 
             {/* KPI Cards (Premium Glassmorphism) */}
             <div className="grid md:grid-cols-3 gap-6">
