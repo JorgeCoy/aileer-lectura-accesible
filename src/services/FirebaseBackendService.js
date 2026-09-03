@@ -178,7 +178,8 @@ const FirebaseBackendService = {
     createDiagnosticSession: async (teacherId, classId, sessionTitle = 'Diagnóstico Inicial') => {
         try {
             const pin = Math.floor(100000 + Math.random() * 900000).toString();
-            const sessionRef = await addDoc(collection(db, 'diagnostic_sessions'), {
+            // El PIN de 6 dígitos es el ID del documento: permite getDoc() directo O(1) con la regla 'allow get'
+            await setDoc(doc(db, 'diagnostic_sessions', pin), {
                 pin,
                 teacherId,
                 classId: classId || 'express',
@@ -186,7 +187,7 @@ const FirebaseBackendService = {
                 status: 'active',
                 createdAt: new Date().toISOString()
             });
-            return { id: sessionRef.id, pin, sessionTitle };
+            return { id: pin, pin, sessionTitle };
         } catch (error) {
             console.error("Error creating diagnostic PIN session:", error);
             throw error;
@@ -200,11 +201,10 @@ const FirebaseBackendService = {
                 await signInAnonymously(auth);
             }
 
-            const q = query(collection(db, 'diagnostic_sessions'), where('pin', '==', pin.toString()), where('status', '==', 'active'));
-            const snap = await getDocs(q);
-            if (snap.empty) return null;
-            const docData = snap.docs[0];
-            return { id: docData.id, ...docData.data() };
+            // Consulta por ID exacto getDoc (Obedece allow get: if status == 'active' sin requerir permiso list)
+            const sessionDoc = await getDoc(doc(db, 'diagnostic_sessions', pin.toString()));
+            if (!sessionDoc.exists() || sessionDoc.data().status !== 'active') return null;
+            return { id: sessionDoc.id, ...sessionDoc.data() };
         } catch (error) {
             console.error("Error fetching diagnostic session by PIN:", error);
             return null;

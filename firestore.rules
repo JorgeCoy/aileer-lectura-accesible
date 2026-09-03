@@ -12,7 +12,7 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Auxiliar: Obtener el documento de usuario de Firestore (Firestore Rules cachea múltiples llamadas get al mismo documento)
+    // Auxiliar: Obtener el documento de usuario de Firestore
     function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
@@ -29,15 +29,10 @@ service cloud.firestore {
 
     // Colección de Usuarios (/users)
     match /users/{userId} {
-      // Lectura: El propio usuario o miembros del mismo colegio
       allow read: if isOwner(userId) || (isAuthenticated() && resource.data.schoolId == getUserSchoolId());
-      
-      // Creación: Todo registro público nace como 'student' sin colegio (previene auto-elevación y fuga entre colegios)
       allow create: if isOwner(userId) 
         && request.resource.data.role == 'student' 
         && (!('schoolId' in request.resource.data) || request.resource.data.schoolId == null);
-      
-      // Edición: El usuario NO PUEDE alterar su propio 'role' ni su 'schoolId' (imposibilita la auto-escalación)
       allow update: if isOwner(userId) 
         && request.resource.data.role == resource.data.role 
         && (!('schoolId' in resource.data) || request.resource.data.schoolId == resource.data.schoolId);
@@ -45,43 +40,46 @@ service cloud.firestore {
 
     // Colección de Clases (/classes)
     match /classes/{classId} {
-      // Lectura: Solo usuarios del mismo colegio o el docente dueño de la clase
       allow read: if isAuthenticated() && (resource.data.schoolId == getUserSchoolId() || resource.data.teacherId == request.auth.uid);
-      
-      // Creación: Solo docentes autenticados vinculando su propio teacherId Y su propio schoolId (previene inyección entre colegios)
       allow create: if isAuthenticated() 
         && getUserRole() == 'teacher' 
         && request.resource.data.teacherId == request.auth.uid
         && request.resource.data.schoolId == getUserSchoolId();
       
-      // Edición y Eliminación: Solo el docente dueño de la clase
-      allow update, delete: if isAuthenticated() && getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid;
+      // Inmutabilidad de schoolId y teacherId en edición de clases
+      allow update: if isAuthenticated() 
+        && getUserRole() == 'teacher' 
+        && resource.data.teacherId == request.auth.uid
+        && request.resource.data.schoolId == resource.data.schoolId
+        && request.resource.data.teacherId == resource.data.teacherId;
+
+      allow delete: if isAuthenticated() && getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid;
     }
 
     // Colección de Tareas / Asignaciones (/assignments)
     match /assignments/{assignmentId} {
-      // Lectura: Docente dueño o usuarios del mismo colegio
       allow read: if isAuthenticated() && (resource.data.teacherId == request.auth.uid || resource.data.schoolId == getUserSchoolId());
-      
-      // Creación: Solo docentes autenticados vinculando su propio teacherId Y su propio schoolId
       allow create: if isAuthenticated() 
         && getUserRole() == 'teacher' 
         && request.resource.data.teacherId == request.auth.uid
         && request.resource.data.schoolId == getUserSchoolId();
       
-      // Edición y Eliminación: Solo el docente dueño
-      allow update, delete: if isAuthenticated() && getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid;
+      // Inmutabilidad de schoolId y teacherId en edición de asignaciones
+      allow update: if isAuthenticated() 
+        && getUserRole() == 'teacher' 
+        && resource.data.teacherId == request.auth.uid
+        && request.resource.data.schoolId == resource.data.schoolId
+        && request.resource.data.teacherId == resource.data.teacherId;
+
+      allow delete: if isAuthenticated() && getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid;
     }
 
     // Colección de Progreso y Lecturas (/progress)
     match /progress/{progressId} {
-      // Lectura: El propio estudiante O docentes del MISMO colegio (aislamiento total multi-tenant)
       allow read: if isAuthenticated() && (
         resource.data.studentId == request.auth.uid || 
         (getUserRole() == 'teacher' && resource.data.schoolId == getUserSchoolId())
       );
-      
-      // Creación y Edición: Estricto. El estudiante solo puede escribir SU propio progreso en SU propio colegio
       allow create, update: if isAuthenticated() 
         && request.resource.data.studentId == request.auth.uid
         && request.resource.data.schoolId == getUserSchoolId();
@@ -89,28 +87,25 @@ service cloud.firestore {
 
     // Colección de Sesiones de Diagnóstico (PIN Exprés de 3 Minutos)
     match /diagnostic_sessions/{sessionId} {
-      // Creación: Solo docentes autenticados pueden iniciar sesiones
       allow create: if isAuthenticated() && getUserRole() == 'teacher' && request.resource.data.teacherId == request.auth.uid;
       
-      // Obtener un documento individual (Estudiante que conoce el PIN activo o docente dueño)
+      // Obtener un documento individual sabiendo el PIN activo (El PIN es el Document ID)
       allow get: if isAuthenticated() && ((getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid) || resource.data.status == 'active');
       
-      // Listar múltiples sesiones (Query): Solo el docente dueño puede listar sus sesiones (Bloquea raspado/descubrimiento masivo de PINs activos)
+      // Listado masivo (Query): Solo el docente creador
       allow list: if isAuthenticated() && getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid;
       
-      // Edición / Cierre de Sesión: Solo el docente creador de la sesión (permite cambiar status a 'closed')
+      // Edición / Cierre de Sesión: Solo el docente creador
       allow update: if isAuthenticated() && getUserRole() == 'teacher'
         && resource.data.teacherId == request.auth.uid
         && request.resource.data.teacherId == resource.data.teacherId;
       
-      // Subcolección independiente de envíos (Leíble solo por el propio estudiante o el docente de la sesión)
+      // Subcolección independiente de envíos
       match /submissions/{submissionId} {
-        // Envió permitido solo si el alumno está autenticado Y la sesión de diagnóstico sigue 'active'
         allow create: if isAuthenticated() 
           && request.resource.data.studentUid == request.auth.uid
           && get(/databases/$(database)/documents/diagnostic_sessions/$(sessionId)).data.status == 'active';
         
-        // Lectura restringida: Solo el propio estudiante que envió O el docente creador de la sesión
         allow read: if isAuthenticated() && (
           resource.data.studentUid == request.auth.uid ||
           get(/databases/$(database)/documents/diagnostic_sessions/$(sessionId)).data.teacherId == request.auth.uid
