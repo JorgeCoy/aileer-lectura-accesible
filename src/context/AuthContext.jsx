@@ -19,25 +19,28 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     // Registro
-    const register = async (email, password, name, selectedRole, assignedSchoolId = 'demo_school_123') => {
+    const register = async (email, password, name, selectedRole = 'student', assignedSchoolId = null) => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const firebaseUser = userCredential.user;
 
-            // Crear el perfil del usuario en Firestore
+            // Crear el perfil del usuario en Firestore (Cumpliendo reglas multi-tenant)
             const userProfile = {
                 uid: firebaseUser.uid,
                 email: email,
                 name: name,
-                role: selectedRole,
-                schoolId: assignedSchoolId,
+                role: selectedRole === 'teacher' ? 'student' : 'student', // Todo registro público nace como student
                 createdAt: new Date().toISOString()
             };
+
+            if (assignedSchoolId) {
+                userProfile.schoolId = assignedSchoolId;
+            }
 
             await setDoc(doc(db, 'users', firebaseUser.uid), userProfile);
 
             setUser(firebaseUser);
-            setRole(selectedRole);
+            setRole('student');
             setSchoolId(assignedSchoolId);
 
             return firebaseUser;

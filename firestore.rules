@@ -12,7 +12,7 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Auxiliar: Obtener datos del perfil en /users
+    // Auxiliar: Obtener el documento de usuario de Firestore
     function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
@@ -29,10 +29,16 @@ service cloud.firestore {
 
     // Colección de Usuarios (/users)
     match /users/{userId} {
-      // El propio usuario puede leer/crear/editar su documento, o usuarios del mismo colegio
+      // Lectura: El propio usuario o miembros del mismo colegio
       allow read: if isOwner(userId) || (isAuthenticated() && resource.data.schoolId == getUserSchoolId());
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
+      
+      // Creación: Todo registro público nace como 'student' (previene auto-elevación de rol/colegio)
+      allow create: if isOwner(userId) && request.resource.data.role == 'student';
+      
+      // Edición: El usuario NO PUEDE alterar su propio 'role' ni su 'schoolId' (imposibilita la auto-escalación)
+      allow update: if isOwner(userId) 
+        && request.resource.data.role == resource.data.role 
+        && (!('schoolId' in resource.data) || request.resource.data.schoolId == resource.data.schoolId);
     }
 
     // Colección de Clases (/classes)
@@ -61,16 +67,31 @@ service cloud.firestore {
 
     // Colección de Progreso y Lecturas (/progress)
     match /progress/{progressId} {
-      // Lectura: El propio estudiante o docentes
-      allow read: if isAuthenticated() && (resource.data.studentId == request.auth.uid || getUserRole() == 'teacher');
+      // Lectura: El propio estudiante O docentes del MISMO colegio (aislamiento total multi-tenant)
+      allow read: if isAuthenticated() && (
+        resource.data.studentId == request.auth.uid || 
+        (getUserRole() == 'teacher' && resource.data.schoolId == getUserSchoolId())
+      );
       
-      // Creación y Edición: Estricto. El estudiante solo puede escribir/modificar SU propio progreso
-      allow create, update: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
+      // Creación y Edición: Estricto. El estudiante solo puede escribir SU propio progreso en SU propio colegio
+      allow create, update: if isAuthenticated() 
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.schoolId == getUserSchoolId();
     }
 
     // Colección de Sesiones de Diagnóstico (PIN Exprés de 3 Minutos)
     match /diagnostic_sessions/{sessionId} {
-      allow read, create, update: if true;
+      // Creación: Solo docentes autenticados pueden iniciar sesiones
+      allow create: if isAuthenticated() && getUserRole() == 'teacher' && request.resource.data.teacherId == request.auth.uid;
+      
+      // Lectura: Docente dueño o estudiantes participando en sesión activa
+      allow read: if (isAuthenticated() && resource.data.teacherId == request.auth.uid) || resource.data.status == 'active';
+      
+      // Edición: Solo permite añadir resultados a la sesión activa sin sobreescribir PIN, docente ni título
+      allow update: if resource.data.status == 'active'
+        && request.resource.data.pin == resource.data.pin
+        && request.resource.data.teacherId == resource.data.teacherId
+        && request.resource.data.sessionTitle == resource.data.sessionTitle;
     }
 
     // Bloqueo estricto por defecto para cualquier otra colección no especificada
