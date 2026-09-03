@@ -2,118 +2,214 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Auxiliar: ¿El usuario inició sesión?
+    // ============================================
+    // FUNCIONES AUXILIARES SEGURAS
+    // ============================================
+
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Auxiliar: ¿Es el propio usuario?
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Auxiliar: Obtener el documento de usuario de Firestore
+    // MANEJO SEGURO: Si el documento no existe, retorna {} en vez de crashear
     function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return userDoc.data != null ? userDoc.data : {};
     }
 
-    // Auxiliar: Obtener el rol del usuario
     function getUserRole() {
-      return getUserData().role;
+      let data = getUserData();
+      return data != null && 'role' in data ? data.role : 'student';
     }
 
-    // Auxiliar: Obtener el colegio (schoolId) del usuario
     function getUserSchoolId() {
-      return getUserData().schoolId;
+      let data = getUserData();
+      return data != null && 'schoolId' in data ? data.schoolId : null;
     }
 
-    // Colección de Usuarios (/users)
+    // ============================================
+    // USUARIOS (/users)
+    // ============================================
+    // PRIVACIDAD Estricta: Nadie lista usuarios. Solo cada uno lee su propio perfil.
+
     match /users/{userId} {
-      allow read: if isOwner(userId) || (isAuthenticated() && resource.data.schoolId == getUserSchoolId());
+      // Solo el propio usuario puede leer su perfil
+      allow get: if isOwner(userId);
+      
+      // NADIE puede listar todos los usuarios (previene fuga de datos Ley 1581 / GDPR)
+      allow list: if false;
+      
+      // Creación: Todo registro público nace como 'student' sin colegio
       allow create: if isOwner(userId) 
-        && request.resource.data.role == 'student' 
+        && request.resource.data.role == 'student'
         && (!('schoolId' in request.resource.data) || request.resource.data.schoolId == null);
+      
+      // Update: El usuario puede editar su perfil, pero NUNCA su 'role' ni 'schoolId'
       allow update: if isOwner(userId) 
-        && request.resource.data.role == resource.data.role 
-        && (!('schoolId' in resource.data) || request.resource.data.schoolId == resource.data.schoolId);
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.schoolId == resource.data.schoolId;
+      
+      // Delete: Solo el propio usuario o un admin
+      allow delete: if isOwner(userId) || (
+        isAuthenticated() && getUserRole() == 'admin'
+      );
     }
 
-    // Colección de Clases (/classes)
+    // ============================================
+    // CLASES (/classes)
+    // ============================================
+
     match /classes/{classId} {
-      allow read: if isAuthenticated() && (resource.data.schoolId == getUserSchoolId() || resource.data.teacherId == request.auth.uid);
+      // Leer documento individual: solo si es el docente creador o pertenece al mismo colegio
+      allow get: if isAuthenticated() && (
+        resource.data.teacherId == request.auth.uid || 
+        resource.data.schoolId == getUserSchoolId()
+      );
+      
+      // Listar/Query: El cliente DEBE filtrar por schoolId o teacherId.
+      allow list: if isAuthenticated() && getUserSchoolId() != null;
+      
+      // Crear: Solo docentes, asignando su propio UID y su colegio
       allow create: if isAuthenticated() 
         && getUserRole() == 'teacher' 
         && request.resource.data.teacherId == request.auth.uid
         && request.resource.data.schoolId == getUserSchoolId();
       
-      // Inmutabilidad de schoolId y teacherId en edición de clases
+      // Update: Solo el docente creador. schoolId y teacherId son INMUTABLES.
       allow update: if isAuthenticated() 
         && getUserRole() == 'teacher' 
         && resource.data.teacherId == request.auth.uid
         && request.resource.data.schoolId == resource.data.schoolId
         && request.resource.data.teacherId == resource.data.teacherId;
-
-      allow delete: if isAuthenticated() && getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid;
+      
+      // Delete: Solo el docente creador
+      allow delete: if isAuthenticated() 
+        && getUserRole() == 'teacher' 
+        && resource.data.teacherId == request.auth.uid;
     }
 
-    // Colección de Tareas / Asignaciones (/assignments)
+    // ============================================
+    // ASIGNACIONES (/assignments)
+    // ============================================
+
     match /assignments/{assignmentId} {
-      allow read: if isAuthenticated() && (resource.data.teacherId == request.auth.uid || resource.data.schoolId == getUserSchoolId());
+      allow get: if isAuthenticated() && (
+        resource.data.teacherId == request.auth.uid || 
+        resource.data.schoolId == getUserSchoolId()
+      );
+      
+      allow list: if isAuthenticated() && getUserSchoolId() != null;
+      
       allow create: if isAuthenticated() 
         && getUserRole() == 'teacher' 
         && request.resource.data.teacherId == request.auth.uid
         && request.resource.data.schoolId == getUserSchoolId();
       
-      // Inmutabilidad de schoolId y teacherId en edición de asignaciones
       allow update: if isAuthenticated() 
         && getUserRole() == 'teacher' 
         && resource.data.teacherId == request.auth.uid
         && request.resource.data.schoolId == resource.data.schoolId
         && request.resource.data.teacherId == resource.data.teacherId;
-
-      allow delete: if isAuthenticated() && getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid;
+      
+      allow delete: if isAuthenticated() 
+        && getUserRole() == 'teacher' 
+        && resource.data.teacherId == request.auth.uid;
     }
 
-    // Colección de Progreso y Lecturas (/progress)
+    // ============================================
+    // PROGRESO (/progress)
+    // ============================================
+
     match /progress/{progressId} {
-      allow read: if isAuthenticated() && (
+      // Leer individual: el propio estudiante o un docente del mismo colegio
+      allow get: if isAuthenticated() && (
         resource.data.studentId == request.auth.uid || 
         (getUserRole() == 'teacher' && resource.data.schoolId == getUserSchoolId())
       );
+      
+      allow list: if isAuthenticated() && (
+        request.query.studentId == request.auth.uid ||
+        (getUserRole() == 'teacher' && getUserSchoolId() != null)
+      );
+      
+      // Crear/Update: Solo el propio estudiante, dentro de su colegio
       allow create, update: if isAuthenticated() 
         && request.resource.data.studentId == request.auth.uid
         && request.resource.data.schoolId == getUserSchoolId();
+      
+      // Delete: Solo el propio estudiante o docente del colegio
+      allow delete: if isAuthenticated() && (
+        resource.data.studentId == request.auth.uid ||
+        (getUserRole() == 'teacher' && resource.data.schoolId == getUserSchoolId())
+      );
     }
 
-    // Colección de Sesiones de Diagnóstico (PIN Exprés de 3 Minutos)
+    // ============================================
+    // SESIONES DE DIAGNÓSTICO (/diagnostic_sessions)
+    // ============================================
+
     match /diagnostic_sessions/{sessionId} {
-      allow create: if isAuthenticated() && getUserRole() == 'teacher' && request.resource.data.teacherId == request.auth.uid;
+      allow create: if isAuthenticated() 
+        && getUserRole() == 'teacher' 
+        && request.resource.data.teacherId == request.auth.uid;
       
-      // Obtener un documento individual sabiendo el PIN activo (El PIN es el Document ID)
-      allow get: if isAuthenticated() && ((getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid) || resource.data.status == 'active');
+      // get: Docente ve sus sesiones CUALQUIERA. Estudiante ve solo las ACTIVAS.
+      allow get: if isAuthenticated() && (
+        (getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid) || 
+        resource.data.status == 'active'
+      );
       
-      // Listado masivo (Query): Solo el docente creador
-      allow list: if isAuthenticated() && getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid;
+      // list: Solo el docente creador lista sus sesiones
+      allow list: if isAuthenticated() 
+        && getUserRole() == 'teacher' 
+        && resource.data.teacherId == request.auth.uid;
       
-      // Edición / Cierre de Sesión: Solo el docente creador
-      allow update: if isAuthenticated() && getUserRole() == 'teacher'
+      // update: Solo el docente creador (ej. cerrar sesión)
+      allow update: if isAuthenticated() 
+        && getUserRole() == 'teacher'
         && resource.data.teacherId == request.auth.uid
         && request.resource.data.teacherId == resource.data.teacherId;
       
-      // Subcolección independiente de envíos
+      // delete: Solo el docente creador
+      allow delete: if isAuthenticated() 
+        && getUserRole() == 'teacher' 
+        && resource.data.teacherId == request.auth.uid;
+
+      // ============================================
+      // SUBCOLECCIÓN: ENVÍOS (/diagnostic_sessions/{sessionId}/submissions)
+      // ============================================
+      
       match /submissions/{submissionId} {
+        // Crear: Solo si la sesión está activa y el estudiante envía con su propio UID
         allow create: if isAuthenticated() 
           && request.resource.data.studentUid == request.auth.uid
           && get(/databases/$(database)/documents/diagnostic_sessions/$(sessionId)).data.status == 'active';
         
-        allow read: if isAuthenticated() && (
+        // Leer: Solo el estudiante que envió o el docente creador de la sesión
+        allow get: if isAuthenticated() && (
           resource.data.studentUid == request.auth.uid ||
           get(/databases/$(database)/documents/diagnostic_sessions/$(sessionId)).data.teacherId == request.auth.uid
         );
+        
+        // Listar: Solo el estudiante que envió o el docente creador
+        allow list: if isAuthenticated() && (
+          resource.data.studentUid == request.auth.uid ||
+          get(/databases/$(database)/documents/diagnostic_sessions/$(sessionId)).data.teacherId == request.auth.uid
+        );
+        
+        // Update/Delete: Solo el docente creador (el estudiante no puede editar su envío)
+        allow update, delete: if isAuthenticated() 
+          && get(/databases/$(database)/documents/diagnostic_sessions/$(sessionId)).data.teacherId == request.auth.uid;
       }
     }
 
-    // Bloqueo estricto por defecto para cualquier otra colección no especificada
+    // ============================================
+    // BLOQUEO ESTRICTO POR DEFECTO
+    // ============================================
+
     match /{document=**} {
       allow read, write: if false;
     }
