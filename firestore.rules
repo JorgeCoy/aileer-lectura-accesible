@@ -32,8 +32,10 @@ service cloud.firestore {
       // Lectura: El propio usuario o miembros del mismo colegio
       allow read: if isOwner(userId) || (isAuthenticated() && resource.data.schoolId == getUserSchoolId());
       
-      // Creación: Todo registro público nace como 'student' (previene auto-elevación de rol/colegio)
-      allow create: if isOwner(userId) && request.resource.data.role == 'student';
+      // Creación: Todo registro público nace como 'student' sin colegio (previene auto-elevación)
+      allow create: if isOwner(userId) 
+        && request.resource.data.role == 'student' 
+        && (!('schoolId' in request.resource.data) || request.resource.data.schoolId == null);
       
       // Edición: El usuario NO PUEDE alterar su propio 'role' ni su 'schoolId' (imposibilita la auto-escalación)
       allow update: if isOwner(userId) 
@@ -84,14 +86,16 @@ service cloud.firestore {
       // Creación: Solo docentes autenticados pueden iniciar sesiones
       allow create: if isAuthenticated() && getUserRole() == 'teacher' && request.resource.data.teacherId == request.auth.uid;
       
-      // Lectura: Docente dueño o estudiantes participando en sesión activa
-      allow read: if (isAuthenticated() && resource.data.teacherId == request.auth.uid) || resource.data.status == 'active';
+      // Lectura: Usuarios autenticados (incluye Auth Anónimo por PIN)
+      allow read: if isAuthenticated() && ((getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid) || resource.data.status == 'active');
       
-      // Edición: Solo permite añadir resultados a la sesión activa sin sobreescribir PIN, docente ni título
-      allow update: if resource.data.status == 'active'
-        && request.resource.data.pin == resource.data.pin
-        && request.resource.data.teacherId == resource.data.teacherId
-        && request.resource.data.sessionTitle == resource.data.sessionTitle;
+      // Subcolección independiente de envíos (Garantiza cero colisión entre 300+ alumnos en simultáneo)
+      match /submissions/{submissionId} {
+        // Cualquier usuario autenticado (incluso Auth Anónimo por PIN) puede enviar su resultado
+        allow create: if isAuthenticated() && request.resource.data.studentUid == request.auth.uid;
+        // Solo usuarios autenticados pueden consultar las respuestas
+        allow read: if isAuthenticated();
+      }
     }
 
     // Bloqueo estricto por defecto para cualquier otra colección no especificada

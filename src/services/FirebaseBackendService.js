@@ -1,5 +1,6 @@
 import { collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, arrayUnion, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from './firebase';
+import { signInAnonymously } from 'firebase/auth';
+import { db, auth } from './firebase';
 
 const FirebaseBackendService = {
     // --- CLASSES (AULAS VIRTUALES) ---
@@ -183,7 +184,6 @@ const FirebaseBackendService = {
                 classId: classId || 'express',
                 sessionTitle,
                 status: 'active',
-                submissions: [],
                 createdAt: new Date().toISOString()
             });
             return { id: sessionRef.id, pin, sessionTitle };
@@ -195,6 +195,11 @@ const FirebaseBackendService = {
 
     getDiagnosticSessionByPin: async (pin) => {
         try {
+            // Autenticación Anónima si el usuario no tiene sesión iniciada
+            if (!auth.currentUser) {
+                await signInAnonymously(auth);
+            }
+
             const q = query(collection(db, 'diagnostic_sessions'), where('pin', '==', pin.toString()), where('status', '==', 'active'));
             const snap = await getDocs(q);
             if (snap.empty) return null;
@@ -208,18 +213,21 @@ const FirebaseBackendService = {
 
     submitDiagnosticResult: async (pin, studentName, resultData) => {
         try {
+            // Autenticación Anónima garantizada
+            if (!auth.currentUser) {
+                await signInAnonymously(auth);
+            }
+
             const session = await FirebaseBackendService.getDiagnosticSessionByPin(pin);
             if (!session) throw new Error("Sesión de diagnóstico no encontrada o expirada.");
 
-            const sessionRef = doc(db, 'diagnostic_sessions', session.id);
-            const newSubmission = {
+            // Subcolección independiente por estudiante (Evita condiciones de carrera y colisión entre 300+ alumnos)
+            const submissionsRef = collection(db, 'diagnostic_sessions', session.id, 'submissions');
+            await addDoc(submissionsRef, {
                 studentName,
+                studentUid: auth.currentUser ? auth.currentUser.uid : 'anon',
                 submittedAt: new Date().toISOString(),
                 ...resultData
-            };
-
-            await updateDoc(sessionRef, {
-                submissions: arrayUnion(newSubmission)
             });
             return true;
         } catch (error) {
