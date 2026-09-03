@@ -1,6 +1,7 @@
 import { collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, arrayUnion, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
-import { db, auth } from './firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, auth, functions } from './firebase';
 
 const FirebaseBackendService = {
     // --- CLASSES (AULAS VIRTUALES) ---
@@ -278,6 +279,18 @@ const FirebaseBackendService = {
             return updatedStudents;
         } catch (error) {
             console.error("Error batch adding students:", error);
+            throw error;
+        }
+    },
+
+    // --- B2B CORE: CANJE SEGURO DE CÓDIGO DE INVITACIÓN (CLOUD FUNCTION) ---
+    redeemInvitationCode: async (code) => {
+        try {
+            const redeemFn = httpsCallable(functions, 'redeemInvitationCode');
+            const result = await redeemFn({ code });
+            return result.data;
+        } catch (error) {
+            console.error("Error al canjear código de invitación:", error);
             throw error;
         }
     }
