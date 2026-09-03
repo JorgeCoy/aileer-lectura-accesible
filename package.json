@@ -12,6 +12,8 @@
     "deploy": "gh-pages -d dist",
     "test:perf": "node test-performance.js",
     "test:rules": "vitest run src/tests/firestore-rules.test.js",
+    "test:emulated": "firebase emulators:exec \"npm run test:rules\"",
+    "emulator:firestore": "firebase emulators:start --only firestore",
     "monitor:perf": "vite --mode development"
   },
   "dependencies": {
