@@ -8,6 +8,8 @@ import {
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../services/firebase';
 
+import FirebaseBackendService from '../services/FirebaseBackendService';
+
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
@@ -106,6 +108,24 @@ export const AuthProvider = ({ children }) => {
         return unsubscribe;
     }, []);
 
+    // Canjear código de colegio de forma segura mediante Cloud Function
+    const claimSchoolInvitation = async (code) => {
+        if (!user) throw new Error("Debes iniciar sesión para canjear un código.");
+        try {
+            const data = await FirebaseBackendService.redeemInvitationCode(code);
+            if (data.success) {
+                setRole(data.role);
+                setSchoolId(data.schoolId);
+                return { success: true, message: `Bienvenido a ${data.schoolName || 'tu institución'}`, role: data.role, schoolId: data.schoolId };
+            } else {
+                return { success: false, error: data.error || 'Error al canjear código' };
+            }
+        } catch (error) {
+            console.error("Error canjeando código:", error);
+            return { success: false, error: error.message };
+        }
+    };
+
     const value = {
         user,
         role,
@@ -113,7 +133,8 @@ export const AuthProvider = ({ children }) => {
         loading,
         register,
         login,
-        logout
+        logout,
+        claimSchoolInvitation
     };
 
     return (
