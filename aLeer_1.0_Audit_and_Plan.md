@@ -11,7 +11,7 @@
 | :--- | :---: | :--- | :--- |
 | **Motor de Lectura** | 75% | Estable con RSVP, Bionic, Chunking y Line Focus. | **CONSERVAR**: Mantener como herramienta de entrenamiento, eliminando promesas pseudocientíficas. |
 | **PWA & Offline-First** | 75% | Service Worker e IndexedDB operativos. | **CONSERVAR**: Es la ventaja competitiva principal en LATAM. |
-| **Firebase & Seguridad** | 75% | Firestore multi-tenant (`schoolId->teacherId->classId->studentId`), reglas de seguridad sin fallbacks. | **CONSERVAR & EXTENDER**: Soporte para unión de cuentas freemium a tenant (`claimSchoolTenant`). |
+| **Firebase & Seguridad** | 80% | Firestore multi-tenant (`schoolId->teacherId->classId->studentId`). **Reglas de seguridad blindadas**: eliminadas puertas traseras `!exists()`, aislamiento por `schoolId` y validación estricta `request.resource.data.studentId == request.auth.uid`. | **CONSERVAR & EXTENDER**: Soporte para unión de cuentas freemium a tenant (`claimSchoolTenant`). |
 | **Panel Docente & Reportes** | 65% | `TeacherDashboard`, `TeacherReports`, `TeacherConfig` y `ClassJoin` operativos. | **REESTRUCTURAR**: Enfocar en los 3 pilares (*Diagnóstico, Entrenamiento, Evidencia*). |
 | **Evaluación Pedagógica** | 50% | Preguntas de opción múltiple y abiertas. | **REESCRIBIR**: Estructurar quizzes por competencias psicométricas (**Literal, Inferencial, Crítica/Sintáctica**). |
 | **IA Worker Local** | 70% | HuggingFace Web Worker con cola de concurrencia FIFO y límite de 2 modelos en RAM. | **CONSERVAR & EVOLUCIONAR**: Dirigir la IA hacia un **Motor de Recomendación Adaptativo** de lecturas. |

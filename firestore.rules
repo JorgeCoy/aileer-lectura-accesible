@@ -12,37 +12,60 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Auxiliar: Obtener el rol del usuario desde su documento en /users
+    // Auxiliar: Obtener datos del perfil en /users
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Auxiliar: Obtener el rol del usuario
     function getUserRole() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      return getUserData().role;
     }
 
-    // Colección de Usuarios
+    // Auxiliar: Obtener el colegio (schoolId) del usuario
+    function getUserSchoolId() {
+      return getUserData().schoolId;
+    }
+
+    // Colección de Usuarios (/users)
     match /users/{userId} {
-      // Cualquier usuario autenticado puede leer datos de perfil
-      allow read: if isAuthenticated();
-      // Cada usuario solo puede crear o actualizar su propio documento de perfil
-      allow create, update: if isOwner(userId);
+      // El propio usuario puede leer/crear/editar su documento, o usuarios del mismo colegio
+      allow read: if isOwner(userId) || (isAuthenticated() && resource.data.schoolId == getUserSchoolId());
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
     }
 
-    // Colección de Clases
+    // Colección de Clases (/classes)
     match /classes/{classId} {
-      // Estudiantes y docentes autenticados pueden ver información de clases
-      allow read: if isAuthenticated();
-      // Solo docentes pueden crear, editar o eliminar clases
-      allow create, update, delete: if isAuthenticated() && (getUserRole() == 'teacher' || !exists(/databases/$(database)/documents/users/$(request.auth.uid)));
+      // Lectura: Solo usuarios del mismo colegio o el docente dueño de la clase
+      allow read: if isAuthenticated() && (resource.data.schoolId == getUserSchoolId() || resource.data.teacherId == request.auth.uid);
+      
+      // Creación: Solo docentes autenticados vinculando su propio teacherId
+      allow create: if isAuthenticated() && getUserRole() == 'teacher' && request.resource.data.teacherId == request.auth.uid;
+      
+      // Edición y Eliminación: Solo el docente dueño de la clase
+      allow update, delete: if isAuthenticated() && getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid;
     }
 
-    // Colección de Tareas / Asignaciones
+    // Colección de Tareas / Asignaciones (/assignments)
     match /assignments/{assignmentId} {
-      allow read: if isAuthenticated();
-      allow create, update, delete: if isAuthenticated() && (getUserRole() == 'teacher' || !exists(/databases/$(database)/documents/users/$(request.auth.uid)));
+      // Lectura: Docente dueño o usuarios del mismo colegio
+      allow read: if isAuthenticated() && (resource.data.teacherId == request.auth.uid || resource.data.schoolId == getUserSchoolId());
+      
+      // Creación: Solo docentes autenticados asignándose como creadores
+      allow create: if isAuthenticated() && getUserRole() == 'teacher' && request.resource.data.teacherId == request.auth.uid;
+      
+      // Edición y Eliminación: Solo el docente dueño
+      allow update, delete: if isAuthenticated() && getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid;
     }
 
-    // Colección de Progreso y Lecturas
+    // Colección de Progreso y Lecturas (/progress)
     match /progress/{progressId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAuthenticated();
+      // Lectura: El propio estudiante o docentes
+      allow read: if isAuthenticated() && (resource.data.studentId == request.auth.uid || getUserRole() == 'teacher');
+      
+      // Creación y Edición: Estricto. El estudiante solo puede escribir/modificar SU propio progreso
+      allow create, update: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
     }
 
     // Colección de Sesiones de Diagnóstico (PIN Exprés de 3 Minutos)
@@ -50,7 +73,7 @@ service cloud.firestore {
       allow read, create, update: if true;
     }
 
-    // Bloqueo por defecto para cualquier otra colección no especificada
+    // Bloqueo estricto por defecto para cualquier otra colección no especificada
     match /{document=**} {
       allow read, write: if false;
     }
