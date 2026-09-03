@@ -236,6 +236,20 @@ const FirebaseBackendService = {
         }
     },
 
+    closeDiagnosticSession: async (sessionId) => {
+        try {
+            const sessionRef = doc(db, 'diagnostic_sessions', sessionId);
+            await updateDoc(sessionRef, {
+                status: 'closed',
+                closedAt: new Date().toISOString()
+            });
+            return true;
+        } catch (error) {
+            console.error("Error closing diagnostic session:", error);
+            throw error;
+        }
+    },
+
     // --- B2B CORE: RECONCILIACIÓN FREEMIUM A TENANT INSTITUCIONAL ---
     claimSchoolTenant: async (teacherId, schoolId) => {
         try {

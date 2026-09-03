@@ -12,7 +12,7 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Auxiliar: Obtener el documento de usuario de Firestore
+    // Auxiliar: Obtener el documento de usuario de Firestore (Evaluación en caché automática por Firestore Rules)
     function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
@@ -32,7 +32,7 @@ service cloud.firestore {
       // Lectura: El propio usuario o miembros del mismo colegio
       allow read: if isOwner(userId) || (isAuthenticated() && resource.data.schoolId == getUserSchoolId());
       
-      // Creación: Todo registro público nace como 'student' sin colegio (previene auto-elevación)
+      // Creación: Todo registro público nace como 'student' sin colegio (previene auto-elevación y fuga entre colegios)
       allow create: if isOwner(userId) 
         && request.resource.data.role == 'student' 
         && (!('schoolId' in request.resource.data) || request.resource.data.schoolId == null);
@@ -86,15 +86,24 @@ service cloud.firestore {
       // Creación: Solo docentes autenticados pueden iniciar sesiones
       allow create: if isAuthenticated() && getUserRole() == 'teacher' && request.resource.data.teacherId == request.auth.uid;
       
-      // Lectura: Usuarios autenticados (incluye Auth Anónimo por PIN)
+      // Lectura: Docente dueño o estudiantes participando en sesión activa
       allow read: if isAuthenticated() && ((getUserRole() == 'teacher' && resource.data.teacherId == request.auth.uid) || resource.data.status == 'active');
+      
+      // Edición / Cierre de Sesión: Solo el docente creador de la sesión (permite cambiar status a 'closed')
+      allow update: if isAuthenticated() && getUserRole() == 'teacher'
+        && resource.data.teacherId == request.auth.uid
+        && request.resource.data.teacherId == resource.data.teacherId;
       
       // Subcolección independiente de envíos (Garantiza cero colisión entre 300+ alumnos en simultáneo)
       match /submissions/{submissionId} {
         // Cualquier usuario autenticado (incluso Auth Anónimo por PIN) puede enviar su resultado
         allow create: if isAuthenticated() && request.resource.data.studentUid == request.auth.uid;
-        // Solo usuarios autenticados pueden consultar las respuestas
-        allow read: if isAuthenticated();
+        
+        // Lectura restringida: Solo el propio estudiante que envió O el docente creador de la sesión de diagnóstico
+        allow read: if isAuthenticated() && (
+          resource.data.studentUid == request.auth.uid ||
+          get(/databases/$(database)/documents/diagnostic_sessions/$(sessionId)).data.teacherId == request.auth.uid
+        );
       }
     }
 
